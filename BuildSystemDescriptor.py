@@ -44,7 +44,7 @@ class Compiler:
         return self.compilerType == other.compilerType and self.version == other.version
 
     def __lt__(self, other: Compiler) -> bool:
-        return self.compilerType.value < other.compilerType.value or self.version < other.version
+        return self.compilerType.value < other.compilerType.value and self.version < other.version
 
     def __str__(self) -> str:
         return "{} {}".format(self.compilerType.value, self.version)
@@ -90,9 +90,9 @@ class BuildSystemDescriptor:
         return self.filename == other.filename
 
     def __lt__(self, other: BuildSystemDescriptor) -> bool:
-        return self.architecture.value < other.architecture.value or \
-               self.compiler < other.compiler or \
-               self.hostSystem.value < other.hostSystem.value or \
+        return self.architecture.value < other.architecture.value and \
+               self.compiler < other.compiler and \
+               self.hostSystem.value < other.hostSystem.value and \
                self.installationSource.value < other.installationSource.value
 
     def matches(self, descriptor: BuildSystemDescriptor) -> bool:
