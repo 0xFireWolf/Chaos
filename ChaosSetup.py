@@ -5,8 +5,8 @@ from typing import Callable
 
 import distro
 import platform
-from EnvironmentConfigurator import *
-from ProjectBuilder import *
+from .EnvironmentConfigurator import *
+from .ProjectBuilder import *
 
 
 class ChaosConfig:

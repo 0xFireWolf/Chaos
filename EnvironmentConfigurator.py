@@ -5,7 +5,7 @@
 import os
 import tempfile
 import shutil
-from Utilities import *
+from .Utilities import *
 
 
 # An abstract configurator that sets up the development environment on the host system

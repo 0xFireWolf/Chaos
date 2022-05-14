@@ -4,8 +4,8 @@
 
 import shutil
 import tempfile
-from BuildSystemDescriptor import *
-from Utilities import *
+from .BuildSystemDescriptor import *
+from .Utilities import *
 
 kCurrentToolchainFile = "CurrentToolchain.cmake"
 kCurrentConanProfile = "CurrentProfile.conanprofile"

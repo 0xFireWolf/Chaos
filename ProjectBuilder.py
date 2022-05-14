@@ -2,7 +2,7 @@
 # MARK: - Build, Test & Clean Projects
 #
 
-from CompilerToolchainManager import *
+from .CompilerToolchainManager import *
 
 kBuildFolder = "build"
 
