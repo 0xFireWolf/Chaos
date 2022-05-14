@@ -61,7 +61,7 @@ class InstallationSource(Enum):
     kAPT = "APT"
     kXcode = "Xcode"
     kARM = "ARM"
-    kVisualStudio = "Visual Studio"
+    kVisualStudio = "VisualStudio"
 
 
 class BuildSystemDescriptor:
