@@ -4,6 +4,7 @@
 
 import shutil
 import tempfile
+import pathlib
 from .BuildSystemDescriptor import *
 from .Utilities import *
 
@@ -91,8 +92,8 @@ class CompilerToolchainManager:
             os.remove(kCurrentToolchainFile)
         if os.path.exists(kCurrentConanProfile):
             os.remove(kCurrentConanProfile)
-        os.symlink("Toolchains/{}".format(toolchain.filename), kCurrentToolchainFile)
-        os.symlink("Profiles/{}".format(profile.filename), kCurrentConanProfile)
+        os.symlink(pathlib.Path("Toolchains/{}".format(toolchain.filename)), pathlib.Path(kCurrentToolchainFile))
+        os.symlink(pathlib.Path("Profiles/{}".format(profile.filename)), pathlib.Path(kCurrentConanProfile))
         print()
         print("The toolchain and the corresponding Conan profile are both set.")
 
