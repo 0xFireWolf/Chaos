@@ -85,8 +85,8 @@ class CompilerToolchainManager:
         :param toolchain: The compiler toolchain
         :param profile: The Conan profile
         """
-        print("Applying the compiler toolchain:", toolchain)
-        print("Applying the Conan profile:", profile)
+        print("Applying the compiler toolchain:", toolchain.filename)
+        print("Applying the Conan profile:", profile.filename)
         if os.path.exists(kCurrentToolchainFile):
             os.remove(kCurrentToolchainFile)
         if os.path.exists(kCurrentConanProfile):
@@ -115,7 +115,7 @@ class CompilerToolchainManager:
                 if index not in range(0, len(toolchains)):
                     raise ValueError
                 toolchain = toolchains[index]
-                print("Selected Toolchain:", toolchain)
+                print("Selected Toolchain:", toolchain.filename)
                 profile = next((p for p in profiles if toolchain.matches(p)), None)
                 if profile is None:
                     raise FileNotFoundError
