@@ -70,7 +70,9 @@ class Chaos:
         return 0 # TODO: Return from action
 
     def ci_select_toolchain(self, name: str) -> int:
-        self.compilerToolchainManager.apply_compiler_toolchain(Toolchain(name), ConanProfile(name))
+        toolchain = Toolchain(name + ".cmake")
+        profile = ConanProfile(name + ".conanprofile")
+        self.compilerToolchainManager.apply_compiler_toolchain(toolchain, profile)
         return 0 # TODO: Return from action
 
     def ci_build_all(self, btype: BuildType) -> int:
