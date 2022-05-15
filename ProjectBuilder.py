@@ -9,11 +9,11 @@ kBuildFolder = "build"
 
 # A project builder that builds, tests, and cleans the project
 class ProjectBuilder:
-    # Name of the binary that runs all tests
-    test: str
+    # Name of the executables that run all tests
+    tests: list[str]
 
-    def __init__(self, test: str):
-        self.test = test
+    def __init__(self, tests: list[str]):
+        self.tests = tests
 
     def rebuild_project(self, btype: BuildType) -> None:
         """
@@ -52,7 +52,8 @@ class ProjectBuilder:
         :param btype: The build type
         """
         self.rebuild_project(btype)
-        subprocess.run([os.getcwd() + "/build/bin/" + self.test], cwd=kBuildFolder)
+        for test in self.tests:
+            subprocess.run([os.getcwd() + "/build/bin/" + test], cwd=kBuildFolder)
 
     def run_all_tests_debug(self) -> None:
         """

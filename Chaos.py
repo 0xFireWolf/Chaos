@@ -11,8 +11,8 @@ from .ProjectBuilder import *
 
 
 class Config:
-    # Name of the binary that runs all tests
-    test: str
+    # Name of the executables that run all tests
+    tests: list[str]
 
 
 class Chaos:
@@ -32,7 +32,7 @@ class Chaos:
         if system == "Darwin":
             self.environmentConfigurator = EnvironmentConfiguratorMacOS()
             self.compilerToolchainManager = CompilerToolchainManagerMacOS(Architecture.kx86_64 if machine == "x86_64" else Architecture.kARM64)
-            self.projectBuilder = ProjectBuilder(config.test)
+            self.projectBuilder = ProjectBuilder(config.tests)
         elif system == "Linux":
             distribution = distro.id()
             version = distro.version()
@@ -45,14 +45,14 @@ class Chaos:
                 else:
                     print("Ubuntu {} is not tested.".format(version))
                     raise EnvironmentError
-                self.projectBuilder = ProjectBuilder(config.test)
+                self.projectBuilder = ProjectBuilder(config.tests)
             else:
                 print("{} is not supported.".format(distro.name(True)))
                 raise EnvironmentError
         elif system == "Windows":
             self.environmentConfigurator = EnvironmentConfiguratorWindows()
             self.compilerToolchainManager = CompilerToolchainManagerWindows(Architecture.kx86_64)
-            self.projectBuilder = ProjectBuilder(config.test)
+            self.projectBuilder = ProjectBuilder(config.tests)
             self.clearConsole = lambda: os.system("cls")
         else:
             print("{} is not supported.".format(system))
