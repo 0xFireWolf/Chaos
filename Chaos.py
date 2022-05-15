@@ -19,6 +19,7 @@ class Chaos:
     environmentConfigurator: EnvironmentConfigurator
     compilerToolchainManager: CompilerToolchainManager
     projectBuilder: ProjectBuilder
+    clearConsole: Callable[[], int]
 
     def __init__(self, config: Config):
         """
@@ -27,6 +28,7 @@ class Chaos:
         """
         system = platform.system()
         machine = platform.machine()
+        self.clearConsole = lambda: os.system("clear")
         if system == "Darwin":
             self.environmentConfigurator = EnvironmentConfiguratorMacOS()
             self.compilerToolchainManager = CompilerToolchainManagerMacOS(Architecture.kx86_64 if machine == "x86_64" else Architecture.kARM64)
@@ -51,6 +53,7 @@ class Chaos:
             self.environmentConfigurator = EnvironmentConfiguratorWindows()
             self.compilerToolchainManager = CompilerToolchainManagerWindows(Architecture.kx86_64)
             self.projectBuilder = ProjectBuilder(config.test)
+            self.clearConsole = lambda: os.system("cls")
         else:
             print("{} is not supported.".format(system))
             raise EnvironmentError
@@ -81,7 +84,7 @@ class Chaos:
             actions[option]()
             return
         while True:
-            os.system("clear")
+            self.clearConsole()
             print()
             print("===============================")
             print("Welcome to Chaos Control Center")

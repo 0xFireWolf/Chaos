@@ -104,7 +104,6 @@ class CompilerToolchainManager:
         toolchains = self.fetch_compatible_compiler_toolchains("Toolchains")
         profiles = self.fetch_compatible_conan_profiles("Profiles")
         while True:
-            os.system("clear")
             print("\n>> Available Compiler Toolchains:\n")
             print("\t                 Arch      Compiler     Host OS   Distribution")
             for index, toolchain in enumerate(toolchains):
