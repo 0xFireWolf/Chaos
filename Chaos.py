@@ -58,7 +58,46 @@ class Chaos:
             print("{} is not supported.".format(system))
             raise EnvironmentError
 
-    def control(self, option: int) -> None:
+    def ci_install_toolchain(self, name: str) -> int:
+        toolchains: dict[str, Callable[[], None]] = {
+            "gcc-10": self.compilerToolchainManager.install_gcc_10,
+            "gcc-11": self.compilerToolchainManager.install_gcc_11,
+            "gcc-12": self.compilerToolchainManager.install_gcc_12,
+            "clang-13": self.compilerToolchainManager.install_clang_13,
+            "clang-14": self.compilerToolchainManager.install_clang_14,
+        }
+        toolchains[name]()
+        return 0 # TODO: Return from action
+
+    def ci_select_toolchain(self, name: str) -> int:
+        self.compilerToolchainManager.apply_compiler_toolchain(Toolchain(name), ConanProfile(name))
+        return 0 # TODO: Return from action
+
+    def ci_build_all(self, btype: BuildType) -> int:
+        self.projectBuilder.rebuild_project(btype)
+        return 0 # TODO: Return from action
+
+    def ci_run_tests(self) -> int:
+        self.projectBuilder.run_all_tests()
+        return 0  # TODO: Return from action
+
+    def ci(self) -> int:
+        command = sys.argv[2]
+        result = 0
+        if command == "--install-toolchain":
+            result = self.ci_install_toolchain(sys.argv[3])
+        elif command == "--select-toolchain":
+            result = self.ci_select_toolchain(sys.argv[3])
+        elif command == "--build-all":
+            result = self.ci_build_all(BuildType(sys.argv[3]))
+        elif command == "--run-tests":
+            result = self.ci_run_tests()
+        else:
+            print("Unrecognized Chaos command: {}.".format(command))
+            result = -1
+        return result
+
+    def control(self, option: int) -> int:
         """
         Main entry point of the Chaos Control Center
         :param option: Pass `-1` to enter interactive mode, otherwise a valid index to perform an operation
@@ -75,14 +114,14 @@ class Chaos:
             self.compilerToolchainManager.generate_xcode_configuration,
             self.projectBuilder.rebuild_project_debug,
             self.projectBuilder.rebuild_project_release,
-            self.projectBuilder.run_all_tests_debug,
-            self.projectBuilder.run_all_tests_release,
+            self.projectBuilder.rebuild_and_run_all_tests_debug,
+            self.projectBuilder.rebuild_and_run_all_tests_release,
             self.projectBuilder.clean_build_folder,
         ]
         if option >= 0:
             # Non-interactive mode
             actions[option]()
-            return
+            return 0 # TODO: Return from Action
         while True:
             self.clearConsole()
             print()
@@ -110,8 +149,8 @@ class Chaos:
             print()
             print("[09] Rebuild the project (DEBUG).")
             print("[10] Rebuild the project (RELEASE).")
-            print("[11] Run all tests (DEBUG).")
-            print("[12] Run all tests (RELEASE).")
+            print("[11] Rebuild and run all tests (DEBUG).")
+            print("[12] Rebuild and run all tests (RELEASE).")
             print("[13] Clean the build folder.")
             print()
             print("Press Ctrl-C or Ctrl-D to exit the menu.")
@@ -133,17 +172,28 @@ class Chaos:
             input("\nPress a key to continue...")
 
 
-def main(config: Config) -> None:
+def main(config: Config) -> int:
     chaos = Chaos(config)
+    # Default: Interactive mode
     option = -1
+
     if len(sys.argv) > 2:
-        print("Usage:")
-        print("{} <option> to run an action directly.", sys.argv[0])
-        print("{} to enter interactive mode.", sys.argv[0])
-    elif len(sys.argv) == 1:
-        # Interactive mode
-        pass
-    else:
+        if sys.argv[1] == "chaos":
+            # CI mode
+            return chaos.ci()
+        else:
+            print("Usage:")
+            print("{} to enter interactive mode.", sys.argv[0])
+            print("{} <option> to run an action directly.", sys.argv[0])
+            print("{} chaos <command> <args>... to run the script in CI mode.", sys.argv[0])
+            return -1
+
+    if len(sys.argv) == 2:
         # Action mode
-        option = int(sys.argv[1])
-    chaos.control(option)
+        try:
+            option = int(sys.argv[1])
+        except ValueError:
+            print("The option value must be an integer.")
+            return -1
+
+    return chaos.control(option)

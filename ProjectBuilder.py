@@ -46,23 +46,29 @@ class ProjectBuilder:
         if os.path.exists(kBuildFolder):
             shutil.rmtree(kBuildFolder)
 
-    def run_all_tests(self, btype: BuildType) -> None:
+    def run_all_tests(self) -> None:
         """
-        [Action] [Helper] Run all tests
-        :param btype: The build type
+        [Action] Run all tests
         """
-        self.rebuild_project(btype)
         for test in self.tests:
             subprocess.run([os.getcwd() + "/build/bin/" + test], cwd=kBuildFolder)
 
-    def run_all_tests_debug(self) -> None:
+    def rebuild_and_run_all_tests(self, btype: BuildType) -> None:
+        """
+        [Action] [Helper] Rebuild the project and run all tests
+        :param btype: The build type
+        """
+        self.rebuild_project(btype)
+        self.run_all_tests()
+
+    def rebuild_and_run_all_tests_debug(self) -> None:
         """
         [Action] Run all tests in DEBUG mode
         """
-        self.run_all_tests(BuildType.kDebug)
+        self.rebuild_and_run_all_tests(BuildType.kDebug)
 
-    def run_all_tests_release(self) -> None:
+    def rebuild_and_run_all_tests_release(self) -> None:
         """
         [Action] Run all tests in RELEASE mode
         """
-        self.run_all_tests(BuildType.kRelease)
+        self.rebuild_and_run_all_tests(BuildType.kRelease)
