@@ -3,6 +3,8 @@
 #
 
 import sys
+from subprocess import CalledProcessError
+
 import distro
 import platform
 from typing import Callable
@@ -58,7 +60,13 @@ class Chaos:
             print("{} is not supported.".format(system))
             raise EnvironmentError
 
-    def ci_install_toolchain(self, name: str) -> int:
+    def ci_install_toolchain(self, name: str) -> None:
+        """
+        [CI] Install the toolchain of the given name
+        :param name: Name of the toolchain. Must be one of `gcc-10`, `gcc-11`, `gcc-12`, `clang-13` and `clang-14`
+        :raise `KeyError` if the given name is invalid;
+               `CalledProcessError` if failed to install the toolchain.
+        """
         toolchains: dict[str, Callable[[], None]] = {
             "gcc-10": self.compilerToolchainManager.install_gcc_10,
             "gcc-11": self.compilerToolchainManager.install_gcc_11,
@@ -67,63 +75,76 @@ class Chaos:
             "clang-14": self.compilerToolchainManager.install_clang_14,
         }
         toolchains[name]()
-        return 0 # TODO: Return from action
 
-    def ci_select_toolchain(self, name: str) -> int:
+    def ci_select_toolchain(self, name: str) -> None:
+        """
+        [CI] Select the toolchain of the given name
+        :param name: Name of the toolchain
+        :raise `ValueError` if the given toolchain name is invalid;
+               `CalledProcessError` if failed to select the toolchain.
+        """
         toolchain = Toolchain(name + ".cmake")
         profile = ConanProfile(name + ".conanprofile")
         self.compilerToolchainManager.apply_compiler_toolchain(toolchain, profile)
-        return 0 # TODO: Return from action
 
-    def ci_build_all(self, btype: BuildType) -> int:
-        self.projectBuilder.rebuild_project(btype)
-        return 0 # TODO: Return from action
+    def ci_build_all(self, btype: str) -> None:
+        """
+        [CI] Build all targets
+        :param btype: The raw build type
+        :raise `ValueError` if the given build type is invalid;
+               `CalledProcessError` if failed to build one of the targets.
+        """
+        self.projectBuilder.rebuild_project(BuildType(btype))
 
-    def ci_run_tests(self) -> int:
+    def ci_run_tests(self) -> None:
+        """
+        [CI] Run all tests
+        :raise `CalledProcessError` if one of the tests has failed.
+        """
         self.projectBuilder.run_all_tests()
-        return 0  # TODO: Return from action
 
     def ci(self) -> int:
+        """
+        [CI] Main Entry Point of the Continuous Integration
+        :return: The status code to be passed to `main()`.
+        """
         command = sys.argv[2]
         result = 0
-        if command == "--install-toolchain":
-            result = self.ci_install_toolchain(sys.argv[3])
-        elif command == "--select-toolchain":
-            result = self.ci_select_toolchain(sys.argv[3])
-        elif command == "--build-all":
-            result = self.ci_build_all(BuildType(sys.argv[3]))
-        elif command == "--run-tests":
-            result = self.ci_run_tests()
-        else:
-            print("Unrecognized Chaos command: {}.".format(command))
+        try:
+            if command == "--install-toolchain":
+                self.ci_install_toolchain(sys.argv[3])
+            elif command == "--select-toolchain":
+                self.ci_select_toolchain(sys.argv[3])
+            elif command == "--build-all":
+                self.ci_build_all(sys.argv[3])
+            elif command == "--run-tests":
+                self.ci_run_tests()
+            else:
+                print("Unrecognized Chaos command: {}.".format(command))
+                raise ValueError
+        except (KeyError, ValueError, CalledProcessError):
+            print("Failed to perform the CI operation.")
             result = -1
         return result
 
-    def control(self, option: int) -> int:
+    def control_action_mode(self, actions: list[Callable[[], None]], option: int) -> None:
         """
-        Main entry point of the Chaos Control Center
-        :param option: Pass `-1` to enter interactive mode, otherwise a valid index to perform an operation
+        [CC] Chaos Control Center Action Mode
+        :param actions: A list of available actions
+        :param option: The index of the action to be performed
+        :raise: `IndexError` if the given option is invalid;
+                `CalledProcessError` if the action has failed.
         """
-        actions: list[Callable[[], None]] = [
-            self.environmentConfigurator.install_all,
-            self.compilerToolchainManager.install_gcc_10,
-            self.compilerToolchainManager.install_gcc_11,
-            self.compilerToolchainManager.install_gcc_12,
-            self.compilerToolchainManager.install_clang_13,
-            self.compilerToolchainManager.install_clang_14,
-            self.compilerToolchainManager.install_all_compilers,
-            self.compilerToolchainManager.select_compiler_toolchain,
-            self.compilerToolchainManager.generate_xcode_configuration,
-            self.projectBuilder.rebuild_project_debug,
-            self.projectBuilder.rebuild_project_release,
-            self.projectBuilder.rebuild_and_run_all_tests_debug,
-            self.projectBuilder.rebuild_and_run_all_tests_release,
-            self.projectBuilder.clean_build_folder,
-        ]
-        if option >= 0:
-            # Non-interactive mode
-            actions[option]()
-            return 0 # TODO: Return from Action
+        if option not in range(0, len(actions)):
+            raise IndexError
+        actions[option]()
+
+    def control_interactive_mode(self, actions: list[Callable[[], None]]) -> None:
+        """
+        [CC] Chaos Control Center Interactive Mode
+        :param actions: A list of available actions
+        :return: The status code to be passed to `main()`.
+        """
         while True:
             self.clearConsole()
             print()
@@ -172,6 +193,39 @@ class Chaos:
                 break
             actions[option]()
             input("\nPress a key to continue...")
+
+    def control(self, option: int) -> int:
+        """
+        [CC] Main entry point of the Chaos Control Center
+        :param option: Pass `-1` to enter interactive mode, otherwise a valid index to perform an operation
+        :return: The status code to be passed to `main()`.
+        """
+        actions: list[Callable[[], None]] = [
+            self.environmentConfigurator.install_all,
+            self.compilerToolchainManager.install_gcc_10,
+            self.compilerToolchainManager.install_gcc_11,
+            self.compilerToolchainManager.install_gcc_12,
+            self.compilerToolchainManager.install_clang_13,
+            self.compilerToolchainManager.install_clang_14,
+            self.compilerToolchainManager.install_all_compilers,
+            self.compilerToolchainManager.select_compiler_toolchain,
+            self.compilerToolchainManager.generate_xcode_configuration,
+            self.projectBuilder.rebuild_project_debug,
+            self.projectBuilder.rebuild_project_release,
+            self.projectBuilder.rebuild_and_run_all_tests_debug,
+            self.projectBuilder.rebuild_and_run_all_tests_release,
+            self.projectBuilder.clean_build_folder,
+        ]
+        result = 0
+        try:
+            if option >= 0:
+                self.control_action_mode(actions, option)
+            else:
+                self.control_interactive_mode(actions)
+        except (IndexError, ValueError, CalledProcessError):
+            print("The Chaos Control Center has terminated unexpectedly.")
+            result = -1
+        return result
 
 
 def main(config: Config) -> int:
