@@ -3,11 +3,11 @@
 #
 
 import sys
-from subprocess import CalledProcessError
-
 import distro
 import platform
+import traceback
 from typing import Callable
+from subprocess import CalledProcessError
 from .EnvironmentConfigurator import *
 from .ProjectBuilder import *
 
@@ -124,6 +124,7 @@ class Chaos:
                 raise ValueError
         except (KeyError, ValueError, CalledProcessError):
             print("Failed to perform the CI operation.")
+            traceback.print_exc()
             result = -1
         return result
 
@@ -136,6 +137,7 @@ class Chaos:
                 `CalledProcessError` if the action has failed.
         """
         if option not in range(0, len(actions)):
+            print("The given option {} is invalid.".format(option))
             raise IndexError
         actions[option]()
 
@@ -224,6 +226,7 @@ class Chaos:
                 self.control_interactive_mode(actions)
         except (IndexError, ValueError, CalledProcessError):
             print("The Chaos Control Center has terminated unexpectedly.")
+            traceback.print_exc()
             result = -1
         return result
 
