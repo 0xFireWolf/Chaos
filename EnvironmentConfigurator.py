@@ -34,9 +34,9 @@ class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
     def install_build_essentials(self) -> None:
         subprocess.run(["sudo", "xcode-select", "--install"])
         path = tempfile.mkdtemp()
-        subprocess.run(["curl", "-O", "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"], cwd=path)
+        subprocess.run(["curl", "-O", "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"], cwd=path).check_returncode()
         os.chmod(path + "/install.sh", 0o755)
-        subprocess.run([path + "/install.sh"])
+        subprocess.run([path + "/install.sh"]).check_returncode()
         shutil.rmtree(path)
 
     def install_cmake(self) -> None:
@@ -57,7 +57,7 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
     def install_conan(self) -> None:
         apt_install(["python3-pip"])
         pip_install(["conan"])
-        subprocess.run(["sudo", "ln", "-s", os.path.expanduser("~") + "/.local/bin/conan", "/usr/local/bin/conan"])
+        subprocess.run(["sudo", "ln", "-s", os.path.expanduser("~") + "/.local/bin/conan", "/usr/local/bin/conan"]).check_returncode()
 
 
 # A configurator that sets up the development environment on Windows 10 or later

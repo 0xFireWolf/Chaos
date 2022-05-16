@@ -51,6 +51,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all conan profiles at the given folder
         :param folder: Path to the folder that stores conan profiles
         :return: A list of parsed conan profiles.
+        :raise `ValueError` if failed to parse one of the profiles in the given folder.
         """
         return [ConanProfile(filename)
                 for filename in filter(lambda filename: filename.endswith(".conanprofile"), os.listdir(folder))]
@@ -60,6 +61,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all conan profiles compatible with the current host system at the given folder
         :param folder: Path to the folder that stores conan profiles
         :return: A list of parsed conan profiles.
+        :raise `ValueError` if failed to parse one of the profiles in the given folder.
         """
         return list(filter(lambda profile: profile.compatible(self.hostSystem, self.architecture), self.fetch_all_conan_profiles(folder)))
 
@@ -68,6 +70,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all CMake compiler toolchains at the given folder
         :param folder: Path to the folder that stores CMake compiler toolchains
         :return: A list of parsed compiler toolchains.
+        :raise `ValueError` if failed to parse one of the toolchains in the given folder.
         """
         return [Toolchain(filename)
                 for filename in filter(lambda filename: filename.endswith(".cmake"), os.listdir(folder))]
@@ -77,6 +80,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all CMake compiler toolchains compatible with the current host system at the given folder
         :param folder: Path to the folder that stores CMake compiler toolchains
         :return: A list of parsed compiler toolchains.
+        :raise `ValueError` if failed to parse one of the toolchains in the given folder.
         """
         return sorted(list(filter(lambda toolchain: toolchain.compatible(self.hostSystem, self.architecture), self.fetch_all_compiler_toolchains(folder))))
 
@@ -135,7 +139,7 @@ class CompilerToolchainManager:
         """
         path = tempfile.mkdtemp()
         subprocess.run(["conan", "install", ".", "--install-folder", path,
-                        "--build", "missing", "--profile", kCurrentConanProfile])
+                        "--build", "missing", "--profile", kCurrentConanProfile]).check_returncode()
         shutil.copy(path + "/" + kXcodeConfigFile, "./")
         shutil.rmtree(path)
 
@@ -183,19 +187,19 @@ class CompilerToolchainManagerUbuntu2004(CompilerToolchainManager):
 
     def install_clang_13(self) -> None:
         path = tempfile.mkdtemp()
-        subprocess.run(["wget", "https://apt.llvm.org/llvm.sh"], cwd=path)
+        subprocess.run(["wget", "https://apt.llvm.org/llvm.sh"], cwd=path).check_returncode()
         script = path + "/llvm.sh"
         os.chmod(script, 0o755)
-        subprocess.run(["sudo", script, "13"])
+        subprocess.run(["sudo", script, "13"]).check_returncode()
         apt_install(["libc++-13-dev", "libc++abi-13-dev"])
         shutil.rmtree(path)
 
     def install_clang_14(self) -> None:
         path = tempfile.mkdtemp()
-        subprocess.run(["wget", "https://apt.llvm.org/llvm.sh"], cwd=path)
+        subprocess.run(["wget", "https://apt.llvm.org/llvm.sh"], cwd=path).check_returncode()
         script = path + "/llvm.sh"
         os.chmod(script, 0o755)
-        subprocess.run(["sudo", script, "14"])
+        subprocess.run(["sudo", script, "14"]).check_returncode()
         apt_install(["libc++-14-dev", "libc++abi-14-dev"])
         shutil.rmtree(path)
 
