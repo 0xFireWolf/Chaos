@@ -4,8 +4,8 @@
 
 from __future__ import annotations
 from enum import Enum
-from collections import namedtuple
 import os
+from functools import total_ordering
 
 
 class BuildType(Enum):
@@ -13,6 +13,7 @@ class BuildType(Enum):
     kRelease = "Release"
 
 
+@total_ordering
 class Architecture(Enum):
     kx86_64 = "x86-64"
     kARM32 = "ARM32"
@@ -28,6 +29,7 @@ class Architecture(Enum):
         return hash(self.value)
 
 
+@total_ordering
 class CompilerType(Enum):
     kGCC = "GCC"
     kClang = "Clang"
@@ -44,6 +46,7 @@ class CompilerType(Enum):
         return hash(self.value)
 
 
+@total_ordering
 class Compiler:
     compilerType: CompilerType
     version: int
@@ -63,7 +66,7 @@ class Compiler:
         return self.compilerType == other.compilerType and self.version == other.version
 
     def __lt__(self, other: Compiler) -> bool:
-        return self.compilerType < other.compilerType and self.version < other.version
+        return (self.compilerType.value, self.version) < (other.compilerType.value, other.version)
 
     def __str__(self) -> str:
         return "{} {}".format(self.compilerType.value, self.version)
@@ -72,6 +75,7 @@ class Compiler:
         return hash((self.compilerType, self.version))
 
 
+@total_ordering
 class HostSystem(Enum):
     kMacOS = "macOS"
     kUbuntu = "Ubuntu"
@@ -87,6 +91,7 @@ class HostSystem(Enum):
         return hash(self.value)
 
 
+@total_ordering
 class InstallationSource(Enum):
     kHomebrew = "Homebrew"
     kAPT = "APT"
@@ -104,6 +109,7 @@ class InstallationSource(Enum):
         return hash(self.value)
 
 
+@total_ordering
 class BuildSystemIdentifier:
     """
     A 4-tuple that identifies a specific toolchain/profile
@@ -125,10 +131,7 @@ class BuildSystemIdentifier:
                     self.hostSystem.value, self.installationSource.value)
 
     def __lt__(self, other: BuildSystemIdentifier) -> bool:
-        return self.architecture < other.architecture and \
-               self.compiler < other.compiler and \
-               self.hostSystem.value < other.hostSystem.value and \
-               self.installationSource.value < other.installationSource.value
+        return self.compiler < other.compiler
 
     def __eq__(self, other: BuildSystemIdentifier) -> bool:
         return self.architecture == other.architecture and self.compiler == other.compiler and \
