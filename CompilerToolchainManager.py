@@ -1,7 +1,7 @@
 #
 # MARK: - Manage Compiler Toolchains
 #
-
+import os
 import shutil
 import tempfile
 import pathlib
@@ -10,6 +10,10 @@ from .Utilities import *
 
 kCurrentToolchainFile = "CurrentToolchain.cmake"
 kCurrentConanProfile = "CurrentProfile.conanprofile"
+
+kCurrentConanProfileDebug = "CurrentProfileDebug.conanprofile"
+kCurrentConanProfileRelease = "CurrentProfileRelease.conanprofile"
+
 kXcodeConfigFile = "conanbuildinfo.xcconfig"
 
 
@@ -46,6 +50,14 @@ class CompilerToolchainManager:
         self.install_clang_13()
         self.install_clang_14()
 
+    def remove_file_if_exist(self, file: str) -> None:
+        """
+        Remove the given file if it exists
+        :param file: The name of the file
+        """
+        if os.path.exists(file):
+            os.remove(file)
+
     def fetch_all_conan_profiles(self, folder: str) -> list[ConanProfile]:
         """
         [Helper] Fetch all conan profiles at the given folder
@@ -63,7 +75,23 @@ class CompilerToolchainManager:
         :return: A list of parsed conan profiles.
         :raise `ValueError` if failed to parse one of the profiles in the given folder.
         """
-        return list(filter(lambda profile: profile.compatible(self.hostSystem, self.architecture), self.fetch_all_conan_profiles(folder)))
+        return list(filter(lambda profile: profile.identifier.compatible(self.hostSystem, self.architecture),
+                           self.fetch_all_conan_profiles(folder)))
+
+    def fetch_compatible_conan_profiles_as_map(self, folder: str) -> dict[BuildSystemIdentifier, ConanProfilePair]:
+        """
+        [Helper] Fetch all conan profiles compatible with the current host system at the given folder and build the profile map
+        :param folder: Path to the folder that stores conan profiles
+        :return: A map keyed by the profile identifier.
+        :raise `ValueError` if failed to parse one of the profiles in the given folder.
+        """
+        pmap: dict[BuildSystemIdentifier, ConanProfilePair] = {}
+        for profile in self.fetch_compatible_conan_profiles(folder):
+            if profile.buildType == BuildType.kDebug:
+                pmap[profile.identifier].debug = profile
+            else:
+                pmap[profile.identifier].release = profile
+        return pmap
 
     def fetch_all_compiler_toolchains(self, folder: str) -> list[Toolchain]:
         """
@@ -82,48 +110,61 @@ class CompilerToolchainManager:
         :return: A list of parsed compiler toolchains.
         :raise `ValueError` if failed to parse one of the toolchains in the given folder.
         """
-        return sorted(list(filter(lambda toolchain: toolchain.compatible(self.hostSystem, self.architecture), self.fetch_all_compiler_toolchains(folder))))
+        return list(filter(lambda toolchain: toolchain.identifier.compatible(self.hostSystem, self.architecture),
+                           self.fetch_all_compiler_toolchains(folder)))
 
-    def apply_compiler_toolchain(self, toolchain: Toolchain, profile: ConanProfile) -> None:
+    def fetch_compatible_compiler_toolchains_as_map(self, folder: str) -> dict[BuildSystemIdentifier, Toolchain]:
+        """
+        [Helper] Fetch all CMake compiler toolchains compatible with the current host system at the given folder and build the toolchain map
+        :param folder: Path to the folder that stores CMake compiler toolchains
+        :return: A map keyed by the toolchain identifier.
+        :raise `ValueError` if failed to parse one of the toolchains in the given folder.
+        """
+        return {toolchain.identifier: toolchain for toolchain in self.fetch_compatible_compiler_toolchains(folder)}
+
+    def apply_compiler_toolchain(self, toolchain: Toolchain, profileDebug: ConanProfile, profileRelease: ConanProfile) -> None:
         """
         [Action] [Helper] Apply the given combination of the compiler toolchain and the Conan profile
         :param toolchain: The compiler toolchain
-        :param profile: The Conan profile
+        :param profileDebug: The Conan profile for debug build
+        :param profileRelease: The Conan profile for release build
         """
         print("Applying the compiler toolchain:", toolchain.filename)
-        print("Applying the Conan profile:", profile.filename)
-        if os.path.exists(kCurrentToolchainFile):
-            os.remove(kCurrentToolchainFile)
-        if os.path.exists(kCurrentConanProfile):
-            os.remove(kCurrentConanProfile)
+        print("Applying the Conan profile (Debug):", profileDebug.filename)
+        print("Applying the Conan profile (Release):", profileRelease.filename)
+        self.remove_file_if_exist(kCurrentToolchainFile)
+        self.remove_file_if_exist(kCurrentConanProfileDebug)
+        self.remove_file_if_exist(kCurrentConanProfileRelease)
         os.symlink(pathlib.Path("Toolchains/{}".format(toolchain.filename)), pathlib.Path(kCurrentToolchainFile))
-        os.symlink(pathlib.Path("Profiles/{}".format(profile.filename)), pathlib.Path(kCurrentConanProfile))
+        os.symlink(pathlib.Path("Profiles/{}".format(profileDebug.filename)), pathlib.Path(kCurrentConanProfileDebug))
+        os.symlink(pathlib.Path("Profiles/{}".format(profileRelease.filename)), pathlib.Path(kCurrentConanProfileRelease))
         print()
-        print("The toolchain and the corresponding Conan profile are both set.")
+        print("The toolchain and the corresponding Conan profiles are both set.")
 
     def select_compiler_toolchain(self) -> None:
         """
         [Action] Select a compiler toolchain
         """
-        toolchains = self.fetch_compatible_compiler_toolchains("Toolchains")
-        profiles = self.fetch_compatible_conan_profiles("Profiles")
+        toolchains = self.fetch_compatible_compiler_toolchains_as_map("Toolchains")
+        profiles = self.fetch_compatible_conan_profiles_as_map("Profiles")
+        assert len(toolchains.keys()) == len(profiles.keys())
+        identifiers = sorted(list(toolchains.keys()))
         while True:
             print("\n>> Available Compiler Toolchains:\n")
             print("\t                 Arch      Compiler     Host OS   Distribution")
-            for index, toolchain in enumerate(toolchains):
+            for index, identifier in enumerate(identifiers):
                 print("\t[{:02}] Toolchain: {:>6}  {:^14}  {:^7}  {:^14}"
-                      .format(index, toolchain.architecture.value, str(toolchain.compiler),
-                              toolchain.hostSystem.value, toolchain.installationSource.value))
+                      .format(index, identifier.architecture.value, str(identifier.compiler),
+                              identifier.hostSystem.value, identifier.installationSource.value))
             try:
                 index = int(input("\nInput the toolchain number and press ENTER: "))
                 if index not in range(0, len(toolchains)):
                     raise ValueError
-                toolchain = toolchains[index]
+                identifier = identifiers[index]
+                toolchain = toolchains[identifier]
+                profilePair = profiles[identifier]
                 print("Selected Toolchain:", toolchain.filename)
-                profile = next((p for p in profiles if toolchain.matches(p)), None)
-                if profile is None:
-                    raise FileNotFoundError
-                self.apply_compiler_toolchain(toolchain, profile)
+                self.apply_compiler_toolchain(toolchain, profilePair.debug, profilePair.release)
                 break
             except ValueError:
                 print("Please input a valid compiler toolchain number and try again.")
@@ -148,7 +189,7 @@ class CompilerToolchainManager:
 class CompilerToolchainManagerMacOS(CompilerToolchainManager):
     def __init__(self, architecture: Architecture):
         super().__init__(HostSystem.kMacOS, architecture)
-    
+
     def install_gcc_10(self) -> None:
         if self.architecture == Architecture.kARM64:
             print("GCC 10 is not available on Apple Silicon-based Mac.")
