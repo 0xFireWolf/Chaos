@@ -24,6 +24,9 @@ class Architecture(Enum):
     def __lt__(self, other: Architecture) -> bool:
         return self.value < other.value
 
+    def __hash__(self):
+        return hash(self.value)
+
 
 class CompilerType(Enum):
     kGCC = "GCC"
@@ -36,6 +39,9 @@ class CompilerType(Enum):
 
     def __lt__(self, other: CompilerType) -> bool:
         return self.value < other.value
+
+    def __hash__(self):
+        return hash(self.value)
 
 
 class Compiler:
@@ -62,6 +68,9 @@ class Compiler:
     def __str__(self) -> str:
         return "{} {}".format(self.compilerType.value, self.version)
 
+    def __hash__(self):
+        return hash((self.compilerType, self.version))
+
 
 class HostSystem(Enum):
     kMacOS = "macOS"
@@ -73,6 +82,9 @@ class HostSystem(Enum):
 
     def __lt__(self, other: HostSystem) -> bool:
         return self.value < other.value
+
+    def __hash__(self):
+        return hash(self.value)
 
 
 class InstallationSource(Enum):
@@ -87,6 +99,9 @@ class InstallationSource(Enum):
 
     def __lt__(self, other: InstallationSource) -> bool:
         return self.value < other.value
+
+    def __hash__(self):
+        return hash(self.value)
 
 
 class BuildSystemIdentifier:
@@ -126,45 +141,6 @@ class BuildSystemIdentifier:
         return self.hostSystem == hostSystem and self.architecture == architecture
 
 
-# class BuildSystemDescriptor:
-#     filename: str
-#     architecture: Architecture
-#     compiler: Compiler
-#     hostSystem: HostSystem
-#     installationSource: InstallationSource
-#
-#     def __init__(self, filename: str):
-#         self.filename = filename
-#         tokens = filename.removesuffix(os.path.splitext(filename)[-1]).split("_")
-#         if len(tokens) != 4:
-#             raise ValueError
-#         self.architecture = Architecture(tokens[0])
-#         self.compiler = Compiler(tokens[1])
-#         self.hostSystem = HostSystem(tokens[2])
-#         self.installationSource = InstallationSource(tokens[3])
-#
-#     def __str__(self) -> str:
-#         return "Arch: {}, Compiler: {}, HostOS: {}, From: {}" \
-#             .format(self.architecture.value, self.compiler,
-#                     self.hostSystem.value, self.installationSource.value)
-#
-#     def __eq__(self, other: BuildSystemDescriptor) -> bool:
-#         return self.filename == other.filename
-#
-#     def __lt__(self, other: BuildSystemDescriptor) -> bool:
-#         return self.architecture.value < other.architecture.value and \
-#                self.compiler < other.compiler and \
-#                self.hostSystem.value < other.hostSystem.value and \
-#                self.installationSource.value < other.installationSource.value
-#
-#     def matches(self, descriptor: BuildSystemDescriptor) -> bool:
-#         return self.architecture == descriptor.architecture and self.compiler == descriptor.compiler and \
-#                self.hostSystem == descriptor.hostSystem and self.installationSource == descriptor.installationSource
-#
-#     def compatible(self, host: HostSystem, architecture: Architecture) -> bool:
-#         return self.hostSystem == host and self.architecture == architecture
-
-
 class Toolchain:
     filename: str
     identifier: BuildSystemIdentifier
@@ -191,4 +167,10 @@ class ConanProfile:
         self.buildType = BuildType(tokens[4])
 
 
-ConanProfilePair = namedtuple("ConanProfilePair", ["debug", "release"])
+class ConanProfilePair:
+    debug: ConanProfile
+    release: ConanProfile
+
+    def __init__(self, debug: ConanProfile = None, release: ConanProfile = None):
+        self.debug = debug
+        self.release = release

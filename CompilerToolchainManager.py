@@ -86,11 +86,14 @@ class CompilerToolchainManager:
         :raise `ValueError` if failed to parse one of the profiles in the given folder.
         """
         pmap: dict[BuildSystemIdentifier, ConanProfilePair] = {}
+        default = ConanProfilePair(None, None)
         for profile in self.fetch_compatible_conan_profiles(folder):
+            pair = pmap.setdefault(profile.identifier, default)
             if profile.buildType == BuildType.kDebug:
-                pmap[profile.identifier].debug = profile
+                pair.debug = profile
             else:
-                pmap[profile.identifier].release = profile
+                pair.release = profile
+            pmap[profile.identifier] = pair
         return pmap
 
     def fetch_all_compiler_toolchains(self, folder: str) -> list[Toolchain]:
