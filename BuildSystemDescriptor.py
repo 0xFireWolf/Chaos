@@ -155,6 +155,9 @@ class Toolchain:
             raise ValueError
         self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3])
 
+    def __str__(self) -> str:
+        return self.filename
+
 
 class ConanProfile:
     filename: str
@@ -168,6 +171,9 @@ class ConanProfile:
             raise ValueError
         self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3])
         self.buildType = BuildType(tokens[4])
+
+    def __str__(self) -> str:
+        return self.filename
 
 
 class ConanProfilePair:

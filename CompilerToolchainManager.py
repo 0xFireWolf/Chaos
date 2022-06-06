@@ -9,12 +9,11 @@ from .BuildSystemDescriptor import *
 from .Utilities import *
 
 kCurrentToolchainFile = "CurrentToolchain.cmake"
-kCurrentConanProfile = "CurrentProfile.conanprofile"
-
 kCurrentConanProfileDebug = "CurrentProfileDebug.conanprofile"
 kCurrentConanProfileRelease = "CurrentProfileRelease.conanprofile"
-
 kXcodeConfigFile = "conanbuildinfo.xcconfig"
+kXcodeConfigFileDebug = "conanbuildinfo.debug.xcconfig"
+kXcodeConfigFileRelease = "conanbuildinfo.release.xcconfig"
 
 
 # An abstract manager that sets up the compiler toolchain on the host system
@@ -78,23 +77,22 @@ class CompilerToolchainManager:
         return list(filter(lambda profile: profile.identifier.compatible(self.hostSystem, self.architecture),
                            self.fetch_all_conan_profiles(folder)))
 
-    def fetch_compatible_conan_profiles_as_map(self, folder: str) -> dict[BuildSystemIdentifier, ConanProfilePair]:
+    def fetch_compatible_conan_profiles_as_map(self, folder: str) -> (dict[BuildSystemIdentifier, ConanProfile], dict[BuildSystemIdentifier, ConanProfile]):
         """
         [Helper] Fetch all conan profiles compatible with the current host system at the given folder and build the profile map
         :param folder: Path to the folder that stores conan profiles
         :return: A map keyed by the profile identifier.
         :raise `ValueError` if failed to parse one of the profiles in the given folder.
         """
-        pmap: dict[BuildSystemIdentifier, ConanProfilePair] = {}
-        default = ConanProfilePair(None, None)
-        for profile in self.fetch_compatible_conan_profiles(folder):
-            pair = pmap.setdefault(profile.identifier, default)
+        pmap_dbg: dict[BuildSystemIdentifier, ConanProfile] = {}
+        pmap_rel: dict[BuildSystemIdentifier, ConanProfile] = {}
+        profiles = self.fetch_compatible_conan_profiles(folder)
+        for profile in profiles:
             if profile.buildType == BuildType.kDebug:
-                pair.debug = profile
+                pmap_dbg[profile.identifier] = profile
             else:
-                pair.release = profile
-            pmap[profile.identifier] = pair
-        return pmap
+                pmap_rel[profile.identifier] = profile
+        return pmap_dbg, pmap_rel
 
     def fetch_all_compiler_toolchains(self, folder: str) -> list[Toolchain]:
         """
@@ -149,8 +147,9 @@ class CompilerToolchainManager:
         [Action] Select a compiler toolchain
         """
         toolchains = self.fetch_compatible_compiler_toolchains_as_map("Toolchains")
-        profiles = self.fetch_compatible_conan_profiles_as_map("Profiles")
-        assert len(toolchains.keys()) == len(profiles.keys())
+        profiles_dbg, profiles_rel = self.fetch_compatible_conan_profiles_as_map("Profiles")
+        assert len(toolchains.keys()) == len(profiles_dbg.keys())
+        assert len(toolchains.keys()) == len(profiles_rel.keys())
         identifiers = sorted(list(toolchains.keys()))
         while True:
             print("\n>> Available Compiler Toolchains:\n")
@@ -164,10 +163,7 @@ class CompilerToolchainManager:
                 if index not in range(0, len(toolchains)):
                     raise ValueError
                 identifier = identifiers[index]
-                toolchain = toolchains[identifier]
-                profilePair = profiles[identifier]
-                print("Selected Toolchain:", toolchain.filename)
-                self.apply_compiler_toolchain(toolchain, profilePair.debug, profilePair.release)
+                self.apply_compiler_toolchain(toolchains[identifier], profiles_dbg[identifier], profiles_rel[identifier])
                 break
             except ValueError:
                 print("Please input a valid compiler toolchain number and try again.")
@@ -177,15 +173,22 @@ class CompilerToolchainManager:
                 print("Please select another compiler toolchain and try again.")
                 continue
 
+    def generate_xcode_configuration_with_profile(self, profile: str, config: str) -> None:
+        """
+        [Action] Generate the Xcode configuration from the given Conan profile
+        """
+        path = tempfile.mkdtemp()
+        subprocess.run(["conan", "install", ".", "--install-folder", path,
+                        "--build", "missing", "--profile", profile]).check_returncode()
+        shutil.copy(path + "/" + kXcodeConfigFile, "./" + config)
+        shutil.rmtree(path)
+
     def generate_xcode_configuration(self) -> None:
         """
         [Action] Generate the Xcode configuration from the current Conan profile
         """
-        path = tempfile.mkdtemp()
-        subprocess.run(["conan", "install", ".", "--install-folder", path,
-                        "--build", "missing", "--profile", kCurrentConanProfile]).check_returncode()
-        shutil.copy(path + "/" + kXcodeConfigFile, "./")
-        shutil.rmtree(path)
+        self.generate_xcode_configuration_with_profile(kCurrentConanProfileDebug, kXcodeConfigFileDebug)
+        self.generate_xcode_configuration_with_profile(kCurrentConanProfileRelease, kXcodeConfigFileRelease)
 
 
 # A manager that sets up the compiler toolchain on macOS
