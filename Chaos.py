@@ -84,8 +84,9 @@ class Chaos:
                `CalledProcessError` if failed to select the toolchain.
         """
         toolchain = Toolchain(name + ".cmake")
-        profile = ConanProfile(name + ".conanprofile")
-        self.compilerToolchainManager.apply_compiler_toolchain(toolchain, profile)
+        profile_dbg = ConanProfile(name + "_Debug.conanprofile")
+        profile_rel = ConanProfile(name + "_Release.conanprofile")
+        self.compilerToolchainManager.apply_compiler_toolchain(toolchain, profile_dbg, profile_rel)
 
     def ci_build_all(self, btype: str) -> None:
         """

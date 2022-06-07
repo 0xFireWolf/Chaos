@@ -1,7 +1,7 @@
 #
 # MARK: - Manage Compiler Toolchains
 #
-import os
+
 import shutil
 import tempfile
 import pathlib
@@ -62,7 +62,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all conan profiles at the given folder
         :param folder: Path to the folder that stores conan profiles
         :return: A list of parsed conan profiles.
-        :raise `ValueError` if failed to parse one of the profiles in the given folder.
+        :raise: `ValueError` if failed to parse one of the profiles in the given folder.
         """
         return [ConanProfile(filename)
                 for filename in filter(lambda filename: filename.endswith(".conanprofile"), os.listdir(folder))]
@@ -72,7 +72,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all conan profiles compatible with the current host system at the given folder
         :param folder: Path to the folder that stores conan profiles
         :return: A list of parsed conan profiles.
-        :raise `ValueError` if failed to parse one of the profiles in the given folder.
+        :raise: `ValueError` if failed to parse one of the profiles in the given folder.
         """
         return list(filter(lambda profile: profile.identifier.compatible(self.hostSystem, self.architecture),
                            self.fetch_all_conan_profiles(folder)))
@@ -82,7 +82,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all conan profiles compatible with the current host system at the given folder and build the profile map
         :param folder: Path to the folder that stores conan profiles
         :return: A map keyed by the profile identifier.
-        :raise `ValueError` if failed to parse one of the profiles in the given folder.
+        :raise: `ValueError` if failed to parse one of the profiles in the given folder.
         """
         pmap_dbg: dict[BuildSystemIdentifier, ConanProfile] = {}
         pmap_rel: dict[BuildSystemIdentifier, ConanProfile] = {}
@@ -99,7 +99,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all CMake compiler toolchains at the given folder
         :param folder: Path to the folder that stores CMake compiler toolchains
         :return: A list of parsed compiler toolchains.
-        :raise `ValueError` if failed to parse one of the toolchains in the given folder.
+        :raise: `ValueError` if failed to parse one of the toolchains in the given folder.
         """
         return [Toolchain(filename)
                 for filename in filter(lambda filename: filename.endswith(".cmake"), os.listdir(folder))]
@@ -109,7 +109,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all CMake compiler toolchains compatible with the current host system at the given folder
         :param folder: Path to the folder that stores CMake compiler toolchains
         :return: A list of parsed compiler toolchains.
-        :raise `ValueError` if failed to parse one of the toolchains in the given folder.
+        :raise: `ValueError` if failed to parse one of the toolchains in the given folder.
         """
         return list(filter(lambda toolchain: toolchain.identifier.compatible(self.hostSystem, self.architecture),
                            self.fetch_all_compiler_toolchains(folder)))
@@ -119,7 +119,7 @@ class CompilerToolchainManager:
         [Helper] Fetch all CMake compiler toolchains compatible with the current host system at the given folder and build the toolchain map
         :param folder: Path to the folder that stores CMake compiler toolchains
         :return: A map keyed by the toolchain identifier.
-        :raise `ValueError` if failed to parse one of the toolchains in the given folder.
+        :raise: `ValueError` if failed to parse one of the toolchains in the given folder.
         """
         return {toolchain.identifier: toolchain for toolchain in self.fetch_compatible_compiler_toolchains(folder)}
 
