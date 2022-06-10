@@ -26,7 +26,7 @@ class ProjectBuilder:
         subprocess.run(["conan", "install", "..", "--build", "missing",
                         "--profile", "../" + profile], cwd=kBuildFolder)
         subprocess.run(["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype)])
-        subprocess.run(["cmake", "--build", kBuildFolder, "--clean-first", "--parallel", str(os.cpu_count())])
+        subprocess.run(["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel", str(os.cpu_count())])
 
     def rebuild_project_debug(self) -> None:
         """
