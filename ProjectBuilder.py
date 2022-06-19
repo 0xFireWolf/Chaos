@@ -23,10 +23,9 @@ class ProjectBuilder:
         self.clean_build_folder()
         os.mkdir(kBuildFolder)
         profile = kCurrentConanProfileDebug if btype == BuildType.kDebug else kCurrentConanProfileRelease
-        subprocess.run(["conan", "install", "..", "--build", "missing",
-                        "--profile", "../" + profile], cwd=kBuildFolder)
-        subprocess.run(["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype)])
-        subprocess.run(["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel", str(os.cpu_count())])
+        subprocess.run(["conan", "install", "..", "--build", "missing", "--profile", "../" + profile], cwd=kBuildFolder).check_returncode()
+        subprocess.run(["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype)]).check_returncode()
+        subprocess.run(["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel", str(os.cpu_count())]).check_returncode()
 
     def rebuild_project_debug(self) -> None:
         """
@@ -52,7 +51,10 @@ class ProjectBuilder:
         [Action] Run all tests
         """
         for test in self.tests:
-            subprocess.run([os.getcwd() + "/build/bin/" + test], cwd=kBuildFolder)
+            print("========================================")
+            print("Running test \"{}\"...".format(test))
+            print("========================================")
+            subprocess.run([os.getcwd() + "/build/bin/" + test], cwd=kBuildFolder).check_returncode()
 
     def rebuild_and_run_all_tests(self, btype: BuildType) -> None:
         """

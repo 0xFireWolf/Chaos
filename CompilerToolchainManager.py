@@ -178,8 +178,7 @@ class CompilerToolchainManager:
         [Action] Generate the Xcode configuration from the given Conan profile
         """
         path = tempfile.mkdtemp()
-        subprocess.run(["conan", "install", ".", "--install-folder", path,
-                        "--build", "missing", "--profile", profile]).check_returncode()
+        subprocess.run(["conan", "install", ".", "--install-folder", path, "--build", "missing", "--profile", profile]).check_returncode()
         shutil.copy(path + "/" + kXcodeConfigFile, "./" + config)
         shutil.rmtree(path)
 
