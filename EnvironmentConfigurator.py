@@ -26,7 +26,10 @@ class EnvironmentConfigurator:
 
     def install_other(self) -> None:
         if self.other_tools_installer is not None:
+            print("Installing additional required development tools...")
             self.other_tools_installer()
+        else:
+            print("This project does not require any additional development tools.")
 
     def install_basic(self) -> None:
         self.install_build_essentials()
