@@ -49,14 +49,6 @@ class CompilerToolchainManager:
         self.install_clang_13()
         self.install_clang_14()
 
-    def remove_file_if_exist(self, file: str) -> None:
-        """
-        Remove the given file if it exists
-        :param file: The name of the file
-        """
-        if os.path.exists(file):
-            os.remove(file)
-
     def fetch_all_conan_profiles(self, folder: str) -> list[ConanProfile]:
         """
         [Helper] Fetch all conan profiles at the given folder
@@ -133,9 +125,9 @@ class CompilerToolchainManager:
         print("Applying the compiler toolchain:", toolchain.filename)
         print("Applying the Conan profile (Debug):", profileDebug.filename)
         print("Applying the Conan profile (Release):", profileRelease.filename)
-        self.remove_file_if_exist(kCurrentToolchainFile)
-        self.remove_file_if_exist(kCurrentConanProfileDebug)
-        self.remove_file_if_exist(kCurrentConanProfileRelease)
+        remove_file_if_exist(kCurrentToolchainFile)
+        remove_file_if_exist(kCurrentConanProfileDebug)
+        remove_file_if_exist(kCurrentConanProfileRelease)
         os.symlink(pathlib.Path("Toolchains/{}".format(toolchain.filename)), pathlib.Path(kCurrentToolchainFile))
         os.symlink(pathlib.Path("Profiles/{}".format(profileDebug.filename)), pathlib.Path(kCurrentConanProfileDebug))
         os.symlink(pathlib.Path("Profiles/{}".format(profileRelease.filename)), pathlib.Path(kCurrentConanProfileRelease))

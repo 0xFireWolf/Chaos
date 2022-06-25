@@ -1,6 +1,7 @@
 #
 # MARK: - Build, Test & Clean Projects
 #
+import os
 
 from .CompilerToolchainManager import *
 
@@ -45,6 +46,14 @@ class ProjectBuilder:
         """
         if os.path.exists(kBuildFolder):
             shutil.rmtree(kBuildFolder)
+
+    def clean_all(self) -> None:
+        self.clean_build_folder()
+        remove_file_if_exist(kCurrentToolchainFile)
+        remove_file_if_exist(kCurrentConanProfileDebug)
+        remove_file_if_exist(kCurrentConanProfileRelease)
+        remove_file_if_exist(kXcodeConfigFileDebug)
+        remove_file_if_exist(kXcodeConfigFileRelease)
 
     def run_all_tests(self) -> None:
         """

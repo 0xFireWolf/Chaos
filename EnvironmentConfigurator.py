@@ -2,14 +2,19 @@
 # MARK: - Configure Development Environment
 #
 
-import os
 import tempfile
 import shutil
+from typing import Callable
 from .Utilities import *
 
 
 # An abstract configurator that sets up the development environment on the host system
 class EnvironmentConfigurator:
+    other_tools_installer: Callable[[], None]
+
+    def __init__(self, installer: Callable[[], None] = None):
+        self.other_tools_installer = installer
+
     def install_build_essentials(self) -> None:
         raise NotImplementedError
 
@@ -20,12 +25,16 @@ class EnvironmentConfigurator:
         raise NotImplementedError
 
     def install_other(self) -> None:
-        pass
+        if self.other_tools_installer is not None:
+            self.other_tools_installer()
 
-    def install_all(self) -> None:
+    def install_basic(self) -> None:
         self.install_build_essentials()
         self.install_cmake()
         self.install_conan()
+
+    def install_all(self) -> None:
+        self.install_basic()
         self.install_other()
 
 

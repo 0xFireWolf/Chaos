@@ -6,7 +6,6 @@ import sys
 import distro
 import platform
 import traceback
-from typing import Callable
 from subprocess import CalledProcessError
 from .EnvironmentConfigurator import *
 from .ProjectBuilder import *
@@ -14,7 +13,10 @@ from .ProjectBuilder import *
 
 class Config:
     # Name of the executables that run all tests
-    tests: list[str]
+    tests: list[str] = []
+    install_additional_tools_macos: Callable[[], None] = None
+    install_additional_tools_ubuntu: Callable[[], None] = None
+    install_additional_tools_windows: Callable[[], None] = None
 
 
 class Chaos:
@@ -32,14 +34,14 @@ class Chaos:
         machine = platform.machine()
         self.clearConsole = lambda: os.system("clear")
         if system == "Darwin":
-            self.environmentConfigurator = EnvironmentConfiguratorMacOS()
+            self.environmentConfigurator = EnvironmentConfiguratorMacOS(config.install_additional_tools_macos)
             self.compilerToolchainManager = CompilerToolchainManagerMacOS(Architecture.kx86_64 if machine == "x86_64" else Architecture.kARM64)
             self.projectBuilder = ProjectBuilder(config.tests)
         elif system == "Linux":
             distribution = distro.id()
             version = distro.version()
             if distribution == "ubuntu":
-                self.environmentConfigurator = EnvironmentConfiguratorUbuntu()
+                self.environmentConfigurator = EnvironmentConfiguratorUbuntu(config.install_additional_tools_ubuntu)
                 if version == "20.04":
                     self.compilerToolchainManager = CompilerToolchainManagerUbuntu2004(Architecture.kx86_64)
                 elif version == "22.04":
@@ -52,7 +54,7 @@ class Chaos:
                 print("{} is not supported.".format(distro.name(True)))
                 raise EnvironmentError
         elif system == "Windows":
-            self.environmentConfigurator = EnvironmentConfiguratorWindows()
+            self.environmentConfigurator = EnvironmentConfiguratorWindows(config.install_additional_tools_windows)
             self.compilerToolchainManager = CompilerToolchainManagerWindows(Architecture.kx86_64)
             self.projectBuilder = ProjectBuilder(config.tests)
             self.clearConsole = lambda: os.system("cls")
@@ -158,26 +160,29 @@ class Chaos:
             print()
             print(">> Configure Development Environment")
             print()
-            print("[00] Install all required development tools.")
+            print("[00] Install CMake and Conan Package Manager.")
+            print("[01] Install additional required development tools.")
+            print("[02] Install all required development tools.")
             print()
             print(">> Manage Compiler Toolchains")
             print()
-            print("[01] Install GCC 10.")
-            print("[02] Install GCC 11.")
-            print("[03] Install GCC 12.")
-            print("[04] Install Clang 13.")
-            print("[05] Install Clang 14.")
-            print("[06] Install all supported compilers.")
-            print("[07] Select a compiler toolchain.")
-            print("[08] Generate the Xcode configuration.")
+            print("[03] Install GCC 10.")
+            print("[04] Install GCC 11.")
+            print("[05] Install GCC 12.")
+            print("[06] Install Clang 13.")
+            print("[07] Install Clang 14.")
+            print("[08] Install all supported compilers.")
+            print("[09] Select a compiler toolchain.")
+            print("[10] Generate the Xcode configuration.")
             print()
             print(">> Build, Test & Clean Projects")
             print()
-            print("[09] Rebuild the project (DEBUG).")
-            print("[10] Rebuild the project (RELEASE).")
-            print("[11] Rebuild and run all tests (DEBUG).")
-            print("[12] Rebuild and run all tests (RELEASE).")
-            print("[13] Clean the build folder.")
+            print("[11] Rebuild the project (DEBUG).")
+            print("[12] Rebuild the project (RELEASE).")
+            print("[13] Rebuild and run all tests (DEBUG).")
+            print("[14] Rebuild and run all tests (RELEASE).")
+            print("[15] Clean the build folder.")
+            print("[16] Clean the build folder and reset the toolchain.")
             print()
             print("Press Ctrl-C or Ctrl-D to exit the menu.")
             option = 0
@@ -204,6 +209,8 @@ class Chaos:
         :return: The status code to be passed to `main()`.
         """
         actions: list[Callable[[], None]] = [
+            self.environmentConfigurator.install_basic,
+            self.environmentConfigurator.install_other,
             self.environmentConfigurator.install_all,
             self.compilerToolchainManager.install_gcc_10,
             self.compilerToolchainManager.install_gcc_11,
@@ -218,6 +225,7 @@ class Chaos:
             self.projectBuilder.rebuild_and_run_all_tests_debug,
             self.projectBuilder.rebuild_and_run_all_tests_release,
             self.projectBuilder.clean_build_folder,
+            self.projectBuilder.clean_all
         ]
         result = 0
         try:

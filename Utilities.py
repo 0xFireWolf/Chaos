@@ -3,6 +3,7 @@
 #
 
 import subprocess
+import os
 
 
 def brew_install(packages: list[str]) -> None:
@@ -49,3 +50,12 @@ def winget_install(packages: list[str]) -> None:
     """
     for package in packages:
         subprocess.run(["winget", "install", package]).check_returncode()
+
+
+def remove_file_if_exist(file: str) -> None:
+    """
+    Remove the given file if it exists
+    :param file: The name of the file
+    """
+    if os.path.exists(file):
+        os.remove(file)
