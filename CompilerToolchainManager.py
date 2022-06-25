@@ -18,13 +18,10 @@ kXcodeConfigFileRelease = "conanbuildinfo.release.xcconfig"
 
 # An abstract manager that sets up the compiler toolchain on the host system
 class CompilerToolchainManager:
-    # Filter out toolchains that run on a different host system
-    hostSystem: HostSystem
-    # Filter out toolchains that have a different architecture
-    architecture: Architecture
-
     def __init__(self, host: HostSystem, architecture: Architecture):
+        # Filter out toolchains that run on a different host system
         self.hostSystem = host
+        # Filter out toolchains that have a different architecture
         self.architecture = architecture
 
     def install_gcc_10(self) -> None:

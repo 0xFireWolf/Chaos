@@ -10,8 +10,6 @@ from .Utilities import *
 
 # An abstract configurator that sets up the development environment on the host system
 class EnvironmentConfigurator:
-    other_tools_installer: Callable[[], None]
-
     def __init__(self, installer: Callable[[], None] = None):
         self.other_tools_installer = installer
 

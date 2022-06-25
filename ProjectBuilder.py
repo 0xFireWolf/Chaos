@@ -10,9 +10,6 @@ kBuildFolder = "build"
 
 # A project builder that builds, tests, and cleans the project
 class ProjectBuilder:
-    # Name of the executables that run all tests
-    tests: list[str]
-
     def __init__(self, tests: list[str]):
         self.tests = tests
 

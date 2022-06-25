@@ -48,9 +48,6 @@ class CompilerType(Enum):
 
 @total_ordering
 class Compiler:
-    compilerType: CompilerType
-    version: int
-
     def __init__(self, description: str):
         """
         Initialize a compiler from its description
@@ -111,15 +108,10 @@ class InstallationSource(Enum):
 
 @total_ordering
 class BuildSystemIdentifier:
-    """
-    A 4-tuple that identifies a specific toolchain/profile
-    """
-    architecture: Architecture
-    compiler: Compiler
-    hostSystem: HostSystem
-    installationSource: InstallationSource
-
     def __init__(self, architecture: str, compiler: str, hostSystem: str, installationSource: str):
+        """
+         A 4-tuple that identifies a specific toolchain/profile
+        """
         self.architecture = Architecture(architecture)
         self.compiler = Compiler(compiler)
         self.hostSystem = HostSystem(hostSystem)
@@ -145,14 +137,11 @@ class BuildSystemIdentifier:
 
 
 class Toolchain:
-    filename: str
-    identifier: BuildSystemIdentifier
-
     def __init__(self, filename: str):
-        self.filename = filename
         tokens = filename.removesuffix(os.path.splitext(filename)[-1]).split("_")
         if len(tokens) != 4:
             raise ValueError
+        self.filename = filename
         self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3])
 
     def __str__(self) -> str:
@@ -160,15 +149,11 @@ class Toolchain:
 
 
 class ConanProfile:
-    filename: str
-    identifier: BuildSystemIdentifier
-    buildType: BuildType
-
     def __init__(self, filename: str):
-        self.filename = filename
         tokens = filename.removesuffix(os.path.splitext(filename)[-1]).split("_")
         if len(tokens) != 5:
             raise ValueError
+        self.filename = filename
         self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3])
         self.buildType = BuildType(tokens[4])
 
@@ -177,9 +162,6 @@ class ConanProfile:
 
 
 class ConanProfilePair:
-    debug: ConanProfile
-    release: ConanProfile
-
     def __init__(self, debug: ConanProfile = None, release: ConanProfile = None):
         self.debug = debug
         self.release = release

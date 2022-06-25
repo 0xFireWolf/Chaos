@@ -12,19 +12,14 @@ from .ProjectBuilder import *
 
 
 class Config:
-    # Name of the executables that run all tests
-    tests: list[str] = []
-    install_additional_tools_macos: Callable[[], None] = None
-    install_additional_tools_ubuntu: Callable[[], None] = None
-    install_additional_tools_windows: Callable[[], None] = None
+    def __init__(self):
+        self.tests: list[str] = []
+        self.install_additional_tools_macos: Callable[[], None] = None
+        self.install_additional_tools_ubuntu: Callable[[], None] = None
+        self.install_additional_tools_windows: Callable[[], None] = None
 
 
 class Chaos:
-    environmentConfigurator: EnvironmentConfigurator
-    compilerToolchainManager: CompilerToolchainManager
-    projectBuilder: ProjectBuilder
-    clearConsole: Callable[[], int]
-
     def __init__(self, config: Config):
         """
         Initialize the Chaos Control Center with the given configuration
