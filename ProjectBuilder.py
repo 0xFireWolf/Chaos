@@ -2,6 +2,7 @@
 # MARK: - Build, Test & Clean Projects
 #
 import os
+import pathlib
 
 from .CompilerToolchainManager import *
 
@@ -56,11 +57,12 @@ class ProjectBuilder:
         """
         [Action] Run all tests
         """
+        directory = os.getcwd() + "/build/bin/"
         for test in self.tests:
             print("========================================")
             print("Running test \"{}\"...".format(test))
             print("========================================")
-            subprocess.run([os.getcwd() + "/build/bin/" + test], cwd=kBuildFolder).check_returncode()
+            subprocess.run([directory + test], cwd=directory).check_returncode()
 
     def rebuild_and_run_all_tests(self, btype: BuildType) -> None:
         """
