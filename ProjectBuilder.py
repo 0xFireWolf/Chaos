@@ -22,7 +22,7 @@ class ProjectBuilder:
         self.clean_build_folder()
         os.mkdir(kBuildFolder)
         profile = kCurrentConanProfileDebug if btype == BuildType.kDebug else kCurrentConanProfileRelease
-        subprocess.run(["conan", "install", "..", "--build", "missing", "--profile", "../" + profile], cwd=kBuildFolder).check_returncode()
+        subprocess.run(["conan", "install", "..", "--update", "--build", "missing", "--profile", "../" + profile], cwd=kBuildFolder).check_returncode()
         subprocess.run(["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype)]).check_returncode()
         subprocess.run(["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel", str(os.cpu_count())]).check_returncode()
 
