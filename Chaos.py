@@ -70,6 +70,7 @@ class Chaos:
             "gcc-12": self.compilerToolchainManager.install_gcc_12,
             "clang-13": self.compilerToolchainManager.install_clang_13,
             "clang-14": self.compilerToolchainManager.install_clang_14,
+            "clang-15": self.compilerToolchainManager.install_clang_15,
         }
         toolchains[name]()
 
@@ -166,18 +167,19 @@ class Chaos:
             print("[05] Install GCC 12.")
             print("[06] Install Clang 13.")
             print("[07] Install Clang 14.")
-            print("[08] Install all supported compilers.")
-            print("[09] Select a compiler toolchain.")
-            print("[10] Generate the Xcode configuration.")
+            print("[08] Install Clang 15.")
+            print("[09] Install all supported compilers.")
+            print("[10] Select a compiler toolchain.")
+            print("[11] Generate the Xcode configuration.")
             print()
             print(">> Build, Test & Clean Projects")
             print()
-            print("[11] Rebuild the project (DEBUG).")
-            print("[12] Rebuild the project (RELEASE).")
-            print("[13] Rebuild and run all tests (DEBUG).")
-            print("[14] Rebuild and run all tests (RELEASE).")
-            print("[15] Clean the build folder.")
-            print("[16] Clean the build folder and reset the toolchain.")
+            print("[12] Rebuild the project (DEBUG).")
+            print("[13] Rebuild the project (RELEASE).")
+            print("[14] Rebuild and run all tests (DEBUG).")
+            print("[15] Rebuild and run all tests (RELEASE).")
+            print("[16] Clean the build folder.")
+            print("[17] Clean the build folder and reset the toolchain.")
             print()
             print("Press Ctrl-C or Ctrl-D to exit the menu.")
             option = 0
@@ -212,6 +214,7 @@ class Chaos:
             self.compilerToolchainManager.install_gcc_12,
             self.compilerToolchainManager.install_clang_13,
             self.compilerToolchainManager.install_clang_14,
+            self.compilerToolchainManager.install_clang_15,
             self.compilerToolchainManager.install_all_compilers,
             self.compilerToolchainManager.select_compiler_toolchain,
             self.compilerToolchainManager.generate_xcode_configuration,
