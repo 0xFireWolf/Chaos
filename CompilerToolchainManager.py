@@ -220,7 +220,7 @@ class CompilerToolchainManagerUbuntu(CompilerToolchainManager):
         subprocess.run(["wget", "https://apt.llvm.org/llvm.sh"], cwd=path).check_returncode()
         script = path + "/llvm.sh"
         os.chmod(script, 0o755)
-        subprocess.run(["sudo", script, version]).check_returncode()
+        subprocess.run(["sudo", script, str(version)]).check_returncode()
         apt_install(["libc++-{}-dev".format(version), "libc++abi-{}-dev".format(version)])
         shutil.rmtree(path)
 
