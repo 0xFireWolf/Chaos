@@ -48,6 +48,7 @@ class CompilerToolchainManager:
         self.install_gcc_12()
         self.install_clang_13()
         self.install_clang_14()
+        self.install_clang_15()
 
     def fetch_all_conan_profiles(self, folder: str) -> list[ConanProfile]:
         """
