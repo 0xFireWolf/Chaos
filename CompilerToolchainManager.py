@@ -39,6 +39,9 @@ class CompilerToolchainManager:
     def install_clang_14(self) -> None:
         raise NotImplementedError
 
+    def install_clang_15(self) -> None:
+        raise NotImplementedError
+
     def install_all_compilers(self) -> None:
         self.install_gcc_10()
         self.install_gcc_11()
@@ -202,12 +205,27 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
     def install_clang_14(self) -> None:
         brew_install(["llvm@14"])
 
+    def install_clang_15(self) -> None:
+        brew_install(["llvm@15"])
 
-# A manager that sets up the compiler toolchain on Ubuntu 20.04 LTS
-class CompilerToolchainManagerUbuntu2004(CompilerToolchainManager):
+
+# A manager that sets up the compiler toolchain on Ubuntu
+class CompilerToolchainManagerUbuntu(CompilerToolchainManager):
     def __init__(self, architecture: Architecture):
         super().__init__(HostSystem.kUbuntu, architecture)
 
+    def install_clang_from_apt_llvm_org(self, version: int) -> None:
+        path = tempfile.mkdtemp()
+        subprocess.run(["wget", "https://apt.llvm.org/llvm.sh"], cwd=path).check_returncode()
+        script = path + "/llvm.sh"
+        os.chmod(script, 0o755)
+        subprocess.run(["sudo", script, version]).check_returncode()
+        apt_install(["libc++-{}-dev".format(version), "libc++abi-{}-dev".format(version)])
+        shutil.rmtree(path)
+
+
+# A manager that sets up the compiler toolchain on Ubuntu 20.04 LTS
+class CompilerToolchainManagerUbuntu2004(CompilerToolchainManagerUbuntu):
     def install_gcc_10(self) -> None:
         apt_install(["gcc-10", "g++-10"])
 
@@ -221,29 +239,17 @@ class CompilerToolchainManagerUbuntu2004(CompilerToolchainManager):
         apt_install(["gcc-12", "g++-12"])
 
     def install_clang_13(self) -> None:
-        path = tempfile.mkdtemp()
-        subprocess.run(["wget", "https://apt.llvm.org/llvm.sh"], cwd=path).check_returncode()
-        script = path + "/llvm.sh"
-        os.chmod(script, 0o755)
-        subprocess.run(["sudo", script, "13"]).check_returncode()
-        apt_install(["libc++-13-dev", "libc++abi-13-dev"])
-        shutil.rmtree(path)
+        self.install_clang_from_apt_llvm_org(13)
 
     def install_clang_14(self) -> None:
-        path = tempfile.mkdtemp()
-        subprocess.run(["wget", "https://apt.llvm.org/llvm.sh"], cwd=path).check_returncode()
-        script = path + "/llvm.sh"
-        os.chmod(script, 0o755)
-        subprocess.run(["sudo", script, "14"]).check_returncode()
-        apt_install(["libc++-14-dev", "libc++abi-14-dev"])
-        shutil.rmtree(path)
+        self.install_clang_from_apt_llvm_org(14)
+
+    def install_clang_15(self) -> None:
+        self.install_clang_from_apt_llvm_org(15)
 
 
 # A manager that sets up the compiler toolchain on Ubuntu 22.04 LTS
-class CompilerToolchainManagerUbuntu2204(CompilerToolchainManager):
-    def __init__(self, architecture: Architecture):
-        super().__init__(HostSystem.kUbuntu, architecture)
-
+class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
     def install_gcc_10(self) -> None:
         apt_install(["gcc-10", "g++-10"])
 
@@ -259,6 +265,9 @@ class CompilerToolchainManagerUbuntu2204(CompilerToolchainManager):
 
     def install_clang_14(self) -> None:
         apt_install(["clang-14", "lldb-14", "lld-14", "libc++-14-dev", "libc++abi-14-dev", "libunwind-14-dev"])
+
+    def install_clang_15(self) -> None:
+        self.install_clang_from_apt_llvm_org(15)
 
 
 # A manager that sets up the compiler toolchain on Windows
@@ -284,4 +293,8 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
 
     def install_clang_14(self) -> None:
         print("Compiling this project with Clang 14 on Windows is not supported.")
+        print("Please use Microsoft Visual C++ instead.")
+
+    def install_clang_15(self) -> None:
+        print("Compiling this project with Clang 15 on Windows is not supported.")
         print("Please use Microsoft Visual C++ instead.")
