@@ -12,6 +12,7 @@ def brew_install(packages: list[str]) -> None:
     :param packages: Name of the packages
     :raise `CalledProcessError` on error.
     """
+    subprocess.run(["brew", "update"]).check_returncode()
     subprocess.run(["brew", "install"] + packages).check_returncode()
 
 
@@ -21,6 +22,7 @@ def apt_install(packages: list[str]) -> None:
     :param packages: Name of the packages
     :raise `CalledProcessError` on error.
     """
+    subprocess.run(["sudo", "apt", "update", "-y"])
     subprocess.run(["sudo", "apt", "-y", "install"] + packages).check_returncode()
 
 
