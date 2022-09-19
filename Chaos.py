@@ -156,7 +156,7 @@ class Chaos:
             print()
             print(">> Configure Development Environment")
             print()
-            print("[00] Install CMake and Conan Package Manager.")
+            print("[00] Install CMake, Ninja and Conan Package Manager.")
             print("[01] Install additional required development tools.")
             print("[02] Install all required development tools.")
             print()
