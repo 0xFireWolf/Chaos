@@ -45,11 +45,30 @@ def pip_install(packages: list[str]) -> None:
 def winget_install(packages: list[str]) -> None:
     """
     Use winget to install the given list of packages
-    :param packages:  Name of the packages
+    :param packages: Name of the packages
     :raise `CalledProcessError` on error.
     """
     for package in packages:
         subprocess.run(["winget", "install", package]).check_returncode()
+
+
+def choco_install(packages: list[str]) -> None:
+    """
+    Use Chocolatey to install the given list of packages
+    :param packages: Name of the packages
+    :raise `CalledProcessError` on error.
+    """
+    for package in packages:
+        subprocess.run(["choco", "install", "-y", package]).check_returncode()
+
+
+def powershell(command: str) -> None:
+    """
+    Run the given command in Powershell
+    :param command: A Powershell command
+    :raise `CalledProcessError` on error.
+    """
+    subprocess.run(["powershell", "-Command", command]).check_returncode()
 
 
 def remove_file_if_exist(file: str) -> None:
