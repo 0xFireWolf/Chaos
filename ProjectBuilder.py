@@ -1,8 +1,8 @@
 #
 # MARK: - Build, Test & Clean Projects
 #
-import os
-import pathlib
+
+import platform
 
 from .CompilerToolchainManager import *
 
@@ -24,7 +24,18 @@ class ProjectBuilder:
         profile = kCurrentConanProfileDebug if btype == BuildType.kDebug else kCurrentConanProfileRelease
         subprocess.run(["conan", "install", "..", "--update", "--build", "missing", "--profile", "../" + profile], cwd=kBuildFolder).check_returncode()
         subprocess.run(["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype)]).check_returncode()
-        subprocess.run(["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel", str(os.cpu_count())]).check_returncode()
+        parallel_level: int = os.cpu_count()
+        additional_build_flags: list[str] = ["--"]
+        if platform.system() == "Windows":
+            parallel_level = 1
+            additional_build_flags.append("/p:CL_MPCount={}".format(os.cpu_count()))
+        subprocess.run(["cmake",
+                        "--build", kBuildFolder,
+                        "--config", btype.value,
+                        "--clean-first",
+                        "--parallel", str(parallel_level)] +
+                       additional_build_flags if len(additional_build_flags) == 1 else []
+                       ).check_returncode()
 
     def rebuild_project_debug(self) -> None:
         """
