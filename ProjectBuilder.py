@@ -29,13 +29,11 @@ class ProjectBuilder:
         if platform.system() == "Windows":
             parallel_level = 1
             additional_build_flags.append("/p:CL_MPCount={}".format(os.cpu_count()))
-        subprocess.run(["cmake",
-                        "--build", kBuildFolder,
-                        "--config", btype.value,
-                        "--clean-first",
-                        "--parallel", str(parallel_level)] +
-                       additional_build_flags if len(additional_build_flags) == 1 else []
-                       ).check_returncode()
+        args = ["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel", str(parallel_level)]
+        if len(additional_build_flags) != 1:
+            args.extend(additional_build_flags)
+        print("CMake Args: {}".format(args))
+        subprocess.run(args).check_returncode()
 
     def rebuild_project_debug(self) -> None:
         """
