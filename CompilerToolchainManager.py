@@ -224,9 +224,11 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
         if bundle is None:
             raise RuntimeError("Xcode {} is not installed on your local machine.".format(major))
         bundle.activate()
-        print("The current active Xcode developer directory:")
+        print(">> The current active Xcode installation:")
+        print(bundle)
+        print(">> The current active Xcode developer directory:")
         subprocess.run(["xcode-select", "-p"]).check_returncode()
-        print("The current active Apple Clang compiler:")
+        print(">> The current active Apple Clang compiler:")
         subprocess.run(["clang", "-v"]).check_returncode()
 
     def install_apple_clang_13(self) -> None:
