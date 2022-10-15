@@ -4,7 +4,6 @@
 
 import sys
 import distro
-import platform
 import traceback
 from subprocess import CalledProcessError
 from .EnvironmentConfigurator import *
@@ -71,6 +70,8 @@ class Chaos:
             "clang-13": self.compilerToolchainManager.install_clang_13,
             "clang-14": self.compilerToolchainManager.install_clang_14,
             "clang-15": self.compilerToolchainManager.install_clang_15,
+            "apple-clang-13": self.compilerToolchainManager.install_apple_clang_13,
+            "apple-clang-14": self.compilerToolchainManager.install_apple_clang_14,
         }
         toolchains[name]()
 

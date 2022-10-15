@@ -5,8 +5,11 @@
 import shutil
 import tempfile
 import pathlib
+from abc import ABC
+
 from .BuildSystemDescriptor import *
 from .Utilities import *
+from .XcodeFinder import *
 
 kCurrentToolchainFile = "CurrentToolchain.cmake"
 kCurrentConanProfileDebug = "CurrentProfileDebug.conanprofile"
@@ -42,6 +45,12 @@ class CompilerToolchainManager:
     def install_clang_15(self) -> None:
         raise NotImplementedError
 
+    def install_apple_clang_13(self) -> None:
+        raise NotImplementedError
+
+    def install_apple_clang_14(self) -> None:
+        raise NotImplementedError
+
     def install_all_compilers(self) -> None:
         self.install_gcc_10()
         self.install_gcc_11()
@@ -70,7 +79,8 @@ class CompilerToolchainManager:
         return list(filter(lambda profile: profile.identifier.compatible(self.hostSystem, self.architecture),
                            self.fetch_all_conan_profiles(folder)))
 
-    def fetch_compatible_conan_profiles_as_map(self, folder: str) -> (dict[BuildSystemIdentifier, ConanProfile], dict[BuildSystemIdentifier, ConanProfile]):
+    def fetch_compatible_conan_profiles_as_map(self, folder: str) -> (dict[BuildSystemIdentifier, ConanProfile],
+                                                                      dict[BuildSystemIdentifier, ConanProfile]):
         """
         [Helper] Fetch all conan profiles compatible with the current host system at the given folder and build the profile map
         :param folder: Path to the folder that stores conan profiles
@@ -116,22 +126,22 @@ class CompilerToolchainManager:
         """
         return {toolchain.identifier: toolchain for toolchain in self.fetch_compatible_compiler_toolchains(folder)}
 
-    def apply_compiler_toolchain(self, toolchain: Toolchain, profileDebug: ConanProfile, profileRelease: ConanProfile) -> None:
+    def apply_compiler_toolchain(self, toolchain: Toolchain, profile_debug: ConanProfile, profile_release: ConanProfile) -> None:
         """
         [Action] [Helper] Apply the given combination of the compiler toolchain and the Conan profile
         :param toolchain: The compiler toolchain
-        :param profileDebug: The Conan profile for debug build
-        :param profileRelease: The Conan profile for release build
+        :param profile_debug: The Conan profile for debug build
+        :param profile_release: The Conan profile for release build
         """
         print("Applying the compiler toolchain:", toolchain.filename)
-        print("Applying the Conan profile (Debug):", profileDebug.filename)
-        print("Applying the Conan profile (Release):", profileRelease.filename)
+        print("Applying the Conan profile (Debug):", profile_debug.filename)
+        print("Applying the Conan profile (Release):", profile_release.filename)
         remove_file_if_exist(kCurrentToolchainFile)
         remove_file_if_exist(kCurrentConanProfileDebug)
         remove_file_if_exist(kCurrentConanProfileRelease)
         os.symlink(pathlib.Path("Toolchains/{}".format(toolchain.filename)), pathlib.Path(kCurrentToolchainFile))
-        os.symlink(pathlib.Path("Profiles/{}".format(profileDebug.filename)), pathlib.Path(kCurrentConanProfileDebug))
-        os.symlink(pathlib.Path("Profiles/{}".format(profileRelease.filename)), pathlib.Path(kCurrentConanProfileRelease))
+        os.symlink(pathlib.Path("Profiles/{}".format(profile_debug.filename)), pathlib.Path(kCurrentConanProfileDebug))
+        os.symlink(pathlib.Path("Profiles/{}".format(profile_release.filename)), pathlib.Path(kCurrentConanProfileRelease))
         print()
         print("The toolchain and the corresponding Conan profiles are both set.")
 
@@ -209,11 +219,33 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
     def install_clang_15(self) -> None:
         brew_install(["llvm@15"])
 
+    def select_xcode_installation(self, major: int, minor: int = None, patch: int = None) -> None:
+        bundle = XcodeFinder([Path("/Applications")], "Xcode.*\\.app").find(major, minor, patch)
+        if bundle is None:
+            raise RuntimeError("Xcode {} is not installed on your local machine.".format(major))
+        bundle.activate()
+        print("The current active Xcode developer directory:")
+        subprocess.run(["xcode-select", "-p"]).check_returncode()
+        print("The current active Apple Clang compiler:")
+        subprocess.run(["clang", "-v"]).check_returncode()
+
+    def install_apple_clang_13(self) -> None:
+        self.select_xcode_installation(13)
+
+    def install_apple_clang_14(self) -> None:
+        self.select_xcode_installation(14)
+
 
 # A manager that sets up the compiler toolchain on Ubuntu
-class CompilerToolchainManagerUbuntu(CompilerToolchainManager):
+class CompilerToolchainManagerUbuntu(CompilerToolchainManager, ABC):
     def __init__(self, architecture: Architecture):
         super().__init__(HostSystem.kUbuntu, architecture)
+
+    def install_apple_clang_13(self) -> None:
+        print("AppleClang 13 is not available on systems other than macOS.")
+
+    def install_apple_clang_14(self) -> None:
+        print("AppleClang 14 is not available on systems other than macOS.")
 
     def install_clang_from_apt_llvm_org(self, version: int) -> None:
         path = tempfile.mkdtemp()
@@ -299,3 +331,9 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
     def install_clang_15(self) -> None:
         print("Compiling this project with Clang 15 on Windows is not supported.")
         print("Please use Microsoft Visual C++ instead.")
+
+    def install_apple_clang_13(self) -> None:
+        print("AppleClang 13 is not available on systems other than macOS.")
+
+    def install_apple_clang_14(self) -> None:
+        print("AppleClang 14 is not available on systems other than macOS.")
