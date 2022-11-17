@@ -21,13 +21,19 @@ class ProjectBuilder:
         remove_folder_if_exists(kBuildFolder)
         os.mkdir(kBuildFolder)
 
-    def conan_install(self, btype: BuildType) -> None:
+    def conan_install(self, btype: BuildType, conan_flags: list[str] = None) -> None:
         """
         [Action] [Step] Install all required dependencies via Conan
         :param btype: The build type
+        :param conan_flags: Additional flags passed to `conan`
         """
         profile = kCurrentConanProfileDebug if btype == BuildType.kDebug else kCurrentConanProfileRelease
-        subprocess.run(["conan", "install", ".", "-if", kBuildFolder, "--update", "--build", "missing", "--profile", profile]).check_returncode()
+        args: list[str] = ["conan", "install", ".", "-if", kBuildFolder, "--update", "--build", "missing", "--profile", profile]
+        if conan_flags is not None:
+            args.extend(conan_flags)
+        print("Installing all required packages via Conan...")
+        print("Conan Args: \"{}\"".format(" ".join(args)))
+        subprocess.run(args).check_returncode()
 
     def cmake_generate(self, btype: BuildType, cmake_flags: list[str] = None) -> None:
         """
@@ -38,7 +44,8 @@ class ProjectBuilder:
         args: list[str] = ["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype.value)]
         if cmake_flags is not None:
             args.extend(cmake_flags)
-        print("[G] CMake Args: \"{}\"".format(" ".join(args)))
+        print("Generating files for the native build system...")
+        print("CMake Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
     def cmake_build(self, btype: BuildType, parallel_level: int = os.cpu_count(), cmake_flags: list[str] = None, build_flags: list[str] = None):
@@ -55,7 +62,8 @@ class ProjectBuilder:
         if build_flags is not None:
             args.append("--")
             args.extend(build_flags)
-        print("[B] CMake Args: \"{}\"".format(" ".join(args)))
+        print("Building the project...")
+        print("CMake Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
     def rebuild_project(self, btype: BuildType) -> None:
