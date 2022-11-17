@@ -66,18 +66,22 @@ class ProjectBuilder:
         print("CMake Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
-    def rebuild_project(self, btype: BuildType) -> None:
+    def rebuild_project(self, btype: BuildType, conan_flags: list[str] = None, cmake_generate_flags: list[str] = None, cmake_build_flags: list[str] = None) -> None:
         """
         [Action] [Helper] Rebuild the project
         :param btype: The build type
+        :param conan_flags: Additional flags passed to `conan`
+        :param cmake_generate_flags: Additional flags passed to `cmake` before it generates files for the native build system
+        :param cmake_build_flags: Additional flags passed to `cmake` before it builds the project using the native build system
         """
         self.create_fresh_build_folder()
-        self.conan_install(btype)
-        self.cmake_generate(btype)
+        self.conan_install(btype, conan_flags)
+        self.cmake_generate(btype, cmake_generate_flags)
+        parallel_level = os.cpu_count()
+        native_build_flags = None
         if platform.system() == "Windows":
-            self.cmake_build(btype, 1, None, ["/p:CL_MPCount={}".format(os.cpu_count())])
-        else:
-            self.cmake_build(btype)
+            native_build_flags = ["/p:CL_MPCount={}".format(os.cpu_count())]
+        self.cmake_build(btype, parallel_level, cmake_build_flags, native_build_flags)
 
     def rebuild_project_debug(self) -> None:
         """
