@@ -35,7 +35,7 @@ class ProjectBuilder:
         :param btype: The build type
         :param cmake_flags: Additional flags passed to `cmake`
         """
-        args: list[str] = ["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype)]
+        args: list[str] = ["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype.value)]
         if cmake_flags is not None:
             args.extend(cmake_flags)
         print("[G] CMake Args: \"{}\"".format(" ".join(args)))
