@@ -3,6 +3,8 @@
 #
 
 import platform
+import subprocess
+from typing import Any
 
 from .CompilerToolchainManager import *
 
@@ -110,16 +112,29 @@ class ProjectBuilder:
         remove_file_if_exist(kXcodeConfigFileDebug)
         remove_file_if_exist(kXcodeConfigFileRelease)
 
+    def run_test(self, name: str, cwd: str = None, env: dict[str, Any] = None) -> None:
+        """
+        [Action] Run a single test
+        :param name: The name of the test
+        :param cwd: The working directory under which to run the test
+        :param env: The environment variables with which to run the test
+        """
+        directory = os.getcwd() + "/build/bin/"
+        working_directory = directory if cwd is None else cwd
+        environment = os.environ if env is None else os.environ.copy().update(env)
+        print("========================================")
+        print("Running test \"{}\"...".format(name))
+        print(">> CWD = \"{}\"".format(working_directory))
+        print(">> ENV = \"{}\"".format(env))
+        print("========================================")
+        subprocess.run([directory + name], cwd=working_directory, env=environment).check_returncode()
+
     def run_all_tests(self) -> None:
         """
         [Action] Run all tests
         """
-        directory = os.getcwd() + "/build/bin/"
         for test in self.tests:
-            print("========================================")
-            print("Running test \"{}\"...".format(test))
-            print("========================================")
-            subprocess.run([directory + test], cwd=directory).check_returncode()
+            self.run_test(test)
 
     def rebuild_and_run_all_tests(self, btype: BuildType) -> None:
         """
