@@ -1,7 +1,7 @@
 #
 # MARK: - Utilities
 #
-
+import shutil
 import subprocess
 import os
 
@@ -80,3 +80,12 @@ def remove_file_if_exist(file: str) -> None:
     """
     if os.path.exists(file):
         os.remove(file)
+
+
+def remove_folder_if_exists(folder: str) -> None:
+    """
+    Remove the given folder if it exists
+    :param folder: The name of the folder
+    """
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
