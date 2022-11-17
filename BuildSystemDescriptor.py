@@ -56,20 +56,20 @@ class Compiler:
         tokens: list[str] = description.split("-")
         if len(tokens) != 2:
             raise ValueError
-        self.compilerType = CompilerType(tokens[0])
+        self.type = CompilerType(tokens[0])
         self.version = int(tokens[1])
 
     def __eq__(self, other: Compiler) -> bool:
-        return self.compilerType == other.compilerType and self.version == other.version
+        return self.type == other.type and self.version == other.version
 
     def __lt__(self, other: Compiler) -> bool:
-        return (self.compilerType.value, self.version) < (other.compilerType.value, other.version)
+        return (self.type.value, self.version) < (other.type.value, other.version)
 
     def __str__(self) -> str:
-        return "{} {}".format(self.compilerType.value, self.version)
+        return "{} {}".format(self.type.value, self.version)
 
     def __hash__(self):
-        return hash((self.compilerType, self.version))
+        return hash((self.type, self.version))
 
 
 @total_ordering
