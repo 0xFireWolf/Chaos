@@ -80,6 +80,7 @@ class ProjectBuilder:
         parallel_level = os.cpu_count()
         native_build_flags = None
         if platform.system() == "Windows":
+            parallel_level = 1
             native_build_flags = ["/p:CL_MPCount={}".format(os.cpu_count())]
         self.cmake_build(btype, parallel_level, cmake_build_flags, native_build_flags)
 
