@@ -35,9 +35,9 @@ class ProjectBuilder:
         :param btype: The build type
         :param cmake_flags: Additional flags passed to `cmake`
         """
-        args = ["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype)]
+        args: list[str] = ["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype)]
         if cmake_flags is not None:
-            args.append(cmake_flags)
+            args.extend(cmake_flags)
         print("[G] CMake Args: \"{}\"", " ".join(args))
         subprocess.run(args).check_returncode()
 
@@ -49,12 +49,12 @@ class ProjectBuilder:
         :param cmake_flags: Additional flags passed to `cmake`
         :param build_flags: Additional flags passed to the native build system
         """
-        args = ["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel", str(parallel_level)]
+        args: list[str] = ["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel", str(parallel_level)]
         if cmake_flags is not None:
-            args.append(cmake_flags)
+            args.extend(cmake_flags)
         if build_flags is not None:
-            args.append(["--"])
-            args.append(build_flags)
+            args.append("--")
+            args.extend(build_flags)
         print("[B] CMake Args: \"{}\"", " ".join(args))
         subprocess.run(args).check_returncode()
 
