@@ -38,7 +38,7 @@ class ProjectBuilder:
         args: list[str] = ["cmake", "-S", ".", "-B", kBuildFolder, "-DCMAKE_BUILD_TYPE={}".format(btype)]
         if cmake_flags is not None:
             args.extend(cmake_flags)
-        print("[G] CMake Args: \"{}\"", " ".join(args))
+        print("[G] CMake Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
     def cmake_build(self, btype: BuildType, parallel_level: int = os.cpu_count(), cmake_flags: list[str] = None, build_flags: list[str] = None):
@@ -55,7 +55,7 @@ class ProjectBuilder:
         if build_flags is not None:
             args.append("--")
             args.extend(build_flags)
-        print("[B] CMake Args: \"{}\"", " ".join(args))
+        print("[B] CMake Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
     def rebuild_project(self, btype: BuildType) -> None:
