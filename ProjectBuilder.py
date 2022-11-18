@@ -314,7 +314,10 @@ class ProjectBuilder:
                 additional_args.append("--excluded_sources")
                 additional_args.append(token)
         for test in self.tests:
-            subprocess.run(["OpenCppCoverage", "--sources", self.source_folder] + additional_args + ["--", test],
+            # https://github.com/OpenCppCoverage/OpenCppCoverage/wiki/FAQ#coverage-and-throw
+            subprocess.run(["OpenCppCoverage", "--sources", self.source_folder,
+                            "--excluded_line_regex", '\\s*\\}.*'] +
+                           additional_args + ["--", test],
                            cwd=working_directory).check_returncode()
 
     def rebuild_and_run_all_tests_with_coverage(self) -> None:
