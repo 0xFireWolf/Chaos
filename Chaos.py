@@ -179,8 +179,9 @@ class Chaos:
             print("[13] Rebuild the project (RELEASE).")
             print("[14] Rebuild and run all tests (DEBUG).")
             print("[15] Rebuild and run all tests (RELEASE).")
-            print("[16] Clean the build folder.")
-            print("[17] Clean the build folder and reset the toolchain.")
+            print("[16] Rebuild and run all tests with coverage.")
+            print("[17] Clean the build folder.")
+            print("[18] Clean the build folder and reset the toolchain.")
             print()
             print("Press Ctrl-C or Ctrl-D to exit the menu.")
             option = 0
@@ -223,6 +224,7 @@ class Chaos:
             self.projectBuilder.rebuild_project_release,
             self.projectBuilder.rebuild_and_run_all_tests_debug,
             self.projectBuilder.rebuild_and_run_all_tests_release,
+            self.projectBuilder.rebuild_and_run_all_tests_with_coverage,
             self.projectBuilder.clean_build_folder,
             self.projectBuilder.clean_all
         ]
