@@ -1,11 +1,11 @@
 #
 # MARK: - Build, Test & Clean Projects
 #
-
+import glob
 import platform
 import subprocess
 from typing import Any
-
+from pathlib import Path
 from .CompilerToolchainManager import *
 
 kBuildFolder = "build"
@@ -15,6 +15,10 @@ kBuildFolder = "build"
 class ProjectBuilder:
     def __init__(self, tests: list[str]):
         self.tests = tests
+
+    #
+    # MARK: - Small Steps
+    #
 
     def create_fresh_build_folder(self) -> None:
         """
@@ -30,7 +34,8 @@ class ProjectBuilder:
         :param conan_flags: Additional flags passed to `conan`
         """
         profile = kCurrentConanProfileDebug if btype == BuildType.kDebug else kCurrentConanProfileRelease
-        args: list[str] = ["conan", "install", ".", "-if", kBuildFolder, "--update", "--build", "missing", "--profile", profile]
+        args: list[str] = ["conan", "install", ".", "-if", kBuildFolder, "--update", "--build", "missing", "--profile",
+                           profile]
         if conan_flags is not None:
             args.extend(conan_flags)
         print("Installing all required packages via Conan...")
@@ -50,7 +55,8 @@ class ProjectBuilder:
         print("CMake Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
-    def cmake_build(self, btype: BuildType, parallel_level: int = os.cpu_count(), cmake_flags: list[str] = None, build_flags: list[str] = None):
+    def cmake_build(self, btype: BuildType, parallel_level: int = os.cpu_count(), cmake_flags: list[str] = None,
+                    build_flags: list[str] = None):
         """
         [Action] [Step] Use CMake to invoke the native build system to build the project
         :param btype: The build type
@@ -58,7 +64,8 @@ class ProjectBuilder:
         :param cmake_flags: Additional flags passed to `cmake`
         :param build_flags: Additional flags passed to the native build system
         """
-        args: list[str] = ["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel", str(parallel_level)]
+        args: list[str] = ["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel",
+                           str(parallel_level)]
         if cmake_flags is not None:
             args.extend(cmake_flags)
         if build_flags is not None:
@@ -68,7 +75,12 @@ class ProjectBuilder:
         print("CMake Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
-    def rebuild_project(self, btype: BuildType, conan_flags: list[str] = None, cmake_generate_flags: list[str] = None, cmake_build_flags: list[str] = None) -> None:
+    #
+    # MARK: - Rebuild Project
+    #
+
+    def rebuild_project(self, btype: BuildType, conan_flags: list[str] = None, cmake_generate_flags: list[str] = None,
+                        cmake_build_flags: list[str] = None) -> None:
         """
         [Action] [Helper] Rebuild the project
         :param btype: The build type
@@ -98,6 +110,10 @@ class ProjectBuilder:
         """
         self.rebuild_project(BuildType.kRelease)
 
+    #
+    # MARK: - Clean Up
+    #
+
     def clean_build_folder(self) -> None:
         """
         [Action] Clean and remove the build folder
@@ -111,6 +127,10 @@ class ProjectBuilder:
         remove_file_if_exist(kCurrentConanProfileRelease)
         remove_file_if_exist(kXcodeConfigFileDebug)
         remove_file_if_exist(kXcodeConfigFileRelease)
+
+    #
+    # MARK: - Run Tests
+    #
 
     def run_test(self, name: str, cwd: str = None, env: dict[str, Any] = None) -> None:
         """
