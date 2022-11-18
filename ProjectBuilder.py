@@ -141,7 +141,7 @@ class ProjectBuilder:
         """
         directory = os.getcwd() + "/build/bin/"
         working_directory = directory if cwd is None else cwd
-        environment = os.environ if env is None else os.environ.copy().update(env)
+        environment = os.environ if env is None else os.environ.copy() | env
         print("========================================")
         print("Running test \"{}\"...".format(name))
         print(">> CWD = \"{}\"".format(working_directory))
