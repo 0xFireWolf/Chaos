@@ -11,12 +11,12 @@ kBuildFolder = "build"
 
 # A project builder that builds, tests, and cleans the project
 class ProjectBuilder:
-    def __init__(self, tests: list[str], source_folder: Path, exclude_pattern: str):
+    def __init__(self, tests: list[str], source_folder: Path, exclude_patterns: list[str]):
         self.tests = tests
         # A path to the directory that contains all source files
         self.source_folder = source_folder
         # A regex pattern to exclude source files that are not of interest
-        self.exclude_pattern = exclude_pattern
+        self.exclude_patterns = exclude_patterns
 
     #
     # MARK: - Small Steps
@@ -180,6 +180,19 @@ class ProjectBuilder:
     # MARK: - Code Coverage
     #
 
+    def get_exclude_patterns_as_args(self, option: str) -> list[str]:
+        """
+        Convert the user-specified exclude patterns as arguments passed to the coverage analysis tool
+        :param option: The command line tool option prepended to each exclude pattern
+        :return: A list of command line arguments
+        """
+        args: list[str] = []
+        if self.exclude_patterns is not None:
+            for exclude_pattern in self.exclude_patterns:
+                args.append(option)
+                args.append(exclude_pattern)
+        return args
+
     def get_cmake_variable_value(self, toolchain: Path, variable: str) -> str:
         """
         Get the value of a CMake variable defined in the given CMake Toolchain file
@@ -225,8 +238,8 @@ class ProjectBuilder:
         :return:
         """
         files = glob.glob(f"{str(self.source_folder.resolve())}/**/*.*pp", recursive=True)
-        if self.exclude_pattern is not None:
-            regex = re.compile(self.exclude_pattern)
+        if self.exclude_patterns is not None:
+            regex = re.compile("|".join(self.exclude_patterns))
             return [file for file in files if not regex.search(file)]
         else:
             return files
@@ -249,17 +262,12 @@ class ProjectBuilder:
         cmake_generate_flags = self.get_cmake_generate_flags_for_coverage(["-fprofile-arcs", "-ftest-coverage"])
         self.rebuild_project(BuildType.kDebug, cmake_generate_flags=cmake_generate_flags)
         self.run_all_tests()
-        additional_args: list[str] = []
-        if self.exclude_pattern is not None:
-            for token in self.exclude_pattern.split("|"):
-                additional_args.append("--exclude")
-                additional_args.append(token)
         # Generate the code coverage report
         # https://stackoverflow.com/questions/55058715/how-to-get-correct-code-coverage-for-member-functions-in-header-files
         subprocess.run(["lcov", "--gcov-tool", gcov, "--capture", "--no-external",
                         "--directory", self.source_folder.resolve(),
                         "--directory", working_directory.parent / "CMakeFiles",
-                        "--output-file", "Coverage.info"] + additional_args,
+                        "--output-file", "Coverage.info"] + self.get_exclude_patterns_as_args("--exclude"),
                        cwd=working_directory).check_returncode()
         subprocess.run(["genhtml", "Coverage.info", "--output-directory", "CoverageReport"],
                        cwd=working_directory).check_returncode()
@@ -308,16 +316,12 @@ class ProjectBuilder:
         """
         working_directory = Path(os.getcwd()) / "build" / "bin"
         self.rebuild_project(BuildType.kDebug)
-        additional_args: list[str] = []
-        if self.exclude_pattern is not None:
-            for token in self.exclude_pattern.split("|"):
-                additional_args.append("--excluded_sources")
-                additional_args.append(token)
         for test in self.tests:
             # https://github.com/OpenCppCoverage/OpenCppCoverage/wiki/FAQ#coverage-and-throw
             subprocess.run(["OpenCppCoverage", "--sources", self.source_folder,
                             "--excluded_line_regex", '\\s*\\}.*'] +
-                           additional_args + ["--", test],
+                           self.get_exclude_patterns_as_args("--excluded_sources") +
+                           ["--", test],
                            cwd=working_directory).check_returncode()
 
     def rebuild_and_run_all_tests_with_coverage(self) -> None:
