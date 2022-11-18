@@ -3,9 +3,7 @@
 #
 import glob
 import platform
-import subprocess
 from typing import Any
-from pathlib import Path
 from .CompilerToolchainManager import *
 
 kBuildFolder = "build"
@@ -13,8 +11,12 @@ kBuildFolder = "build"
 
 # A project builder that builds, tests, and cleans the project
 class ProjectBuilder:
-    def __init__(self, tests: list[str]):
+    def __init__(self, tests: list[str], source_folder: Path, exclude_pattern: str):
         self.tests = tests
+        # A path to the directory that contains all source files
+        self.source_folder = source_folder
+        # A regex pattern to exclude source files that are not of interest
+        self.exclude_pattern = exclude_pattern
 
     #
     # MARK: - Small Steps
@@ -144,8 +146,6 @@ class ProjectBuilder:
         environment = os.environ if env is None else os.environ.copy() | env
         print("========================================")
         print("Running test \"{}\"...".format(name))
-        print(">> CWD = \"{}\"".format(working_directory))
-        print(">> ENV = \"{}\"".format(env))
         print("========================================")
         subprocess.run([directory + name], cwd=working_directory, env=environment).check_returncode()
 
@@ -175,3 +175,164 @@ class ProjectBuilder:
         [Action] Run all tests in RELEASE mode
         """
         self.rebuild_and_run_all_tests(BuildType.kRelease)
+
+    #
+    # MARK: - Code Coverage
+    #
+
+    def get_cmake_variable_value(self, toolchain: Path, variable: str) -> str:
+        """
+        Get the value of a CMake variable defined in the given CMake Toolchain file
+        :param toolchain: Path to a CMake Toolchain file
+        :param variable: The name of a CMake variable
+        :return: The value of the CMake variable on success.
+        :raise: ValueError if the CMake variable of the given name does not exist.
+        """
+        with open(toolchain) as file:
+            for line in file:
+                result = re.search("set\\({}\\s*(.*?)\\s*\\)".format(variable), line)
+                if result is not None:
+                    return result.group(1)
+            raise ValueError("Cannot find the path to the toolchain installation directory.")
+
+    def get_gcov_path(self, toolchain: Path) -> Path:
+        """
+        Get the path to the `gcov` associated with the given CMake Toolchain file
+        :param toolchain: Path to a CMake Toolchain file
+        :return: The absolute path to `gcov`.
+        """
+        return Path(self.get_cmake_variable_value(toolchain, "GCOV")).resolve(strict=True)
+
+    def get_llvm_profdata_path(self, toolchain: Path) -> Path:
+        """
+        Get the path to the `llvm-profdata` associated with the given CMake Toolchain file
+        :param toolchain: Path to a CMake Toolchain file
+        :return: The absolute path to `llvm-profdata`.
+        """
+        return Path(self.get_cmake_variable_value(toolchain, "LLVM_PROFDATA")).resolve(strict=True)
+
+    def get_llvm_cov_path(self, toolchain: Path) -> Path:
+        """
+        Get the path to the `llvm-cov` associated with the given CMake Toolchain file
+        :param toolchain: Path to a CMake Toolchain file
+        :return: The absolute path to `llvm-cov`.
+        """
+        return Path(self.get_cmake_variable_value(toolchain, "LLVM_COV")).resolve(strict=True)
+
+    def get_source_files_for_coverage(self) -> list[str]:
+        """
+        Get all source files to be considered when analyzing the code coverage
+        :return:
+        """
+        files = glob.glob(f"{str(self.source_folder.resolve())}/**/*.*pp", recursive=True)
+        if self.exclude_pattern is not None:
+            regex = re.compile(self.exclude_pattern)
+            return [file for file in files if not regex.search(file)]
+        else:
+            return files
+
+    def get_cmake_generate_flags_for_coverage(self, compiler_flags: list[str]) -> list[str]:
+        """
+        Get the flags to be passed to CMake for generating files for the native build system
+        :param compiler_flags: Special compiler flags needed to analyze the code coverage
+        :return: A collection of additional CMake flags for build system generation.
+        """
+        flags = " ".join(compiler_flags)
+        return [f"-DCMAKE_C_FLAGS='{flags}'", f"-DCMAKE_CXX_FLAGS='{flags}'"]
+
+    def rebuild_and_run_all_tests_with_coverage_gcc(self) -> None:
+        """
+        Rebuild the project using GCC and run all tests to analyze code coverage using `Gcov`
+        """
+        gcov = self.get_gcov_path(kCurrentToolchainFile)
+        working_directory = Path(os.getcwd()) / "build" / "bin"
+        cmake_generate_flags = self.get_cmake_generate_flags_for_coverage(["-fprofile-arcs", "-ftest-coverage"])
+        self.rebuild_project(BuildType.kDebug, cmake_generate_flags=cmake_generate_flags)
+        self.run_all_tests()
+        additional_args: list[str] = []
+        if self.exclude_pattern is not None:
+            for token in self.exclude_pattern.split("|"):
+                additional_args.append("--exclude")
+                additional_args.append(token)
+        # Generate the code coverage report
+        # https://stackoverflow.com/questions/55058715/how-to-get-correct-code-coverage-for-member-functions-in-header-files
+        subprocess.run(["lcov", "--gcov-tool", gcov, "--capture", "--no-external",
+                        "--directory", self.source_folder.resolve(),
+                        "--directory", working_directory.parent / "CMakeFiles",
+                        "--output-file", "Coverage.info"] + additional_args,
+                       cwd=working_directory).check_returncode()
+        subprocess.run(["genhtml", "Coverage.info", "--output-directory", "CoverageReport"],
+                       cwd=working_directory).check_returncode()
+
+    def rebuild_and_run_all_tests_with_coverage_clang(self) -> None:
+        """
+        Rebuild the project using Clang and run all tests to analyze code coverage using `llvm-cov`
+        """
+        llvm_profdata = self.get_llvm_profdata_path(kCurrentToolchainFile)
+        llvm_cov = self.get_llvm_cov_path(kCurrentToolchainFile)
+        sources = self.get_source_files_for_coverage()
+        working_directory = Path(os.getcwd()) / "build" / "bin"
+        cmake_generate_flags = self.get_cmake_generate_flags_for_coverage(["-fprofile-instr-generate", "-fcoverage-mapping"])
+        self.rebuild_project(BuildType.kDebug, cmake_generate_flags=cmake_generate_flags)
+        print("Source files for coverage analysis:")
+        for source in sources:
+            print(f"- {source}")
+        for test in self.tests:
+            # Run the test and store the raw profile data to the given file
+            self.run_test(test, env={"LLVM_PROFILE_FILE": f"{test}-%p.profraw"})
+            # Merge all raw profile data into a single file
+            subprocess.run([llvm_profdata, "merge", f"-output={test}.profdata"] +
+                           glob.glob(str(working_directory / f"{test}-*.profraw")),
+                           cwd=working_directory).check_returncode()
+            # Generate the code coverage report as an HTML file
+            with open(working_directory / f"{test}CoverageReport.html", "w") as fd:
+                subprocess.run([llvm_cov, "show", test, f"-instr-profile={test}.profdata",
+                                "-Xdemangler", "c++filt", "-Xdemangler", "-n",
+                                "-show-branches=percent", "-use-color", "--format", "html"] + sources,
+                               cwd=working_directory, stdout=fd).check_returncode()
+            # Export the code coverage report as a LCOV file
+            with open(working_directory / f"{test}CoverageReport.lcov", "w") as fd:
+                subprocess.run([llvm_cov, "export", test, f"-instr-profile={test}.profdata",
+                                "-Xdemangler", "c++filt", "-Xdemangler", "-n",
+                                "-show-branch-summary", "-format=lcov"] + sources,
+                               cwd=working_directory, stdout=fd).check_returncode()
+            subprocess.run(["genhtml", f"{test}CoverageReport.lcov", "--output-directory", f"{test}CoverageReport"],
+                           cwd=working_directory).check_returncode()
+
+    def rebuild_and_run_all_tests_with_coverage_appleclang(self) -> None:
+        pass
+
+    def rebuild_and_run_all_tests_with_coverage_msvc(self) -> None:
+        """
+        Rebuild the project using GCC and run all tests to analyze code coverage using `OpenCppCoverage`
+        """
+        working_directory = Path(os.getcwd()) / "build" / "bin"
+        self.rebuild_project(BuildType.kDebug)
+        additional_args: list[str] = []
+        if self.exclude_pattern is not None:
+            for token in self.exclude_pattern.split("|"):
+                additional_args.append("--excluded_sources")
+                additional_args.append(token)
+        for test in self.tests:
+            subprocess.run(["OpenCppCoverage", "--sources", self.source_folder] + additional_args + ["--", test],
+                           cwd=working_directory).check_returncode()
+
+    def rebuild_and_run_all_tests_with_coverage(self) -> None:
+        """
+        [Action] Rebuild the project and run all tests to analyze code coverage
+        """
+        # Guard: The source folder must not be none
+        if self.source_folder is None:
+            raise ValueError("The source folder must be specified to analyze the code coverage.")
+        # Identify the compiler toolchain selected by the user
+        compiler = Toolchain(Path(kCurrentToolchainFile).resolve().name).identifier.compiler.type
+        if compiler == CompilerType.kGCC:
+            self.rebuild_and_run_all_tests_with_coverage_gcc()
+        elif compiler == CompilerType.kClang:
+            self.rebuild_and_run_all_tests_with_coverage_clang()
+        elif compiler == CompilerType.kAppleClang:
+            self.rebuild_and_run_all_tests_with_coverage_appleclang()
+        elif compiler == CompilerType.kMSVC:
+            self.rebuild_and_run_all_tests_with_coverage_msvc()
+        else:
+            raise ValueError("Invalid compiler type reported by the current toolchain.")
