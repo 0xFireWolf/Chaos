@@ -235,11 +235,11 @@ class ProjectBuilder:
     def get_source_files_for_coverage(self) -> list[str]:
         """
         Get all source files to be considered when analyzing the code coverage
-        :return:
+        :return: All the source files that will be analyzed for code coverage.
         """
         files = glob.glob(f"{str(self.source_folder.resolve())}/**/*.*pp", recursive=True)
         if self.exclude_patterns is not None:
-            regex = re.compile("|".join(self.exclude_patterns))
+            regex = re.compile("|".join([p.replace("*", ".*") for p in self.exclude_patterns]))
             return [file for file in files if not regex.search(file)]
         else:
             return files
@@ -308,7 +308,7 @@ class ProjectBuilder:
                            cwd=working_directory).check_returncode()
 
     def rebuild_and_run_all_tests_with_coverage_appleclang(self) -> None:
-        pass
+        raise NotImplementedError("Coverage with Apple Clang will be available soon.")
 
     def rebuild_and_run_all_tests_with_coverage_msvc(self) -> None:
         """
