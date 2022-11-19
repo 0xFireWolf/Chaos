@@ -105,6 +105,13 @@ class Chaos:
         """
         self.projectBuilder.run_all_tests()
 
+    def ci_run_tests_with_coverage(self) -> None:
+        """
+        [CI] Run all tests and analyze code coverage
+        :raise `CalledProcessError` if one of the tests has failed.
+        """
+        self.projectBuilder.rebuild_and_run_all_tests_with_coverage()
+
     def ci(self) -> int:
         """
         [CI] Main Entry Point of the Continuous Integration
@@ -121,6 +128,8 @@ class Chaos:
                 self.ci_build_all(sys.argv[3])
             elif command == "--run-tests":
                 self.ci_run_tests()
+            elif command == "--run-tests-with-coverage":
+                self.ci_run_tests_with_coverage()
             else:
                 print("Unrecognized Chaos command: {}.".format(command))
                 raise ValueError
