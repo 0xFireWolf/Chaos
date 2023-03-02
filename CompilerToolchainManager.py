@@ -11,6 +11,9 @@ from .BuildSystemDescriptor import *
 from .Utilities import *
 from .XcodeFinder import *
 
+kDefaultCMakeToolchainsFolder = "Toolchains"
+kDefaultConanProfilesFolderV1 = "Profiles"
+kDefaultConanProfilesFolderV2 = "Profiles2"
 kCurrentToolchainFile = "CurrentToolchain.cmake"
 kCurrentConanProfileDebug = "CurrentProfileDebug.conanprofile"
 kCurrentConanProfileRelease = "CurrentProfileRelease.conanprofile"
@@ -26,6 +29,10 @@ class CompilerToolchainManager:
         self.hostSystem = host
         # Filter out toolchains that have a different architecture
         self.architecture = architecture
+        # The name of the folder in which CMake toolchains are stores
+        self.cmake_toolchains_folder = kDefaultCMakeToolchainsFolder
+        # The name of the folder in which Conan profiles are stored
+        self.conan_profiles_folder = kDefaultConanProfilesFolderV2 if is_conan_v2_installed() else kDefaultConanProfilesFolderV1
 
     def install_gcc_10(self) -> None:
         raise NotImplementedError
@@ -139,9 +146,12 @@ class CompilerToolchainManager:
         remove_file_if_exist(kCurrentToolchainFile)
         remove_file_if_exist(kCurrentConanProfileDebug)
         remove_file_if_exist(kCurrentConanProfileRelease)
-        os.symlink(pathlib.Path("Toolchains/{}".format(toolchain.filename)), pathlib.Path(kCurrentToolchainFile))
-        os.symlink(pathlib.Path("Profiles/{}".format(profile_debug.filename)), pathlib.Path(kCurrentConanProfileDebug))
-        os.symlink(pathlib.Path("Profiles/{}".format(profile_release.filename)), pathlib.Path(kCurrentConanProfileRelease))
+        os.symlink(pathlib.Path("{}/{}".format(self.cmake_toolchains_folder, toolchain.filename)),
+                   pathlib.Path(kCurrentToolchainFile))
+        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, profile_debug.filename)),
+                   pathlib.Path(kCurrentConanProfileDebug))
+        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, profile_release.filename)),
+                   pathlib.Path(kCurrentConanProfileRelease))
         print()
         print("The toolchain and the corresponding Conan profiles are both set.")
 
@@ -149,8 +159,8 @@ class CompilerToolchainManager:
         """
         [Action] Select a compiler toolchain
         """
-        toolchains = self.fetch_compatible_compiler_toolchains_as_map("Toolchains")
-        profiles_dbg, profiles_rel = self.fetch_compatible_conan_profiles_as_map("Profiles")
+        toolchains = self.fetch_compatible_compiler_toolchains_as_map(self.cmake_toolchains_folder)
+        profiles_dbg, profiles_rel = self.fetch_compatible_conan_profiles_as_map(self.conan_profiles_folder)
         assert len(toolchains.keys()) == len(profiles_dbg.keys())
         assert len(toolchains.keys()) == len(profiles_rel.keys())
         identifiers = sorted(list(toolchains.keys()))
