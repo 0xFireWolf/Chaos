@@ -90,3 +90,11 @@ def remove_folder_if_exists(folder: str) -> None:
     """
     if os.path.exists(folder):
         shutil.rmtree(folder)
+
+
+def is_conan_v2_installed() -> bool:
+    """
+    Check whether Conan 2.x instead of 1.x is installed on the local computer
+    :return: `true` if Conan 2.x has been installed, `false` otherwise.
+    """
+    return subprocess.check_output(["conan", "--version"]).startswith(b"Conan version 2")
