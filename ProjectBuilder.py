@@ -278,7 +278,7 @@ class ProjectBuilder:
         working_directory = Path(os.getcwd()) / "build"
         cmake_generate_flags = self.get_cmake_generate_flags_for_coverage(["-fprofile-arcs", "-ftest-coverage"])
         self.rebuild_project(BuildType.kDebug, cmake_generate_flags=cmake_generate_flags)
-        self.run_all_tests()
+        self.run_all_tests(BuildType.kDebug)
         # Generate the code coverage report
         # https://stackoverflow.com/questions/55058715/how-to-get-correct-code-coverage-for-member-functions-in-header-files
         subprocess.run(["lcov", "--gcov-tool", gcov, "--capture", "--no-external",
