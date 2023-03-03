@@ -146,20 +146,20 @@ class ProjectBuilder:
     # MARK: - Run Tests
     #
 
-    def run_test(self, name: str, cwd: str = None, env: dict[str, Any] = None) -> None:
+    def run_test(self, name: str, cwd: Path = None, env: dict[str, Any] = None) -> None:
         """
         [Action] Run a single test
         :param name: The name of the test
         :param cwd: The working directory under which to run the test
         :param env: The environment variables with which to run the test
         """
-        directory = os.getcwd() + "/" + kBuildFolder
+        directory = Path.cwd() / kBuildFolder
         working_directory = directory if cwd is None else cwd
         environment = os.environ if env is None else os.environ.copy() | env
         print("========================================")
         print("Running test \"{}\"...".format(name))
         print("========================================")
-        subprocess.run([directory + name], cwd=working_directory, env=environment).check_returncode()
+        subprocess.run([directory / name], cwd=working_directory, env=environment).check_returncode()
 
     def run_all_tests(self) -> None:
         """
