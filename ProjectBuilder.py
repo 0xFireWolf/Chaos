@@ -270,7 +270,7 @@ class ProjectBuilder:
         Rebuild the project using GCC and run all tests to analyze code coverage using `Gcov`
         """
         gcov = self.get_gcov_path(kCurrentToolchainFile)
-        working_directory = Path(os.getcwd()) / "build" / "bin"
+        working_directory = Path(os.getcwd()) / "build"
         cmake_generate_flags = self.get_cmake_generate_flags_for_coverage(["-fprofile-arcs", "-ftest-coverage"])
         self.rebuild_project(BuildType.kDebug, cmake_generate_flags=cmake_generate_flags)
         self.run_all_tests()
@@ -291,7 +291,7 @@ class ProjectBuilder:
         llvm_profdata = self.get_llvm_profdata_path(kCurrentToolchainFile)
         llvm_cov = self.get_llvm_cov_path(kCurrentToolchainFile)
         sources = self.get_source_files_for_coverage()
-        working_directory = Path(os.getcwd()) / "build" / "bin"
+        working_directory = Path(os.getcwd()) / "build"
         cmake_generate_flags = self.get_cmake_generate_flags_for_coverage(["-fprofile-instr-generate", "-fcoverage-mapping"])
         self.rebuild_project(BuildType.kDebug, cmake_generate_flags=cmake_generate_flags)
         print("Source files for coverage analysis:")
@@ -326,7 +326,7 @@ class ProjectBuilder:
         """
         Rebuild the project using GCC and run all tests to analyze code coverage using `OpenCppCoverage`
         """
-        working_directory = Path(os.getcwd()) / "build" / "bin"
+        working_directory = Path(os.getcwd()) / "build"
         self.rebuild_project(BuildType.kDebug)
         for test in self.tests:
             # https://github.com/OpenCppCoverage/OpenCppCoverage/wiki/FAQ#coverage-and-throw
