@@ -61,7 +61,7 @@ class ProjectBuilder:
         """
         args: list[str] = ["cmake", "-S", ".", "-B", kBuildFolder,
                            "-DCMAKE_BUILD_TYPE={}".format(btype.value),
-                           "-DCHAOS_CHAINLOAD_TOOLCHAIN_FILE={}".format(self.conan_cmake_integration_file)]
+                           "-DCHAOS_CHAINLOAD_TOOLCHAIN_FILE={}/{}".format(kBuildFolder, self.conan_cmake_integration_file)]
         if cmake_flags is not None:
             args.extend(cmake_flags)
         print("Generating files for the native build system...")
