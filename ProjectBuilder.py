@@ -146,14 +146,18 @@ class ProjectBuilder:
     # MARK: - Run Tests
     #
 
-    def run_test(self, name: str, cwd: Path = None, env: dict[str, Any] = None) -> None:
+    def run_test(self, name: str, btype: BuildType, cwd: Path = None, env: dict[str, Any] = None) -> None:
         """
         [Action] Run a single test
         :param name: The name of the test
+        :param btype: The build type
         :param cwd: The working directory under which to run the test
         :param env: The environment variables with which to run the test
         """
         directory = Path.cwd() / kBuildFolder
+        # Win32 Builds: "CMAKE_BINARY_DIR / <CONFIG>"
+        if platform.system() == "Windows":
+            directory /= btype.value
         working_directory = directory if cwd is None else cwd
         environment = os.environ if env is None else os.environ.copy() | env
         print("========================================")
@@ -161,12 +165,13 @@ class ProjectBuilder:
         print("========================================")
         subprocess.run([directory / name], cwd=working_directory, env=environment).check_returncode()
 
-    def run_all_tests(self) -> None:
+    def run_all_tests(self, btype: BuildType) -> None:
         """
         [Action] Run all tests
+        :param btype: The build type
         """
         for test in self.tests:
-            self.run_test(test)
+            self.run_test(test, btype)
 
     def rebuild_and_run_all_tests(self, btype: BuildType) -> None:
         """
@@ -174,7 +179,7 @@ class ProjectBuilder:
         :param btype: The build type
         """
         self.rebuild_project(btype)
-        self.run_all_tests()
+        self.run_all_tests(btype)
 
     def rebuild_and_run_all_tests_debug(self) -> None:
         """
