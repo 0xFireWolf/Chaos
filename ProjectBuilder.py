@@ -35,13 +35,18 @@ class ProjectBuilder:
 
     def conan_install(self, btype: BuildType, conan_flags: list[str] = None) -> None:
         """
-        [Action] [Step] Install all required dependencies via Conan
+        [Action] [Step] Install all required dependencies via Conan 1.x or 2.x
         :param btype: The build type
         :param conan_flags: Additional flags passed to `conan`
         """
         profile = kCurrentConanProfileDebug if btype == BuildType.kDebug else kCurrentConanProfileRelease
-        args: list[str] = ["conan", "install", ".", "-if", kBuildFolder, "--update", "--build", "missing", "--profile",
-                           profile]
+        args: list[str] = []
+        if is_conan_v2_installed():
+            args.extend(["conan", "install", ".", "--output-folder", kBuildFolder, "--update",
+                         "--build", "missing", "--profile:host", profile, "--profile:build", profile])
+        else:
+            args.extend(["conan", "install", ".", "--install-folder", kBuildFolder, "--update",
+                         "--build", "missing", "--profile", profile])
         if conan_flags is not None:
             args.extend(conan_flags)
         print("Installing all required packages via Conan...")
