@@ -153,7 +153,7 @@ class ProjectBuilder:
         :param cwd: The working directory under which to run the test
         :param env: The environment variables with which to run the test
         """
-        directory = os.getcwd() + "/build/bin/"
+        directory = os.getcwd() + "/" + kBuildFolder
         working_directory = directory if cwd is None else cwd
         environment = os.environ if env is None else os.environ.copy() | env
         print("========================================")
