@@ -98,12 +98,14 @@ class Chaos:
         """
         self.projectBuilder.rebuild_project(BuildType(btype))
 
-    def ci_run_tests(self) -> None:
+    def ci_run_tests(self, btype: str) -> None:
         """
         [CI] Run all tests
-        :raise `CalledProcessError` if one of the tests has failed.
+        :param btype: The raw build type
+        :raise `ValueError` if the given build type is invalid;
+               `CalledProcessError` if one of the tests has failed.
         """
-        self.projectBuilder.run_all_tests()
+        self.projectBuilder.run_all_tests(BuildType(btype))
 
     def ci_run_tests_with_coverage(self) -> None:
         """
@@ -127,7 +129,7 @@ class Chaos:
             elif command == "--build-all":
                 self.ci_build_all(sys.argv[3])
             elif command == "--run-tests":
-                self.ci_run_tests()
+                self.ci_run_tests(sys.argv[3])
             elif command == "--run-tests-with-coverage":
                 self.ci_run_tests_with_coverage()
             else:
