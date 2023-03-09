@@ -72,6 +72,7 @@ class Chaos:
             "clang-13": self.compilerToolchainManager.install_clang_13,
             "clang-14": self.compilerToolchainManager.install_clang_14,
             "clang-15": self.compilerToolchainManager.install_clang_15,
+            "clang-16": self.compilerToolchainManager.install_clang_16,
             "apple-clang-13": self.compilerToolchainManager.install_apple_clang_13,
             "apple-clang-14": self.compilerToolchainManager.install_apple_clang_14,
         }
@@ -182,19 +183,20 @@ class Chaos:
             print("[06] Install Clang 13.")
             print("[07] Install Clang 14.")
             print("[08] Install Clang 15.")
-            print("[09] Install all supported compilers.")
-            print("[10] Select a compiler toolchain.")
-            print("[11] Generate the Xcode configuration.")
+            print("[09] Install Clang 16.")
+            print("[10] Install all supported compilers.")
+            print("[11] Select a compiler toolchain.")
+            print("[12] Generate the Xcode configuration.")
             print()
             print(">> Build, Test & Clean Projects")
             print()
-            print("[12] Rebuild the project (DEBUG).")
-            print("[13] Rebuild the project (RELEASE).")
-            print("[14] Rebuild and run all tests (DEBUG).")
-            print("[15] Rebuild and run all tests (RELEASE).")
-            print("[16] Rebuild and run all tests with coverage.")
-            print("[17] Clean the build folder.")
-            print("[18] Clean the build folder and reset the toolchain.")
+            print("[13] Rebuild the project (DEBUG).")
+            print("[14] Rebuild the project (RELEASE).")
+            print("[15] Rebuild and run all tests (DEBUG).")
+            print("[16] Rebuild and run all tests (RELEASE).")
+            print("[17] Rebuild and run all tests with coverage.")
+            print("[18] Clean the build folder.")
+            print("[19] Clean the build folder and reset the toolchain.")
             print()
             print("Press Ctrl-C or Ctrl-D to exit the menu.")
             option = 0
@@ -230,6 +232,7 @@ class Chaos:
             self.compilerToolchainManager.install_clang_13,
             self.compilerToolchainManager.install_clang_14,
             self.compilerToolchainManager.install_clang_15,
+            self.compilerToolchainManager.install_clang_16,
             self.compilerToolchainManager.install_all_compilers,
             self.compilerToolchainManager.select_compiler_toolchain,
             self.compilerToolchainManager.generate_xcode_configuration,
