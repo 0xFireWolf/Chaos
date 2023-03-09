@@ -127,6 +127,8 @@ class Chaos:
                 self.ci_install_toolchain(sys.argv[3])
             elif command == "--select-toolchain":
                 self.ci_select_toolchain(sys.argv[3])
+            elif command == "--restore-toolchain":
+                self.ci_install_toolchain(sys.argv[3])
             elif command == "--build-all":
                 self.ci_build_all(sys.argv[3])
             elif command == "--run-tests":
