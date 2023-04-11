@@ -8,6 +8,7 @@ import traceback
 from subprocess import CalledProcessError
 from .EnvironmentConfigurator import *
 from .ProjectBuilder import *
+from .CMakeManager import CMakeManagerMacOS, CMakeManagerLinux, CMakeManagerWindows
 
 
 class Config:
@@ -32,7 +33,7 @@ class Chaos:
         if system == "Darwin":
             self.environmentConfigurator = EnvironmentConfiguratorMacOS(config.install_additional_tools_macos)
             self.compilerToolchainManager = CompilerToolchainManagerMacOS(Architecture.kx86_64 if machine == "x86_64" else Architecture.kARM64)
-            self.projectBuilder = ProjectBuilder(config.tests, config.coverage_source_folder, config.coverage_exclude_patterns)
+            self.projectBuilder = ProjectBuilder(config.tests, config.coverage_source_folder, config.coverage_exclude_patterns, CMakeManagerMacOS())
         elif system == "Linux":
             distribution = distro.id()
             version = distro.version()
@@ -45,14 +46,14 @@ class Chaos:
                 else:
                     print("Ubuntu {} is not tested.".format(version))
                     raise EnvironmentError
-                self.projectBuilder = ProjectBuilder(config.tests, config.coverage_source_folder, config.coverage_exclude_patterns)
+                self.projectBuilder = ProjectBuilder(config.tests, config.coverage_source_folder, config.coverage_exclude_patterns, CMakeManagerLinux())
             else:
                 print("{} is not supported.".format(distro.name(True)))
                 raise EnvironmentError
         elif system == "Windows":
             self.environmentConfigurator = EnvironmentConfiguratorWindows(config.install_additional_tools_windows)
             self.compilerToolchainManager = CompilerToolchainManagerWindows(Architecture.kx86_64)
-            self.projectBuilder = ProjectBuilder(config.tests, config.coverage_source_folder, config.coverage_exclude_patterns)
+            self.projectBuilder = ProjectBuilder(config.tests, config.coverage_source_folder, config.coverage_exclude_patterns, CMakeManagerWindows())
             self.clearConsole = lambda: os.system("cls")
         else:
             print("{} is not supported.".format(system))
