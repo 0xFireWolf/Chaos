@@ -200,6 +200,7 @@ class Chaos:
             print("[17] Rebuild and run all tests with coverage.")
             print("[18] Clean the build folder.")
             print("[19] Clean the build folder and reset the toolchain.")
+            print("[20] Determine the minimum CMake version.")
             print()
             print("Press Ctrl-C or Ctrl-D to exit the menu.")
             option = 0
@@ -245,7 +246,8 @@ class Chaos:
             self.projectBuilder.rebuild_and_run_all_tests_release,
             self.projectBuilder.rebuild_and_run_all_tests_with_coverage,
             self.projectBuilder.clean_build_folder,
-            self.projectBuilder.clean_all
+            self.projectBuilder.clean_all,
+            self.projectBuilder.determine_minimum_cmake_version_interactive,
         ]
         result = 0
         try:
