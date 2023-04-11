@@ -65,7 +65,7 @@ class ProjectBuilder:
         :param cmake_flags: Additional flags passed to `cmake`
         """
         chainload_toolchain_file = str((pathlib.Path.cwd() / kBuildFolder / self.conan_cmake_integration_file).resolve())
-        args: list[str] = [cmake.path, "-S", ".", "-B", kBuildFolder,
+        args: list[str] = [str(cmake.path), "-S", ".", "-B", kBuildFolder,
                            "-DCMAKE_BUILD_TYPE={}".format(btype.value),
                            "-DCHAOS_CHAINLOAD_TOOLCHAIN_FILE={}".format(chainload_toolchain_file)]
         if cmake_flags is not None:
@@ -84,7 +84,7 @@ class ProjectBuilder:
         :param cmake_flags: Additional flags passed to `cmake`
         :param build_flags: Additional flags passed to the native build system
         """
-        args: list[str] = [cmake.path, "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel",
+        args: list[str] = [str(cmake.path), "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel",
                            str(parallel_level)]
         if cmake_flags is not None:
             args.extend(cmake_flags)
