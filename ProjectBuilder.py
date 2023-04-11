@@ -222,8 +222,21 @@ class ProjectBuilder:
         :param min_minor: The minimum minor version of CMake from which to start the search
         :param to_directory: Path to the directory to store the extracted CMake binary
         """
-
-
+        results = dict[CMakeBinary, bool]()
+        for cmake in self.cmake_manager.get_cmake_binaries(min_major, min_minor, to_directory, True):
+            try:
+                self.create_fresh_build_folder()
+                self.conan_install(BuildType.kRelease)
+                self.cmake_generate(cmake, BuildType.kRelease)
+                results[cmake] = True
+            except subprocess.CalledProcessError:
+                results[cmake] = False
+        print("\n\n")
+        print("=====================")
+        print("Summary of Execution:")
+        print("=====================")
+        for cmake, outcome in results.items():
+            print(f"[{'SUCCESS' if outcome else 'FAILURE'}] CMake v{cmake.major}.{cmake.minor}.{cmake.patch}")
 
     #
     # MARK: - Code Coverage
