@@ -57,39 +57,41 @@ class ProjectBuilder:
         print("Conan Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
-    def cmake_generate(self, btype: BuildType, cmake_flags: list[str] = None) -> None:
+    def cmake_generate(self, cmake: CMakeBinary, btype: BuildType, cmake_flags: list[str] = None) -> None:
         """
         [Action] [Step] Use CMake to generate files for the native build system
+        :param cmake: The CMake binary that will be used to generate files for the native build system
         :param btype: The build type
         :param cmake_flags: Additional flags passed to `cmake`
         """
         chainload_toolchain_file = str((pathlib.Path.cwd() / kBuildFolder / self.conan_cmake_integration_file).resolve())
-        args: list[str] = ["cmake", "-S", ".", "-B", kBuildFolder,
+        args: list[str] = [cmake.path, "-S", ".", "-B", kBuildFolder,
                            "-DCMAKE_BUILD_TYPE={}".format(btype.value),
                            "-DCHAOS_CHAINLOAD_TOOLCHAIN_FILE={}".format(chainload_toolchain_file)]
         if cmake_flags is not None:
             args.extend(cmake_flags)
-        print("Generating files for the native build system...")
+        print("Generating files for the native build system using CMake v{}.{}.{}...".format(cmake.major, cmake.minor, cmake.patch))
         print("CMake Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
-    def cmake_build(self, btype: BuildType, parallel_level: int = os.cpu_count(), cmake_flags: list[str] = None,
+    def cmake_build(self, cmake: CMakeBinary, btype: BuildType, parallel_level: int = os.cpu_count(), cmake_flags: list[str] = None,
                     build_flags: list[str] = None):
         """
         [Action] [Step] Use CMake to invoke the native build system to build the project
+        :param cmake: The CMake binary that will be used to invoke the native build system to build the project
         :param btype: The build type
         :param parallel_level: The number of threads to build the project
         :param cmake_flags: Additional flags passed to `cmake`
         :param build_flags: Additional flags passed to the native build system
         """
-        args: list[str] = ["cmake", "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel",
+        args: list[str] = [cmake.path, "--build", kBuildFolder, "--config", btype.value, "--clean-first", "--parallel",
                            str(parallel_level)]
         if cmake_flags is not None:
             args.extend(cmake_flags)
         if build_flags is not None:
             args.append("--")
             args.extend(build_flags)
-        print("Building the project...")
+        print("Building the project using CMake v{}.{}.{}...".format(cmake.major, cmake.minor, cmake.patch))
         print("CMake Args: \"{}\"".format(" ".join(args)))
         subprocess.run(args).check_returncode()
 
