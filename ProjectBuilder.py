@@ -99,6 +99,17 @@ class ProjectBuilder:
     # MARK: - Rebuild Project
     #
 
+    def get_default_cmake(self) -> CMakeBinary:
+        """
+        [Helper] Get the default CMake binary
+        :return: A descriptor that describes the default CMake binary.
+        """
+        executable_path = Path(shutil.which("cmake"))
+        output = subprocess.check_output([executable_path, "--version"], text=True)
+        versions = re.findall(r"cmake version (\d+)\.(\d+)\.(\d+)", output)[0]
+        print(f"Found the default CMake v{versions[0]}.{versions[1]}.{versions[2]} at {executable_path}.")
+        return CMakeBinary(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
+
     def rebuild_project(self, btype: BuildType, conan_flags: list[str] = None, cmake_generate_flags: list[str] = None,
                         cmake_build_flags: list[str] = None) -> None:
         """
@@ -108,15 +119,16 @@ class ProjectBuilder:
         :param cmake_generate_flags: Additional flags passed to `cmake` before it generates files for the native build system
         :param cmake_build_flags: Additional flags passed to `cmake` before it builds the project using the native build system
         """
+        cmake = self.get_default_cmake()
         self.create_fresh_build_folder()
         self.conan_install(btype, conan_flags)
-        self.cmake_generate(btype, cmake_generate_flags)
+        self.cmake_generate(cmake, btype, cmake_generate_flags)
         parallel_level = os.cpu_count()
         native_build_flags = None
         if platform.system() == "Windows":
             parallel_level = 1
             native_build_flags = ["/p:CL_MPCount={}".format(os.cpu_count())]
-        self.cmake_build(btype, parallel_level, cmake_build_flags, native_build_flags)
+        self.cmake_build(cmake, btype, parallel_level, cmake_build_flags, native_build_flags)
 
     def rebuild_project_debug(self) -> None:
         """
