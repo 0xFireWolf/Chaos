@@ -217,7 +217,7 @@ class ProjectBuilder:
 
     def determine_minimum_cmake_version(self, min_major: int, min_minor: int, to_directory: Path) -> None:
         """
-        [Action] Determine the minimum version of CMake needed to configure the project
+        [Helper] Determine the minimum version of CMake needed to configure the project
         :param min_major: The minimum major version of CMake from which to start the search
         :param min_minor: The minimum minor version of CMake from which to start the search
         :param to_directory: Path to the directory to store the extracted CMake binary
@@ -237,6 +237,22 @@ class ProjectBuilder:
         print("=====================")
         for cmake, outcome in results.items():
             print(f"[{'SUCCESS' if outcome else 'FAILURE'}] CMake v{cmake.major}.{cmake.minor}.{cmake.patch}")
+
+    def determine_minimum_cmake_version_interactive(self) -> None:
+        """
+        [Action] Determine the minimum version of CMake needed to configure the project
+        """
+        try:
+            min_major = int(input("Enter the minimum major version of CMake to start the search: "))
+            min_minor = int(input("Enter the minimum minor version of CMake to start the search: "))
+            directory = input("Enter the path to directory to store CMake binaries. (Default: A Temporary Folder): ").strip()
+            if not directory:
+                with tempfile.TemporaryDirectory() as temp_directory:
+                    self.determine_minimum_cmake_version(min_major, min_minor, Path(temp_directory))
+            else:
+                self.determine_minimum_cmake_version(min_major, min_minor, Path(directory))
+        except ValueError:
+            print("Invalid input. Please try again.")
 
     #
     # MARK: - Code Coverage
