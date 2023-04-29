@@ -27,7 +27,7 @@ class CMake:
         :param args: A list of arguments passed to the CMake binary
         """
         args.insert(0, self.path)
-        print(f"CMake v{self.major}.{self.minor}.{self.patch} Args: {' '.join(args)}", flush=True)
+        print(f"CMake v{self.major}.{self.minor}.{self.patch} Args: {' '.join([str(arg) for arg in args])}", flush=True)
         subprocess.run(args).check_returncode()
 
     @classmethod
