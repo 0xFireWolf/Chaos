@@ -2,7 +2,6 @@
 # MARK: - Manage Compiler Toolchains
 #
 
-import shutil
 import tempfile
 import pathlib
 from abc import ABC
@@ -15,8 +14,11 @@ kDefaultCMakeToolchainsFolder = "Toolchains"
 kDefaultConanProfilesFolderV1 = "Profiles"
 kDefaultConanProfilesFolderV2 = "Profiles2"
 kCurrentToolchainFile = "CurrentToolchain.cmake"
-kCurrentConanProfileDebug = "CurrentProfileDebug.conanprofile"
-kCurrentConanProfileRelease = "CurrentProfileRelease.conanprofile"
+kCurrentConanBuildProfileDebug = "CurrentBuildProfileDebug.conanprofile"
+kCurrentConanBuildProfileRelease = "CurrentBuildProfileRelease.conanprofile"
+kCurrentConanHostProfileDebug = "CurrentHostProfileDebug.conanprofile"
+kCurrentConanHostProfileRelease = "CurrentHostProfileRelease.conanprofile"
+
 kXcodeConfigFile = "conanbuildinfo.xcconfig"
 kXcodeConfigFileDebug = "conanbuildinfo.debug.xcconfig"
 kXcodeConfigFileRelease = "conanbuildinfo.release.xcconfig"
@@ -137,25 +139,43 @@ class CompilerToolchainManager:
         """
         return {toolchain.identifier: toolchain for toolchain in self.fetch_compatible_compiler_toolchains(folder)}
 
-    def apply_compiler_toolchain(self, toolchain: Toolchain, profile_debug: ConanProfile, profile_release: ConanProfile) -> None:
+    def apply_compiler_toolchain(self, toolchain: Toolchain,
+                                 build_profile_debug: ConanProfile,
+                                 build_profile_release: ConanProfile,
+                                 host_profile_debug: ConanProfile = None,
+                                 host_profile_release: ConanProfile = None) -> None:
         """
         [Action] [Helper] Apply the given combination of the compiler toolchain and the Conan profile
+        :param build_profile_debug: The Conan profile that specifies the build environment (debug build)
+        :param build_profile_release: The Conan profile that specifies the build environment (release build)
+        :param host_profile_debug: The Conan profile that specifies the host environment (debug build)
+        :param host_profile_release: The Conan profile that specifies the host environment (release build)
         :param toolchain: The compiler toolchain
-        :param profile_debug: The Conan profile for debug build
-        :param profile_release: The Conan profile for release build
         """
+        if host_profile_debug is None:
+            host_profile_debug = build_profile_debug
+        if host_profile_release is None:
+            host_profile_release = build_profile_release
         print("Applying the compiler toolchain:", toolchain.filename)
-        print("Applying the Conan profile (Debug):", profile_debug.filename)
-        print("Applying the Conan profile (Release):", profile_release.filename)
-        remove_file_if_exist(kCurrentToolchainFile)
-        remove_file_if_exist(kCurrentConanProfileDebug)
-        remove_file_if_exist(kCurrentConanProfileRelease)
+        print("Applying the Conan build profile (Debug):", build_profile_debug.filename)
+        print("Applying the Conan build profile (Release):", build_profile_release.filename)
+        print("Applying the Conan host profile (Debug):", host_profile_debug.filename)
+        print("Applying the Conan host profile (Release):", host_profile_release.filename)
+        remove_file_if_exist(Path(kCurrentToolchainFile))
+        remove_file_if_exist(Path(kCurrentConanBuildProfileDebug))
+        remove_file_if_exist(Path(kCurrentConanBuildProfileRelease))
+        remove_file_if_exist(Path(kCurrentConanHostProfileDebug))
+        remove_file_if_exist(Path(kCurrentConanHostProfileRelease))
         os.symlink(pathlib.Path("{}/{}".format(self.cmake_toolchains_folder, toolchain.filename)),
                    pathlib.Path(kCurrentToolchainFile))
-        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, profile_debug.filename)),
-                   pathlib.Path(kCurrentConanProfileDebug))
-        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, profile_release.filename)),
-                   pathlib.Path(kCurrentConanProfileRelease))
+        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, build_profile_debug.filename)),
+                   pathlib.Path(kCurrentConanBuildProfileDebug))
+        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, build_profile_release.filename)),
+                   pathlib.Path(kCurrentConanBuildProfileRelease))
+        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, host_profile_debug.filename)),
+                   pathlib.Path(kCurrentConanHostProfileDebug))
+        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, host_profile_release.filename)),
+                   pathlib.Path(kCurrentConanHostProfileRelease))
         print()
         print("The toolchain and the corresponding Conan profiles are both set.")
 
@@ -203,8 +223,9 @@ class CompilerToolchainManager:
         """
         [Action] Generate the Xcode configuration from the current Conan profile
         """
-        self.generate_xcode_configuration_with_profile(kCurrentConanProfileDebug, kXcodeConfigFileDebug)
-        self.generate_xcode_configuration_with_profile(kCurrentConanProfileRelease, kXcodeConfigFileRelease)
+        raise NotImplementedError("Not yet compatible with Conan 2.x.")
+        # self.generate_xcode_configuration_with_profile(kCurrentConanProfileDebug, kXcodeConfigFileDebug)
+        # self.generate_xcode_configuration_with_profile(kCurrentConanProfileRelease, kXcodeConfigFileRelease)
 
 
 # A manager that sets up the compiler toolchain on macOS
