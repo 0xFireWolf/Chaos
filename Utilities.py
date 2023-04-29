@@ -4,6 +4,7 @@
 import shutil
 import subprocess
 import os
+from pathlib import Path
 
 
 def brew_install(packages: list[str]) -> None:
@@ -74,7 +75,7 @@ def powershell(command: str) -> None:
     subprocess.run(["powershell", "-Command", command]).check_returncode()
 
 
-def remove_file_if_exist(file: str) -> None:
+def remove_file_if_exist(file: Path) -> None:
     """
     Remove the given file if it exists
     :param file: The name of the file
@@ -83,7 +84,7 @@ def remove_file_if_exist(file: str) -> None:
         os.remove(file)
 
 
-def remove_folder_if_exists(folder: str) -> None:
+def remove_folder_if_exists(folder: Path) -> None:
     """
     Remove the given folder if it exists
     :param folder: The name of the folder
