@@ -1,22 +1,46 @@
 #
 # MARK: - Download and Manage CMake Binaries
 #
-
+from __future__ import annotations
 import abc
 import re
 import requests
 import tarfile
 import zipfile
+import subprocess
+import shutil
 from io import BytesIO
 from pathlib import Path
+from os import PathLike
 
 
-class CMakeBinary:
+class CMake:
     def __init__(self, major: int, minor: int, patch: int, path: Path):
         self.major = major
         self.minor = minor
         self.patch = patch
         self.path = path
+
+    def call(self, args: list[str | bytes | PathLike[str] | PathLike[bytes]]) -> None:
+        """
+        Call CMake with the given list of arguments
+        :param args: A list of arguments passed to the CMake binary
+        """
+        args.insert(0, self.path)
+        print(f"CMake v{self.major}.{self.minor}.{self.patch} Args: {' '.join(args)}", flush=True)
+        subprocess.run(args).check_returncode()
+
+    @classmethod
+    def default(cls) -> CMake:
+        """
+        Get the default CMake binary installed on the local machine
+        :return: A descriptor that describes the default CMake binary.
+        """
+        executable_path = Path(shutil.which("cmake"))
+        output = subprocess.check_output([executable_path, "--version"], text=True)
+        versions = re.findall(r"cmake version (\d+)\.(\d+)\.(\d+)", output)[0]
+        print(f"Found the default CMake v{versions[0]}.{versions[1]}.{versions[2]} at {executable_path}.")
+        return CMake(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
 
 
 class CMakeManager(abc.ABC):
@@ -76,7 +100,7 @@ class CMakeManager(abc.ABC):
         return {(major, minor): self.get_installer_urls(major, minor)
                 for major, minor in self.get_all_installer_versions(min_major, min_minor)}
 
-    def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMakeBinary:
+    def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMake:
         """
         Download the CMake installer from the given URL, extract and store the CMake binary to the given directory
         :param from_url: URL to the CMake installer to be downloaded
@@ -86,7 +110,7 @@ class CMakeManager(abc.ABC):
         raise NotImplementedError
 
     def get_cmake_binaries(self, min_major: int, min_minor: int, to_directory: Path,
-                           latest_patch_only: bool = True) -> list[CMakeBinary]:
+                           latest_patch_only: bool = True) -> list[CMake]:
         """
         Download all CMake binaries that are greater or equal to the given major and minor version
         :param min_major: The minimum major version of CMake installers
@@ -95,7 +119,7 @@ class CMakeManager(abc.ABC):
         :param latest_patch_only: Pass `True` to only download the latest patch version for each release
         :return: A list of CMake binary descriptors.
         """
-        binaries = list[CMakeBinary]()
+        binaries = list[CMake]()
         for (major, minor), urls in self.get_all_installer_urls(min_major, min_minor).items():
             print(f"Downloading CMake v{major}.{minor} Releases...")
             if latest_patch_only:
@@ -117,7 +141,7 @@ class CMakeManagerMacOS(CMakeManager):
                     r'href="(cmake-{}\.{}\.\d+-Darwin64-universal\.tar\.gz)"'.format(major, minor)]
         return self.get_installer_filenames_with_patterns(major, minor, patterns)
 
-    def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMakeBinary:
+    def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMake:
         """
         Download the CMake installer from the given URL, extract and store the CMake binary to the given directory
         :param from_url: URL to the CMake installer to be downloaded
@@ -130,7 +154,7 @@ class CMakeManagerMacOS(CMakeManager):
         print(f"Downloading CMake v{versions[0]}.{versions[1]}.{versions[2]} for macOS...")
         with tarfile.open(fileobj=BytesIO(requests.get(from_url).content)) as archive:
             archive.extractall(path=to_directory)
-        return CMakeBinary(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
+        return CMake(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
 
 
 class CMakeManagerLinux(CMakeManager):
@@ -146,7 +170,7 @@ class CMakeManagerLinux(CMakeManager):
                     r'href="(cmake-{}\.{}\.\d+-Linux-i386\.tar\.gz)"'.format(major, minor)]
         return self.get_installer_filenames_with_patterns(major, minor, patterns)
 
-    def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMakeBinary:
+    def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMake:
         """
         Download the CMake installer from the given URL, extract and store the CMake binary to the given directory
         :param from_url: URL to the CMake installer to be downloaded
@@ -159,7 +183,7 @@ class CMakeManagerLinux(CMakeManager):
         print(f"Downloading CMake v{versions[0]}.{versions[1]}.{versions[2]} for Linux...")
         with tarfile.open(fileobj=BytesIO(requests.get(from_url).content)) as archive:
             archive.extractall(path=to_directory)
-        return CMakeBinary(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
+        return CMake(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
 
 
 class CMakeManagerWindows(CMakeManager):
@@ -175,7 +199,7 @@ class CMakeManagerWindows(CMakeManager):
                     r'href="(cmake-{}\.{}\.\d+-win32-x86.zip)"'.format(major, minor)]
         return self.get_installer_filenames_with_patterns(major, minor, patterns)
 
-    def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMakeBinary:
+    def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMake:
         """
         Download the CMake installer from the given URL, extract and store the CMake binary to the given directory
         :param from_url: URL to the CMake installer to be downloaded
@@ -188,4 +212,4 @@ class CMakeManagerWindows(CMakeManager):
         print(f"Downloading CMake v{versions[0]}.{versions[1]}.{versions[2]} for Windows...")
         with zipfile.ZipFile(BytesIO(requests.get(from_url).content)) as archive:
             archive.extractall(path=to_directory)
-        return CMakeBinary(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
+        return CMake(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
