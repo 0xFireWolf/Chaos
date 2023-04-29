@@ -98,8 +98,8 @@ class Chaos:
         cmake_toolchain = Toolchain(build_name + ".cmake")
         build_profile_dbg = ConanProfile(build_name + "_Debug.conanprofile")
         build_profile_rel = ConanProfile(build_name + "_Release.conanprofile")
-        host_profile_dbg = None if host_name is None else ConanProfile(build_name + "_Debug.conanprofile")
-        host_profile_rel = None if host_name is None else ConanProfile(build_name + "_Release.conanprofile")
+        host_profile_dbg = None if host_name is None else ConanProfile(host_name + "_Debug.conanprofile")
+        host_profile_rel = None if host_name is None else ConanProfile(host_name + "_Release.conanprofile")
         self.compilerToolchainManager.apply_compiler_toolchain(cmake_toolchain,
                                                                build_profile_dbg, build_profile_rel,
                                                                host_profile_dbg, host_profile_rel)
