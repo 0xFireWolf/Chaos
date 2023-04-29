@@ -87,17 +87,22 @@ class Chaos:
         }
         toolchains[name]()
 
-    def ci_select_toolchain(self, name: str) -> None:
+    def ci_select_toolchain(self, build_name: str, host_name: str = None) -> None:
         """
         [CI] Select the toolchain of the given name
-        :param name: Name of the toolchain
+        :param build_name: Name of the toolchain that specifies the build environment
+        :param host_name: Name of the toolchain that specifies the host environment
         :raise `ValueError` if the given toolchain name is invalid;
                `CalledProcessError` if failed to select the toolchain.
         """
-        toolchain = Toolchain(name + ".cmake")
-        profile_dbg = ConanProfile(name + "_Debug.conanprofile")
-        profile_rel = ConanProfile(name + "_Release.conanprofile")
-        self.compilerToolchainManager.apply_compiler_toolchain(toolchain, profile_dbg, profile_rel)
+        cmake_toolchain = Toolchain(build_name + ".cmake")
+        build_profile_dbg = ConanProfile(build_name + "_Debug.conanprofile")
+        build_profile_rel = ConanProfile(build_name + "_Release.conanprofile")
+        host_profile_dbg = None if host_name is None else ConanProfile(build_name + "_Debug.conanprofile")
+        host_profile_rel = None if host_name is None else ConanProfile(build_name + "_Release.conanprofile")
+        self.compilerToolchainManager.apply_compiler_toolchain(cmake_toolchain,
+                                                               build_profile_dbg, build_profile_rel,
+                                                               host_profile_dbg, host_profile_rel)
 
     def ci_build_all(self, btype: str) -> None:
         """
@@ -135,7 +140,10 @@ class Chaos:
             if command == "--install-toolchain":
                 self.ci_install_toolchain(sys.argv[3])
             elif command == "--select-toolchain":
-                self.ci_select_toolchain(sys.argv[3])
+                if len(sys.argv) == 4:
+                    self.ci_select_toolchain(sys.argv[3])
+                else:
+                    self.ci_select_toolchain(sys.argv[3], sys.argv[4])
             elif command == "--restore-toolchain":
                 self.ci_install_toolchain(sys.argv[3])
             elif command == "--build-all":
