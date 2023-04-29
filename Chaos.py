@@ -129,6 +129,13 @@ class Chaos:
         """
         self.projectBuilder.rebuild_and_run_all_tests_with_coverage()
 
+    def ci_install_all(self, prefix: Path = None) -> None:
+        """
+        [CI] Install all project artifacts
+        :param prefix: Specify the prefix path
+        """
+        self.projectBuilder.install_project(prefix)
+
     def ci(self) -> int:
         """
         [CI] Main Entry Point of the Continuous Integration
@@ -152,6 +159,8 @@ class Chaos:
                 self.ci_run_tests(sys.argv[3])
             elif command == "--run-tests-with-coverage":
                 self.ci_run_tests_with_coverage()
+            elif command == "--install-all":
+                self.ci_install_all(sys.argv[3] if len(sys.argv) == 4 else None)
             else:
                 print("Unrecognized Chaos command: {}.".format(command))
                 raise ValueError
