@@ -121,6 +121,18 @@ class ProjectBuilder:
             args.extend(build_flags)
         cmake.call(args)
 
+    def cmake_install(self, cmake: CMake, prefix: Path = None) -> None:
+        """
+        [Action] [Step] Use CMake to install the project artifacts
+        :param cmake: The CMake binary that will be used to install all artifacts
+        :param prefix: The installation prefix
+        """
+        print(f"Installing project artifacts using CMake v{cmake.major}.{cmake.minor}.{cmake.patch}...")
+        args = ["--install", self.project.build_directory]
+        if prefix is not None:
+            args.extend(["--prefix", prefix])
+        cmake.call(args)
+
     #
     # MARK: - Rebuild Project
     #
@@ -189,6 +201,13 @@ class ProjectBuilder:
         [Action] Rebuild the project in RELEASE mode
         """
         self.rebuild_project(BuildType.kRelease)
+
+    # Action
+    def install_project(self, prefix: Path = None) -> None:
+        """
+        [Action] Install all project artifacts
+        """
+        self.cmake_install(CMake.default(), prefix)
 
     #
     # MARK: - Clean Up
