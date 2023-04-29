@@ -71,7 +71,7 @@ class ProjectBuilder:
         if conan_flags is not None:
             args.extend(conan_flags)
         print("Installing all required packages via Conan...", flush=True)
-        print(f"Conan Args: {' '.join(args)}", flush=True)
+        print(f"Conan Args: {' '.join([str(arg) for arg in args])}", flush=True)
         subprocess.run(args).check_returncode()
 
     def cmake_generate(self, cmake: CMake, build_type: BuildType, toolchain_file: Path,
