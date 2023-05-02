@@ -45,6 +45,9 @@ class CompilerToolchainManager:
     def install_gcc_12(self) -> None:
         raise NotImplementedError
 
+    def install_gcc_13(self) -> None:
+        raise NotImplementedError
+
     def install_clang_13(self) -> None:
         raise NotImplementedError
 
@@ -67,6 +70,7 @@ class CompilerToolchainManager:
         self.install_gcc_10()
         self.install_gcc_11()
         self.install_gcc_12()
+        self.install_gcc_13()
         self.install_clang_13()
         self.install_clang_14()
         self.install_clang_15()
@@ -245,6 +249,9 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
     def install_gcc_12(self) -> None:
         brew_install(["gcc@12"])
 
+    def install_gcc_13(self) -> None:
+        brew_install(["gcc@13"])
+
     def install_clang_13(self) -> None:
         brew_install(["llvm@13"])
 
@@ -307,9 +314,10 @@ class CompilerToolchainManagerUbuntu2004(CompilerToolchainManagerUbuntu):
         apt_install(["gcc-11", "g++-11"])
 
     def install_gcc_12(self) -> None:
-        print("Note that GCC 12 may not be available on Ubuntu 20.04 LTS.")
-        apt_add_repository("ppa:ubuntu-toolchain-r/test")
-        apt_install(["gcc-12", "g++-12"])
+        brew_install(["gcc@12"])
+
+    def install_gcc_13(self) -> None:
+        brew_install(["gcc@13"])
 
     def install_clang_13(self) -> None:
         self.install_clang_from_apt_llvm_org(13)
@@ -335,6 +343,9 @@ class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
 
     def install_gcc_12(self) -> None:
         apt_install(["gcc-12", "g++-12"])
+
+    def install_gcc_13(self) -> None:
+        brew_install(["gcc@13"])
 
     def install_clang_13(self) -> None:
         apt_install(["clang-13", "lldb-13", "lld-13", "libc++-13-dev", "libc++abi-13-dev", "libunwind-13-dev"])
@@ -364,6 +375,10 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
 
     def install_gcc_12(self) -> None:
         print("Compiling this project with GCC 12 on Windows is not supported.")
+        print("Please use Microsoft Visual C++ instead.")
+
+    def install_gcc_13(self) -> None:
+        print("Compiling this project with GCC 13 on Windows is not supported.")
         print("Please use Microsoft Visual C++ instead.")
 
     def install_clang_13(self) -> None:
