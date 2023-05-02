@@ -14,7 +14,7 @@ def brew_install(packages: list[str]) -> None:
     :raise `CalledProcessError` on error.
     """
     executable_path = Path(shutil.which("brew"))
-    print(f"Found the Homebrew at {executable_path}.")
+    print(f"Found the Homebrew at {executable_path}.", flush=True)
     subprocess.run([executable_path, "update"]).check_returncode()
     subprocess.run([executable_path, "install"] + packages).check_returncode()
 
