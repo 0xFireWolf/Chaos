@@ -345,7 +345,8 @@ class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
         apt_install(["gcc-12", "g++-12"])
 
     def install_gcc_13(self) -> None:
-        brew_install(["gcc@13"])
+        apt_add_repository("ppa:ubuntu-toolchain-r/test")
+        apt_install(["gcc-13", "g++-13"])
 
     def install_clang_13(self) -> None:
         apt_install(["clang-13", "lldb-13", "lld-13", "libc++-13-dev", "libc++abi-13-dev", "libunwind-13-dev"])
