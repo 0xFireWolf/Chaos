@@ -48,7 +48,10 @@ class ProjectBuilder:
         remove_folder_if_exists(self.project.build_directory)
         os.mkdir(self.project.build_directory)
 
-    def conan_install(self, build_profile: Path, host_profile: Path, conan_flags: list[str] = None) -> None:
+    def conan_install(self,
+                      build_profile: Path,
+                      host_profile: Path,
+                      conan_flags: list[str] = None) -> None:
         """
         [Action] [Step] Install all required dependencies via Conan 1.x or 2.x
         :param build_profile: Path to a Conan profile that is used to build all dependencies on the host machine
@@ -74,8 +77,12 @@ class ProjectBuilder:
         print(f"Conan Args: {' '.join([str(arg) for arg in args])}", flush=True)
         subprocess.run(args).check_returncode()
 
-    def cmake_generate(self, cmake: CMake, build_type: BuildType, toolchain_file: Path,
-                       chainload_toolchain_file: Path, cmake_flags: list[str] = None) -> None:
+    def cmake_generate(self,
+                       cmake: CMake,
+                       build_type: BuildType,
+                       toolchain_file: Path,
+                       chainload_toolchain_file: Path,
+                       cmake_flags: list[str] = None) -> None:
         """
         [Action] [Step] Use CMake to generate files for the native build system
         :param cmake: The CMake binary that will be used to generate files for the native build system
@@ -99,8 +106,12 @@ class ProjectBuilder:
             args.extend(cmake_flags)
         cmake.call(args)
 
-    def cmake_build(self, cmake: CMake, build_type: BuildType, parallel_level: int = os.cpu_count(),
-                    cmake_flags: list[str] = None, build_flags: list[str] = None):
+    def cmake_build(self,
+                    cmake: CMake,
+                    build_type: BuildType,
+                    parallel_level: int = os.cpu_count(),
+                    cmake_flags: list[str] = None,
+                    build_flags: list[str] = None) -> None:
         """
         [Action] [Step] Use CMake to invoke the native build system to build the project
         :param cmake: The CMake binary that will be used to invoke the native build system to build the project
@@ -137,7 +148,10 @@ class ProjectBuilder:
     # MARK: - Rebuild Project
     #
 
-    def configure(self, cmake: CMake, build_type: BuildType, conan_flags: list[str] = None,
+    def configure(self,
+                  cmake: CMake,
+                  build_type: BuildType,
+                  conan_flags: list[str] = None,
                   cmake_generate_flags: list[str] = None) -> None:
         """
         [Action] [Helper] Configure the project
@@ -165,8 +179,11 @@ class ProjectBuilder:
         self.conan_install(build_profile, host_profile, conan_flags)
         self.cmake_generate(cmake, build_type, toolchain_file, chainload_file, cmake_generate_flags)
 
-    def rebuild_project(self, build_type: BuildType, conan_flags: list[str] = None,
-                        cmake_generate_flags: list[str] = None, cmake_build_flags: list[str] = None) -> None:
+    def rebuild_project(self,
+                        build_type: BuildType,
+                        conan_flags: list[str] = None,
+                        cmake_generate_flags: list[str] = None,
+                        cmake_build_flags: list[str] = None) -> None:
         """
         [Action] [Helper] Rebuild the project
         :param build_type: The build type
@@ -189,18 +206,30 @@ class ProjectBuilder:
         self.cmake_build(cmake, build_type, parallel_level, cmake_build_flags, native_build_flags)
 
     # Action
-    def rebuild_project_debug(self) -> None:
+    def rebuild_project_debug(self,
+                              conan_flags: list[str] = None,
+                              cmake_generate_flags: list[str] = None,
+                              cmake_build_flags: list[str] = None) -> None:
         """
         [Action] Rebuild the project in DEBUG mode
+        :param conan_flags: Additional flags passed to `conan`
+        :param cmake_generate_flags: Additional flags passed to `cmake` when generates files for the native build system
+        :param cmake_build_flags: Additional flags passed to `cmake` when building the project
         """
-        self.rebuild_project(BuildType.kDebug)
+        self.rebuild_project(BuildType.kDebug, conan_flags, cmake_generate_flags, cmake_build_flags)
 
     # Action
-    def rebuild_project_release(self) -> None:
+    def rebuild_project_release(self,
+                                conan_flags: list[str] = None,
+                                cmake_generate_flags: list[str] = None,
+                                cmake_build_flags: list[str] = None) -> None:
         """
         [Action] Rebuild the project in RELEASE mode
+        :param conan_flags: Additional flags passed to `conan`
+        :param cmake_generate_flags: Additional flags passed to `cmake` when generates files for the native build system
+        :param cmake_build_flags: Additional flags passed to `cmake` when building the project
         """
-        self.rebuild_project(BuildType.kRelease)
+        self.rebuild_project(BuildType.kRelease, conan_flags, cmake_generate_flags, cmake_build_flags)
 
     # Action
     def install_project(self, prefix: Path = None) -> None:
