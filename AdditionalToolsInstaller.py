@@ -8,12 +8,23 @@ from abc import ABC, abstractmethod
 class AdditionalToolInstaller(ABC):
     @abstractmethod
     def macos(self) -> None:
-        print("This project does not require any additional development tools on macOS.")
+        pass
 
     @abstractmethod
     def ubuntu(self) -> None:
-        print("This project does not require any additional development tools on Ubuntu.")
+        pass
 
     @abstractmethod
+    def windows(self) -> None:
+        pass
+
+
+class DefaultAdditionalToolInstaller(AdditionalToolInstaller):
+    def macos(self) -> None:
+        print("This project does not require any additional development tools on macOS.")
+
+    def ubuntu(self) -> None:
+        print("This project does not require any additional development tools on Ubuntu.")
+
     def windows(self) -> None:
         print("This project does not require any additional development tools on Windows.")
