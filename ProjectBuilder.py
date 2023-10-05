@@ -5,25 +5,12 @@ from __future__ import annotations
 from typing import Any
 from .CompilerToolchainManager import *
 from .CMakeManager import CMakeManager, CMake
+from .Project import Project
 import glob
 import platform
 
 kConanCMakeIntegrationFileV1 = "conan_paths.cmake"
 kConanCMakeIntegrationFileV2 = "conan_toolchain.cmake"
-
-
-class Project:
-    def __init__(self):
-        # A path to the source directory where `CMakeLists.txt` and `conanfile.txt/py` can be found
-        self.source_directory: Path | None = None
-        # A path to the build directory where Conan toolchains and project binaries will be stored
-        self.build_directory: Path | None = None
-        # A path to the source directory where all C/C++ files for coverage analysis can be found
-        self.coverage_source_directory: Path | None = None
-        # A list of regex patterns that can be used to exclude source files from coverage analysis
-        self.coverage_exclude_patterns: list[str] = []
-        # Name of each executable that contains unit tests
-        self.test_executables: list[str] | None = []
 
 
 # A project builder that builds, tests, and cleans the project
@@ -71,6 +58,10 @@ class ProjectBuilder:
                          "--install-folder", self.project.build_directory,
                          "--update", "--build", "missing",
                          "--profile", build_profile])
+        # Append Conan flags specified by the project
+        if self.project.conan_flags is not None:
+            args.extend(self.project.conan_flags)
+        # Append Conan flags specified by the caller
         if conan_flags is not None:
             args.extend(conan_flags)
         print("Installing all required packages via Conan...", flush=True)
