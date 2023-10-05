@@ -11,42 +11,25 @@ from .ProjectBuilder import *
 from .CMakeManager import CMakeManagerMacOS, CMakeManagerLinux, CMakeManagerWindows
 
 
-class Config:
-    def __init__(self):
-        self.tests: list[str] = []
-        self.install_additional_tools_macos: Callable[[], None] | None = None
-        self.install_additional_tools_ubuntu: Callable[[], None] | None = None
-        self.install_additional_tools_windows: Callable[[], None] | None = None
-        self.coverage_source_folder: Path | None = None
-        self.coverage_exclude_patterns: list[str] = []
-
-
 class Chaos:
-    def __init__(self, config: Config):
+    def __init__(self, project: Project):
         """
-        Initialize the Chaos Control Center with the given configuration
-        :param config: A configuration object
+        Initialize the Chaos Control Center for the given project
+        :param project: A project whose chaos to be controlled
         """
         system = platform.system()
         machine = platform.machine()
-        self.clearConsole = lambda: os.system("clear")
-        project = Project()
-        project.source_directory = Path.cwd()
-        project.build_directory = Path.cwd() / "build"
-        project.coverage_source_directory = config.coverage_source_folder
-        project.coverage_exclude_patterns = config.coverage_exclude_patterns
-        project.test_executables = config.tests
         if system == "Darwin":
-            self.environmentConfigurator = EnvironmentConfiguratorMacOS(config.install_additional_tools_macos)
-            self.compilerToolchainManager = CompilerToolchainManagerMacOS(Architecture.kx86_64
-                                                                          if machine == "x86_64"
-                                                                          else Architecture.kARM64)
+            architecture = Architecture.kx86_64 if machine == "x86_64" else Architecture.kARM64
+            self.environmentConfigurator = EnvironmentConfiguratorMacOS(project.additional_tools_installer.macos)
+            self.compilerToolchainManager = CompilerToolchainManagerMacOS(architecture)
             self.projectBuilder = ProjectBuilder(project, CMakeManagerMacOS())
+            self.clearConsole = lambda: os.system("clear")
         elif system == "Linux":
             distribution = distro.id()
             version = distro.version()
             if distribution == "ubuntu":
-                self.environmentConfigurator = EnvironmentConfiguratorUbuntu(config.install_additional_tools_ubuntu)
+                self.environmentConfigurator = EnvironmentConfiguratorUbuntu(project.additional_tools_installer.ubuntu)
                 if version == "20.04":
                     self.compilerToolchainManager = CompilerToolchainManagerUbuntu2004(Architecture.kx86_64)
                 elif version == "22.04":
@@ -55,11 +38,12 @@ class Chaos:
                     print("Ubuntu {} is not tested.".format(version))
                     raise EnvironmentError
                 self.projectBuilder = ProjectBuilder(project, CMakeManagerLinux())
+                self.clearConsole = lambda: os.system("clear")
             else:
                 print("{} is not supported.".format(distro.name(True)))
                 raise EnvironmentError
         elif system == "Windows":
-            self.environmentConfigurator = EnvironmentConfiguratorWindows(config.install_additional_tools_windows)
+            self.environmentConfigurator = EnvironmentConfiguratorWindows(project.additional_tools_installer.windows)
             self.compilerToolchainManager = CompilerToolchainManagerWindows(Architecture.kx86_64)
             self.projectBuilder = ProjectBuilder(project, CMakeManagerWindows())
             self.clearConsole = lambda: os.system("cls")
@@ -69,8 +53,8 @@ class Chaos:
 
     def ci_install_toolchain(self, name: str) -> None:
         """
-        [CI] Install the toolchain of the given name
-        :param name: Name of the toolchain. Must be one of `gcc-10`, `gcc-11`, `gcc-12`, `clang-13` and `clang-14`
+        [CI] Install the toolchain that has the given name
+        :param name: The toolchain name
         :raise `KeyError` if the given name is invalid;
                `CalledProcessError` if failed to install the toolchain.
         """
@@ -92,9 +76,9 @@ class Chaos:
 
     def ci_select_toolchain(self, build_name: str, host_name: str = None) -> None:
         """
-        [CI] Select the toolchain of the given name
-        :param build_name: Name of the toolchain that specifies the build environment
-        :param host_name: Name of the toolchain that specifies the host environment
+        [CI] Select the toolchain that has the given name
+        :param build_name: The name of the toolchain that specifies the build environment
+        :param host_name: Te name of the toolchain that specifies the host environment
         :raise `ValueError` if the given toolchain name is invalid;
                `CalledProcessError` if failed to select the toolchain.
         """
@@ -294,8 +278,8 @@ class Chaos:
         return result
 
 
-def main(config: Config) -> int:
-    chaos = Chaos(config)
+def main(project: Project) -> int:
+    chaos = Chaos(project)
     # Default: Interactive mode
     option = -1
 
