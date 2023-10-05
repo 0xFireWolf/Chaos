@@ -3,7 +3,7 @@
 #
 from __future__ import annotations
 from pathlib import Path
-from .AdditionalToolsInstaller import AdditionalToolInstaller
+from .AdditionalToolsInstaller import AdditionalToolInstaller, DefaultAdditionalToolInstaller
 
 
 class Project:
@@ -36,4 +36,4 @@ class Project:
         # A list of regex patterns that can be used to exclude source files from coverage analysis
         self.coverage_exclude_patterns: list[str] = [] if coverage_exclude_patterns is None else coverage_exclude_patterns
         # An installer that can be used to install additional development tools needed to build this project
-        self.additional_tools_installer = additional_tools_installer or AdditionalToolInstaller()
+        self.additional_tools_installer = additional_tools_installer or DefaultAdditionalToolInstaller()
