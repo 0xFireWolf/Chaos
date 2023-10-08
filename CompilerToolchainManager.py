@@ -201,9 +201,9 @@ class CompilerToolchainManager:
         identifiers = sorted(list(toolchains.keys()))
         while True:
             print("\n>> Available Compiler Toolchains:\n")
-            print("\t                 Arch      Compiler     Standard Library   Host OS   Distribution")
+            print("\t                 Arch      Compiler       Stdlib     Host OS   Distribution")
             for index, identifier in enumerate(identifiers):
-                print("\t[{:02}] Toolchain: {:>6}  {:^14}  {:^14}  {:^7}  {:^14}"
+                print("\t[{:02}] Toolchain: {:>6}  {:^14}  {:^9}  {:^7}  {:^14}"
                       .format(index,
                               identifier.architecture.value,
                               str(identifier.compiler),
