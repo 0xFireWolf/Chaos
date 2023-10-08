@@ -203,9 +203,13 @@ class CompilerToolchainManager:
             print("\n>> Available Compiler Toolchains:\n")
             print("\t                 Arch      Compiler     Host OS   Distribution")
             for index, identifier in enumerate(identifiers):
-                print("\t[{:02}] Toolchain: {:>6}  {:^14}  {:^7}  {:^14}"
-                      .format(index, identifier.architecture.value, str(identifier.compiler),
-                              identifier.host_system.value, identifier.installation_source.value))
+                print("\t[{:02}] Toolchain: {:>6}  {:^14}  {:^14} {:^7}  {:^14}"
+                      .format(index,
+                              identifier.architecture.value,
+                              str(identifier.compiler),
+                              identifier.standard_library,
+                              identifier.host_system.value,
+                              identifier.installation_source.value))
             try:
                 index = int(input("\nInput the toolchain number and press ENTER: "))
                 if index not in range(0, len(toolchains)):
