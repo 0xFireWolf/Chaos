@@ -73,6 +73,22 @@ class Compiler:
 
 
 @total_ordering
+class StandardLibrary(Enum):
+    kGNU = "libstdc++"
+    kClang = "libc++"
+    kDefault = "Default"
+
+    def __eq__(self, other: StandardLibrary) -> bool:
+        return self.value == other.value
+
+    def __lt__(self, other: StandardLibrary) -> bool:
+        return self.value < other.value
+
+    def __hash__(self):
+        return hash(self.value)
+
+
+@total_ordering
 class HostSystem(Enum):
     kMacOS = "macOS"
     kUbuntu = "Ubuntu"
@@ -108,29 +124,33 @@ class InstallationSource(Enum):
 
 @total_ordering
 class BuildSystemIdentifier:
-    def __init__(self, architecture: str, compiler: str, hostSystem: str, installationSource: str):
+    def __init__(self, architecture: str, compiler: str, standard_library: str, hostSystem: str, installationSource: str):
         """
          A 4-tuple that identifies a specific toolchain/profile
         """
         self.architecture = Architecture(architecture)
         self.compiler = Compiler(compiler)
+        self.standard_library = StandardLibrary(standard_library)
         self.hostSystem = HostSystem(hostSystem)
         self.installationSource = InstallationSource(installationSource)
 
     def __str__(self) -> str:
-        return "Arch: {}, Compiler: {}, HostOS: {}, From: {}" \
-            .format(self.architecture.value, self.compiler,
+        return "Arch: {}, Compiler: {}, Stdlib: {}, HostOS: {}, From: {}" \
+            .format(self.architecture.value, self.compiler, self.standard_library.value,
                     self.hostSystem.value, self.installationSource.value)
 
     def __lt__(self, other: BuildSystemIdentifier) -> bool:
         return self.compiler < other.compiler
 
     def __eq__(self, other: BuildSystemIdentifier) -> bool:
-        return self.architecture == other.architecture and self.compiler == other.compiler and \
-               self.hostSystem == other.hostSystem and self.installationSource == other.installationSource
+        return (self.architecture == other.architecture and
+                self.compiler == other.compiler and
+                self.standard_library == other.standard_library and
+                self.hostSystem == other.hostSystem and
+                self.installationSource == other.installationSource)
 
     def __hash__(self):
-        return hash((self.architecture, self.compiler, self.hostSystem, self.installationSource))
+        return hash((self.architecture, self.compiler, self.standard_library, self.hostSystem, self.installationSource))
 
     def compatible(self, hostSystem: HostSystem, architecture: Architecture) -> bool:
         return self.hostSystem == hostSystem and self.architecture == architecture
@@ -139,10 +159,13 @@ class BuildSystemIdentifier:
 class Toolchain:
     def __init__(self, filename: str):
         tokens = filename.removesuffix(os.path.splitext(filename)[-1]).split("_")
-        if len(tokens) != 4:
+        if len(tokens) == 4:
+            self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], "Default", tokens[2], tokens[3])
+        elif len(tokens) == 5:
+            self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4])
+        else:
             raise ValueError
         self.filename = filename
-        self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3])
 
     def __str__(self) -> str:
         return self.filename
@@ -151,12 +174,16 @@ class Toolchain:
 class ConanProfile:
     def __init__(self, filename: str):
         tokens = filename.removesuffix(os.path.splitext(filename)[-1]).split("_")
-        if len(tokens) != 5:
+        if len(tokens) == 5:
+            self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], "Default", tokens[2], tokens[3])
+            self.buildType = BuildType(tokens[4])
+        elif len(tokens) == 6:
+            self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4])
+            self.buildType = BuildType(tokens[5])
+        else:
             raise ValueError
         self.filename = filename
-        self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3])
-        self.buildType = BuildType(tokens[4])
-
+        
     def __str__(self) -> str:
         return self.filename
 
