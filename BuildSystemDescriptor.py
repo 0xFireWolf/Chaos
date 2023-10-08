@@ -124,20 +124,21 @@ class InstallationSource(Enum):
 
 @total_ordering
 class BuildSystemIdentifier:
-    def __init__(self, architecture: str, compiler: str, standard_library: str, hostSystem: str, installationSource: str):
+    def __init__(self, architecture: str, compiler: str, standard_library: str,
+                 host_system: str, installation_source: str):
         """
          A 4-tuple that identifies a specific toolchain/profile
         """
         self.architecture = Architecture(architecture)
         self.compiler = Compiler(compiler)
         self.standard_library = StandardLibrary(standard_library)
-        self.hostSystem = HostSystem(hostSystem)
-        self.installationSource = InstallationSource(installationSource)
+        self.host_system = HostSystem(host_system)
+        self.installation_source = InstallationSource(installation_source)
 
     def __str__(self) -> str:
         return "Arch: {}, Compiler: {}, Stdlib: {}, HostOS: {}, From: {}" \
             .format(self.architecture.value, self.compiler, self.standard_library.value,
-                    self.hostSystem.value, self.installationSource.value)
+                    self.host_system.value, self.installation_source.value)
 
     def __lt__(self, other: BuildSystemIdentifier) -> bool:
         return self.compiler < other.compiler
@@ -146,14 +147,18 @@ class BuildSystemIdentifier:
         return (self.architecture == other.architecture and
                 self.compiler == other.compiler and
                 self.standard_library == other.standard_library and
-                self.hostSystem == other.hostSystem and
-                self.installationSource == other.installationSource)
+                self.host_system == other.host_system and
+                self.installation_source == other.installation_source)
 
     def __hash__(self):
-        return hash((self.architecture, self.compiler, self.standard_library, self.hostSystem, self.installationSource))
+        return hash((self.architecture,
+                     self.compiler,
+                     self.standard_library,
+                     self.host_system,
+                     self.installation_source))
 
-    def compatible(self, hostSystem: HostSystem, architecture: Architecture) -> bool:
-        return self.hostSystem == hostSystem and self.architecture == architecture
+    def compatible(self, host_system: HostSystem, architecture: Architecture) -> bool:
+        return self.host_system == host_system and self.architecture == architecture
 
 
 class Toolchain:
@@ -183,7 +188,7 @@ class ConanProfile:
         else:
             raise ValueError
         self.filename = filename
-        
+
     def __str__(self) -> str:
         return self.filename
 
