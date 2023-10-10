@@ -314,24 +314,42 @@ class CompilerToolchainManagerUbuntu(CompilerToolchainManager, ABC):
     def install_apple_clang_15(self) -> None:
         print("AppleClang 15 is not available on systems other than macOS.")
 
+    def install_gcc_from_apt(self, version: int) -> None:
+        apt_install([f"gcc-{version}", f"g++-{version}"])
+
+    def install_clang_from_apt(self, version: int) -> None:
+        apt_install([f"clang-{version}",
+                     f"clang-tools-{version}",
+                     f"clang-{version}-doc",
+                     f"libclang-common-{version}-dev",
+                     f"libclang-{version}-dev",
+                     f"libclang1-{version}",
+                     f"clang-format-{version}",
+                     f"python3-clang-{version}",
+                     f"clangd-{version}",
+                     f"clang-tidy-{version}",
+                     f"libc++-{version}-dev",
+                     f"libc++abi-{version}-dev",
+                     f"libunwind-{version}-dev"])
+
     def install_clang_from_apt_llvm_org(self, version: int) -> None:
         path = tempfile.mkdtemp()
         subprocess.run(["wget", "https://apt.llvm.org/llvm.sh"], cwd=path).check_returncode()
         script = path + "/llvm.sh"
         os.chmod(script, 0o755)
         subprocess.run(["sudo", script, str(version)]).check_returncode()
-        apt_install(["libc++-{}-dev".format(version), "libc++abi-{}-dev".format(version)])
+        self.install_clang_from_apt(version)
         shutil.rmtree(path)
 
 
 # A manager that sets up the compiler toolchain on Ubuntu 20.04 LTS
 class CompilerToolchainManagerUbuntu2004(CompilerToolchainManagerUbuntu):
     def install_gcc_10(self) -> None:
-        apt_install(["gcc-10", "g++-10"])
+        self.install_gcc_from_apt(10)
 
     def install_gcc_11(self) -> None:
         apt_add_repository("ppa:ubuntu-toolchain-r/test")
-        apt_install(["gcc-11", "g++-11"])
+        self.install_gcc_from_apt(11)
 
     def install_gcc_12(self) -> None:
         brew_install(["gcc@12"])
@@ -358,24 +376,23 @@ class CompilerToolchainManagerUbuntu2004(CompilerToolchainManagerUbuntu):
 # A manager that sets up the compiler toolchain on Ubuntu 22.04 LTS
 class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
     def install_gcc_10(self) -> None:
-        apt_install(["gcc-10", "g++-10"])
+        self.install_gcc_from_apt(10)
 
     def install_gcc_11(self) -> None:
-        print("GCC 11 is the default compiler toolchain on Ubuntu 22.04 LTS.")
-        print("Installation is not required.")
+        self.install_gcc_from_apt(11)
 
     def install_gcc_12(self) -> None:
-        apt_install(["gcc-12", "g++-12"])
+        self.install_gcc_from_apt(12)
 
     def install_gcc_13(self) -> None:
         apt_add_repository("ppa:ubuntu-toolchain-r/test")
-        apt_install(["gcc-13", "g++-13"])
+        self.install_gcc_from_apt(13)
 
     def install_clang_13(self) -> None:
-        apt_install(["clang-13", "lldb-13", "lld-13", "libc++-13-dev", "libc++abi-13-dev", "libunwind-13-dev"])
+        self.install_clang_from_apt(13)
 
     def install_clang_14(self) -> None:
-        apt_install(["clang-14", "lldb-14", "lld-14", "libc++-14-dev", "libc++abi-14-dev", "libunwind-14-dev"])
+        self.install_clang_from_apt(14)
 
     def install_clang_15(self) -> None:
         self.install_clang_from_apt_llvm_org(15)
