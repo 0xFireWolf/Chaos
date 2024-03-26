@@ -111,6 +111,7 @@ class InstallationSource(Enum):
     kXcode = "Xcode"
     kARM = "ARM"
     kVisualStudio = "VisualStudio"
+    kPKG = "PKG"
 
     def __eq__(self, other: InstallationSource) -> bool:
         return self.value == other.value
