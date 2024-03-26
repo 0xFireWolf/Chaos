@@ -93,6 +93,7 @@ class HostSystem(Enum):
     kMacOS = "macOS"
     kUbuntu = "Ubuntu"
     kWindows = "Windows"
+    kFreeBSD = "FreeBSD"
 
     def __eq__(self, other: HostSystem) -> bool:
         return self.value == other.value
