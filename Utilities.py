@@ -38,6 +38,16 @@ def apt_add_repository(name: str) -> None:
     subprocess.run(["sudo", "add-apt-repository", "-y", name]).check_returncode()
 
 
+def pkg_install(packages: list[str]) -> None:
+    """
+    Use PKG to install the given list of packages
+    :param packages: Name of the packages
+    :raise `CalledProcessError` on error.
+    """
+    subprocess.run(["sudo", "pkg", "update"])
+    subprocess.run(["sudo", "pkg", "install", "-y"] + packages).check_returncode()
+
+
 def pip_install(packages: list[str]) -> None:
     """
     Use Pip to install the given list of Python package
