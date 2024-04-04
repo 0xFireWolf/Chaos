@@ -18,6 +18,10 @@ class AdditionalToolInstaller(ABC):
     def windows(self) -> None:
         pass
 
+    @abstractmethod
+    def freebsd(self) -> None:
+        pass
+
 
 class DefaultAdditionalToolInstaller(AdditionalToolInstaller):
     def macos(self) -> None:
@@ -28,3 +32,6 @@ class DefaultAdditionalToolInstaller(AdditionalToolInstaller):
 
     def windows(self) -> None:
         print("This project does not require any additional development tools on Windows.")
+
+    def freebsd(self) -> None:
+        print("This project does not require any additional development tools on FreeBSD.")
