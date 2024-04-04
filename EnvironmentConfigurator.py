@@ -96,3 +96,19 @@ class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
 
     def install_conan(self) -> None:
         winget_install(["JFrog.Conan"])
+
+
+# A configurator that sets up the development environment on FreeBSD
+class EnvironmentConfiguratorFreeBSD(EnvironmentConfigurator):
+    def install_build_essentials(self) -> None:
+        pass
+
+    def install_cmake(self) -> None:
+        pkg_install(["cmake"])
+
+    def install_ninja(self) -> None:
+        pkg_install(["ninja"])
+
+    def install_conan(self) -> None:
+        pkg_install(["py311-sqlite3"])
+        pip_install(["conan"])
