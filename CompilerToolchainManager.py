@@ -63,6 +63,9 @@ class CompilerToolchainManager:
     def install_clang_17(self) -> None:
         raise NotImplementedError
 
+    def install_clang_18(self) -> None:
+        raise NotImplementedError
+
     def install_apple_clang_13(self) -> None:
         raise NotImplementedError
 
@@ -278,6 +281,9 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
     def install_clang_17(self) -> None:
         brew_install(["llvm@17"])
 
+    def install_clang_18(self) -> None:
+        brew_install(["llvm@18"])
+
     def select_xcode_installation(self, major: int, minor: int = None, patch: int = None) -> None:
         bundle = XcodeFinder([Path("/Applications")], "Xcode.*\\.app").find(major, minor, patch)
         if bundle is None:
@@ -372,6 +378,9 @@ class CompilerToolchainManagerUbuntu2004(CompilerToolchainManagerUbuntu):
     def install_clang_17(self) -> None:
         self.install_clang_from_apt_llvm_org(17)
 
+    def install_clang_18(self) -> None:
+        self.install_clang_from_apt_llvm_org(18)
+
 
 # A manager that sets up the compiler toolchain on Ubuntu 22.04 LTS
 class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
@@ -402,6 +411,9 @@ class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
 
     def install_clang_17(self) -> None:
         self.install_clang_from_apt_llvm_org(17)
+
+    def install_clang_18(self) -> None:
+        self.install_clang_from_apt_llvm_org(18)
 
 
 # A manager that sets up the compiler toolchain on Windows
@@ -443,6 +455,10 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
 
     def install_clang_17(self) -> None:
         print("Compiling this project with Clang 17 on Windows is not supported.")
+        print("Please use Microsoft Visual C++ instead.")
+
+    def install_clang_18(self) -> None:
+        print("Compiling this project with Clang 18 on Windows is not supported.")
         print("Please use Microsoft Visual C++ instead.")
 
     def install_apple_clang_13(self) -> None:
