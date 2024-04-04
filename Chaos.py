@@ -68,6 +68,7 @@ class Chaos:
             "clang-15": self.compilerToolchainManager.install_clang_15,
             "clang-16": self.compilerToolchainManager.install_clang_16,
             "clang-17": self.compilerToolchainManager.install_clang_17,
+            "clang-18": self.compilerToolchainManager.install_clang_18,
             "apple-clang-13": self.compilerToolchainManager.install_apple_clang_13,
             "apple-clang-14": self.compilerToolchainManager.install_apple_clang_14,
             "apple-clang-15": self.compilerToolchainManager.install_apple_clang_15,
@@ -201,20 +202,21 @@ class Chaos:
             print("[09] Install Clang 15.")
             print("[10] Install Clang 16.")
             print("[11] Install Clang 17.")
-            print("[12] Install all supported compilers.")
-            print("[13] Select a compiler toolchain.")
-            print("[14] Generate the Xcode configuration.")
+            print("[12] Install Clang 18.")
+            print("[13] Install all supported compilers.")
+            print("[14] Select a compiler toolchain.")
+            print("[15] Generate the Xcode configuration.")
             print()
             print(">> Build, Test & Clean Projects")
             print()
-            print("[15] Rebuild the project (DEBUG).")
-            print("[16] Rebuild the project (RELEASE).")
-            print("[17] Rebuild and run all tests (DEBUG).")
-            print("[18] Rebuild and run all tests (RELEASE).")
-            print("[19] Rebuild and run all tests with coverage.")
-            print("[20] Clean the build folder.")
-            print("[21] Clean the build folder and reset the toolchain.")
-            print("[22] Determine the minimum CMake version.")
+            print("[16] Rebuild the project (DEBUG).")
+            print("[17] Rebuild the project (RELEASE).")
+            print("[18] Rebuild and run all tests (DEBUG).")
+            print("[19] Rebuild and run all tests (RELEASE).")
+            print("[20] Rebuild and run all tests with coverage.")
+            print("[21] Clean the build folder.")
+            print("[22] Clean the build folder and reset the toolchain.")
+            print("[23] Determine the minimum CMake version.")
             print()
             print("Press Ctrl-C or Ctrl-D to exit the menu.")
             option = 0
@@ -253,6 +255,7 @@ class Chaos:
             self.compilerToolchainManager.install_clang_15,
             self.compilerToolchainManager.install_clang_16,
             self.compilerToolchainManager.install_clang_17,
+            self.compilerToolchainManager.install_clang_18,
             self.compilerToolchainManager.install_all_compilers,
             self.compilerToolchainManager.select_compiler_toolchain,
             self.compilerToolchainManager.generate_xcode_configuration,
