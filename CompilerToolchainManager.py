@@ -469,3 +469,48 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
 
     def install_apple_clang_15(self) -> None:
         print("AppleClang 15 is not available on systems other than macOS.")
+
+
+# A manager that sets up the compiler toolchain on FreeBSD
+class CompilerToolchainManagerFreeBSD(CompilerToolchainManager):
+    def __init__(self, architecture: Architecture):
+        super().__init__(HostSystem.kFreeBSD, architecture)
+
+    def install_gcc_10(self) -> None:
+        pkg_install(["gcc10"])
+
+    def install_gcc_11(self) -> None:
+        pkg_install(["gcc11"])
+
+    def install_gcc_12(self) -> None:
+        pkg_install(["gcc12"])
+
+    def install_gcc_13(self) -> None:
+        pkg_install(["gcc13"])
+
+    def install_clang_13(self) -> None:
+        pkg_install(["llvm13"])
+
+    def install_clang_14(self) -> None:
+        pkg_install(["llvm14"])
+
+    def install_clang_15(self) -> None:
+        pkg_install(["llvm15"])
+
+    def install_clang_16(self) -> None:
+        pkg_install(["llvm16"])
+
+    def install_clang_17(self) -> None:
+        pkg_install(["llvm17"])
+
+    def install_clang_18(self) -> None:
+        pkg_install(["llvm18"])
+
+    def install_apple_clang_13(self) -> None:
+        print("AppleClang 13 is not available on systems other than macOS.")
+
+    def install_apple_clang_14(self) -> None:
+        print("AppleClang 14 is not available on systems other than macOS.")
+
+    def install_apple_clang_15(self) -> None:
+        print("AppleClang 15 is not available on systems other than macOS.")
