@@ -47,6 +47,11 @@ class Chaos:
             self.compilerToolchainManager = CompilerToolchainManagerWindows(Architecture.kx86_64)
             self.projectBuilder = ProjectBuilder(project, CMakeManagerWindows())
             self.clearConsole = lambda: os.system("cls")
+        elif system == "FreeBSD":
+            self.environmentConfigurator = EnvironmentConfiguratorFreeBSD(project.additional_tools_installer.freebsd)
+            self.compilerToolchainManager = CompilerToolchainManagerFreeBSD(Architecture.kx86_64)
+            self.projectBuilder = ProjectBuilder(project, CMakeManager())  # CMakeManager does not support FreeBSD
+            self.clearConsole = lambda: os.system("clear")
         else:
             print("{} is not supported.".format(system))
             raise EnvironmentError
