@@ -34,6 +34,8 @@ class Chaos:
                     self.compilerToolchainManager = CompilerToolchainManagerUbuntu2004(Architecture.kx86_64)
                 elif version == "22.04":
                     self.compilerToolchainManager = CompilerToolchainManagerUbuntu2204(Architecture.kx86_64)
+                elif version == "24.04":
+                    self.compilerToolchainManager = CompilerToolchainManagerUbuntu2404(Architecture.kx86_64)
                 else:
                     print("Ubuntu {} is not tested.".format(version))
                     raise EnvironmentError
