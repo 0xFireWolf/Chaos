@@ -416,6 +416,39 @@ class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
         self.install_clang_from_apt_llvm_org(18)
 
 
+# A manager that sets up the compiler toolchain on Ubuntu 24.04 LTS
+class CompilerToolchainManagerUbuntu2404(CompilerToolchainManagerUbuntu):
+    def install_gcc_10(self) -> None:
+        self.install_gcc_from_apt(10)
+
+    def install_gcc_11(self) -> None:
+        self.install_gcc_from_apt(11)
+
+    def install_gcc_12(self) -> None:
+        self.install_gcc_from_apt(12)
+
+    def install_gcc_13(self) -> None:
+        self.install_gcc_from_apt(13)
+
+    def install_clang_13(self) -> None:
+        self.install_clang_from_apt_llvm_org(13)
+
+    def install_clang_14(self) -> None:
+        self.install_clang_from_apt(14)
+
+    def install_clang_15(self) -> None:
+        self.install_clang_from_apt(15)
+
+    def install_clang_16(self) -> None:
+        self.install_clang_from_apt(16)
+
+    def install_clang_17(self) -> None:
+        self.install_clang_from_apt(17)
+
+    def install_clang_18(self) -> None:
+        self.install_clang_from_apt(18)
+
+
 # A manager that sets up the compiler toolchain on Windows
 class CompilerToolchainManagerWindows(CompilerToolchainManager):
     def __init__(self, architecture: Architecture):
