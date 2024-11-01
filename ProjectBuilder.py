@@ -251,8 +251,6 @@ class ProjectBuilder:
         remove_file_if_exist(kCurrentConanBuildProfileRelease)
         remove_file_if_exist(kCurrentConanHostProfileDebug)
         remove_file_if_exist(kCurrentConanHostProfileRelease)
-        remove_file_if_exist(kXcodeConfigFileDebug)
-        remove_file_if_exist(kXcodeConfigFileRelease)
 
     #
     # MARK: - Run Tests
