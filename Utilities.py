@@ -56,7 +56,7 @@ def pip_install(packages: list[str]) -> None:
     :param packages: Name of the packages
     :raise `CalledProcessError` on error.
     """
-    subprocess.run(["sudo", "pip", "install", "--break-system-packages"] + packages).check_returncode()
+    subprocess.run(["pip", "install", "--break-system-packages"] + packages).check_returncode()
 
 
 def winget_install(packages: list[str]) -> None:
