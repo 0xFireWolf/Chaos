@@ -3,9 +3,11 @@
 #
 from __future__ import annotations
 import argparse
+import sys
 import distro
 import traceback
 from subprocess import CalledProcessError
+from typing import Type
 from .EnvironmentConfigurator import *
 from .ProjectBuilder import *
 from .CMakeManager import CMakeManagerMacOS, CMakeManagerLinux, CMakeManagerWindows
@@ -152,33 +154,31 @@ class Chaos:
         :param args: The parsed command line arguments
         :return: The status code to be passed to `main()`.
         """
-        result = 0
         try:
-            match args.command:
-                case "--install-tools":
-                    self.ci_install_tools()
-                case "--install-toolchain":
-                    self.ci_install_toolchain(args.name)
-                case "--select-toolchain":
-                    self.ci_select_toolchain(args.build_name, args.host_name)
-                case "--restore-toolchain":
-                    self.ci_install_toolchain(args.name)
-                case "--build-all":
-                    self.ci_build_all(args.type)
-                case "--run-tests":
-                    self.ci_run_tests(args.type)
-                case "--run-tests-with-coverage":
-                    self.ci_run_tests_with_coverage()
-                case "--install-all":
-                    self.ci_install_all(args.path)
-                case _:
-                    print(f"Unrecognized Chaos command: {args.command}.")
-                    raise ValueError
+            if args.install_tools is True:
+                self.ci_install_tools()
+            elif args.install_toolchain is not None:
+                self.ci_install_toolchain(*args.install_toolchain)
+            elif args.select_toolchain is not None:
+                self.ci_select_toolchain(*args.select_toolchain)
+            elif args.restore_toolchain is not None:
+                self.ci_install_toolchain(*args.restore_toolchain)
+            elif args.build_all is not None:
+                self.ci_build_all(*args.build_all)
+            elif args.run_tests is not None:
+                self.ci_run_tests(*args.run_tests)
+            elif args.run_tests_with_coverage is True:
+                self.ci_run_tests_with_coverage()
+            elif args.install_all is not None:
+                self.ci_install_all(*args.install_all)
+            else:
+                print(f"Unrecognized Chaos command: {args.command}.")
+                raise ValueError
+            return 0
         except (KeyError, ValueError, CalledProcessError):
             print("Failed to perform the CI operation.")
             traceback.print_exc()
-            result = -1
-        return result
+            return -1
 
     #
     # MARK: Create Menus
@@ -268,7 +268,7 @@ class Chaos:
                 print("Goodbye.")
                 break
 
-    def control(self, option: int) -> int:
+    def control(self, option: int = -1) -> int:
         """
         [CC] Main entry point of the Chaos Control Center
         :param option: Pass `-1` to enter interactive mode, otherwise a valid index to perform an operation
@@ -288,70 +288,78 @@ class Chaos:
             return -1
 
 
+def required_length(min_nargs: int, max_nargs: int) -> Type[argparse.Action]:
+    class RequiredLength(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            if not min_nargs <= len(values) <= max_nargs:
+                raise argparse.ArgumentTypeError(f"{self.dest} requires between {min_nargs} and {max_nargs} arguments.")
+            setattr(args, self.dest, values)
+    return RequiredLength
+
 def main(project: Project) -> int:
-    # Create the top-level parser
-    parser = argparse.ArgumentParser(description="A control center for CMake + Conan + C++20 (and later) projects")
-
-    # Add a positional argument for running a specific action
-    parser.add_argument("index", nargs="?", type=int, help="Run a specific action if provided or enter the interactive mode")
-
-    # Create subparsers for different running modes
-    mode_subparsers = parser.add_subparsers(dest="mode", help="Subcommands under chaos mode")
-
-    # Create a subparser for "chaos" mode
-    chaos_mode_subparser = mode_subparsers.add_parser("chaos", help="Chaos mode operations")
-
-    # Create subparsers for different commands under "chaos" mode
-    chaos_command_subparsers = chaos_mode_subparser.add_subparsers(dest="command", required=True)
-
-    # Chaos Command: --install-tools
-    chaos_install_tools_parser = chaos_command_subparsers.add_parser("--install-tools", help="Install all required development tools")
-
-    # Chaos Command: --install-toolchain <ToolchainName>
-    chaos_install_toolchain_parser = chaos_command_subparsers.add_parser("--install-toolchain", help="Install a compiler toolchain")
-    chaos_install_toolchain_parser.add_argument("name", help="Name of the compiler toolchain to install")
-
-    # Chaos Command: --select-toolchain <BuildToolchainName> [<HostToolchainName>]
-    chaos_select_toolchain_parser = chaos_command_subparsers.add_parser("--select-toolchain", help="Select a compiler toolchain")
-    chaos_select_toolchain_parser.add_argument("build_name", help="Name of the toolchain specifying the build environment")
-    chaos_select_toolchain_parser.add_argument("host_name", nargs="?", help="Name of the toolchain specifying the host environment")
-
-    # Chaos Command: --restore <Name>
-    chaos_restore_toolchain_parser = chaos_command_subparsers.add_parser("--restore-toolchain", help="Restore a compiler toolchain")
-    chaos_restore_toolchain_parser.add_argument("name", help="Name of the compiler toolchain to restore")
-
-    # Chaos Command: --build-all <BuildType>
-    chaos_build_all_parser = chaos_command_subparsers.add_parser("--build-all", help="Build all targets in DEBUG or RELEASE mode")
-    chaos_build_all_parser.add_argument("type", help="The build type (DEBUG or RELEASE)")
-
-    # Chaos Command: --run-tests <BuildType>
-    chaos_run_tests_parser = chaos_command_subparsers.add_parser("--run-tests", help="Run all tests in DEBUG or RELEASE mode")
-    chaos_run_tests_parser.add_argument("type", help="The build type (DEBUG or RELEASE)")
-
-    # Chaos Command: -run-tests-with-coverage [<BuildType>]
-    chaos_analyze_coverage_parser = chaos_command_subparsers.add_parser("-run-tests-with-coverage", help="Run all tests and analyze code coverage")
-    chaos_analyze_coverage_parser.add_argument("type", nargs="?", help="The build type (DEBUG or RELEASE)")
-
-    # Chaos Command: --install-all <Path>
-    install_all_parser = chaos_command_subparsers.add_parser("--install-all", help="Install all targets")
-    install_all_parser.add_argument("path", help="The prefix path for installation")
-
-    # Parse arguments
-    args = parser.parse_args()
-
     # Create the chaos control center
     chaos = Chaos(project)
 
-    # Handle the parsed arguments
-    # Guard: Check whether users want to run an action directly
-    if args.index is not None:
-        # Non-interactive Mode: Run an action at the specified index
-        return chaos.control(args.index)
+    # Guard: Check whether users want to run the control center in interactive mode
+    if len(sys.argv) == 1:
+        return chaos.control()
 
-    # Guard: Check whether users want to run an action in the CI environment
-    if args.mode == "chaos":
-        # CI Mode: Run the specified action with specified arguments
-        return chaos.ci_entry_point(args)
+    # Create the top-level parser
+    parser = argparse.ArgumentParser(description="A control center for CMake + Conan + C++20 (and later) projects")
 
-    # Users want to enter the interactive mode
-    return chaos.control(-1)
+    # Add mutually exclusive group for commands
+    group = parser.add_mutually_exclusive_group()
+
+    # Chaos Command: --install-tools
+    group.add_argument("--install-tools",
+                       action="store_true",
+                       help="Install all required development tools")
+
+    # Chaos Command: --install-toolchain <ToolchainName>
+    group.add_argument("--install-toolchain",
+                       nargs=1,
+                       metavar="NAME",
+                       help="Install a compiler toolchain named <NAME>")
+
+    # Chaos Command: --select-toolchain <BuildToolchainName> [<HostToolchainName>]
+    group.add_argument("--select-toolchain",
+                       nargs=2,
+                       metavar=("BUILD_NAME", "HOST_NAME"),
+                       action=required_length(1, 2),
+                       help="Select a compiler toolchain named <BUILD_NAME> that specifies the build environment " \
+                       "and an optional compiler toolchain named <HOST_NAME> that specifies the host environment")
+
+    # Chaos Command: --restore <Name>
+    group.add_argument("--restore-toolchain",
+                       nargs=1,
+                       metavar="NAME",
+                       help="Restore a compiler toolchain named <NAME>")
+
+    # Chaos Command: --build-all <BuildType>
+    group.add_argument("--build-all",
+                       nargs=1,
+                       metavar="TYPE",
+                       choices=["Debug", "Release"],
+                       help="Build all targets in Debug or Release mode")
+
+    # Chaos Command: --run-tests <BuildType>
+    group.add_argument("--run-tests",
+                       nargs=1,
+                       metavar="TYPE",
+                       choices=["Debug", "Release"],
+                       help="Run all tests in Debug or Release mode")
+
+    # Chaos Command: -run-tests-with-coverage [<BuildType>]
+    group.add_argument("--run-tests-with-coverage",
+                       action="store_true",
+                       help="Run all tests and analyze code coverage")
+
+    # Chaos Command: --install-all <Path>
+    group.add_argument("--install-all",
+                       nargs=1,
+                       metavar="PATH",
+                       action=required_length(0, 1),
+                       help="Install all targets using the default prefix path or [PATH] if specified")
+
+    # Parse arguments
+    return chaos.ci_entry_point(parser.parse_args())
