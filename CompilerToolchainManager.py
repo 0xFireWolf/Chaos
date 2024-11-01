@@ -4,7 +4,7 @@
 
 import tempfile
 import pathlib
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from .BuildSystemDescriptor import *
 from .Utilities import *
@@ -25,7 +25,7 @@ kXcodeConfigFileRelease = "conanbuildinfo.release.xcconfig"
 
 
 # An abstract manager that sets up the compiler toolchain on the host system
-class CompilerToolchainManager:
+class CompilerToolchainManager(ABC):
     def __init__(self, host: HostSystem, architecture: Architecture):
         # Filter out toolchains that run on a different host system
         self.hostSystem = host
@@ -36,43 +36,68 @@ class CompilerToolchainManager:
         # The name of the folder in which Conan profiles are stored
         self.conan_profiles_folder = kDefaultConanProfilesFolderV2 if is_conan_v2_installed() else kDefaultConanProfilesFolderV1
 
+    @abstractmethod
     def install_gcc_10(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_gcc_11(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_gcc_12(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_gcc_13(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
+    def install_gcc_14(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
     def install_clang_13(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_clang_14(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_clang_15(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_clang_16(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_clang_17(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_clang_18(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
+    def install_clang_19(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
     def install_apple_clang_13(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_apple_clang_14(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_apple_clang_15(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def install_apple_clang_16(self) -> None:
         raise NotImplementedError
 
     def install_all_compilers(self) -> None:
@@ -80,11 +105,14 @@ class CompilerToolchainManager:
         self.install_gcc_11()
         self.install_gcc_12()
         self.install_gcc_13()
+        self.install_gcc_14()
         self.install_clang_13()
         self.install_clang_14()
         self.install_clang_15()
         self.install_clang_16()
         self.install_clang_17()
+        self.install_clang_18()
+        self.install_clang_19()
 
     def fetch_all_conan_profiles(self, folder: str) -> list[ConanProfile]:
         """
@@ -228,6 +256,7 @@ class CompilerToolchainManager:
                 print("Please select another compiler toolchain and try again.")
                 continue
 
+    # TODO: DEPRECATED
     def generate_xcode_configuration_with_profile(self, profile: str, config: str) -> None:
         """
         [Action] Generate the Xcode configuration from the given Conan profile
@@ -237,6 +266,7 @@ class CompilerToolchainManager:
         shutil.copy(path + "/" + kXcodeConfigFile, "./" + config)
         shutil.rmtree(path)
 
+    # TODO: DEPRECATED
     def generate_xcode_configuration(self) -> None:
         """
         [Action] Generate the Xcode configuration from the current Conan profile
@@ -266,6 +296,9 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
     def install_gcc_13(self) -> None:
         brew_install(["gcc@13"])
 
+    def install_gcc_14(self) -> None:
+        brew_install(["gcc@14"])
+
     def install_clang_13(self) -> None:
         brew_install(["llvm@13"])
 
@@ -284,6 +317,9 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
     def install_clang_18(self) -> None:
         brew_install(["llvm@18"])
 
+    def install_clang_19(self) -> None:
+        brew_install(["llvm@19"])
+
     def select_xcode_installation(self, major: int, minor: int = None, patch: int = None) -> None:
         bundle = XcodeFinder([Path("/Applications")], "Xcode.*\\.app").find(major, minor, patch)
         if bundle is None:
@@ -292,9 +328,9 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
         print(">> The current active Xcode installation:")
         print(bundle)
         print(">> The current active Xcode developer directory:")
-        subprocess.run(["xcode-select", "-p"]).check_returncode()
+        print(subprocess.check_output(["xcode-select", "-p"], text=True))
         print(">> The current active Apple Clang compiler:")
-        subprocess.run(["clang", "-v"]).check_returncode()
+        print(subprocess.check_output(["clang", "-v"], text=True))
 
     def install_apple_clang_13(self) -> None:
         self.select_xcode_installation(13)
@@ -304,6 +340,9 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
 
     def install_apple_clang_15(self) -> None:
         self.select_xcode_installation(15)
+
+    def install_apple_clang_16(self) -> None:
+        self.select_xcode_installation(16)
 
 
 # A manager that sets up the compiler toolchain on Ubuntu
@@ -319,6 +358,9 @@ class CompilerToolchainManagerUbuntu(CompilerToolchainManager, ABC):
 
     def install_apple_clang_15(self) -> None:
         print("AppleClang 15 is not available on systems other than macOS.")
+
+    def install_apple_clang_16(self) -> None:
+        print("AppleClang 16 is not available on systems other than macOS.")
 
     def install_gcc_from_apt(self, version: int) -> None:
         apt_install([f"gcc-{version}", f"g++-{version}"])
@@ -363,6 +405,9 @@ class CompilerToolchainManagerUbuntu2004(CompilerToolchainManagerUbuntu):
     def install_gcc_13(self) -> None:
         brew_install(["gcc@13"])
 
+    def install_gcc_14(self) -> None:
+        brew_install(["gcc@14"])
+
     def install_clang_13(self) -> None:
         self.install_clang_from_apt_llvm_org(13)
 
@@ -381,6 +426,9 @@ class CompilerToolchainManagerUbuntu2004(CompilerToolchainManagerUbuntu):
     def install_clang_18(self) -> None:
         self.install_clang_from_apt_llvm_org(18)
 
+    def install_clang_19(self) -> None:
+        self.install_clang_from_apt_llvm_org(19)
+
 
 # A manager that sets up the compiler toolchain on Ubuntu 22.04 LTS
 class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
@@ -396,6 +444,10 @@ class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
     def install_gcc_13(self) -> None:
         apt_add_repository("ppa:ubuntu-toolchain-r/test")
         self.install_gcc_from_apt(13)
+
+    def install_gcc_14(self) -> None:
+        apt_add_repository("ppa:ubuntu-toolchain-r/test")
+        self.install_gcc_from_apt(14)
 
     def install_clang_13(self) -> None:
         self.install_clang_from_apt(13)
@@ -415,6 +467,9 @@ class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
     def install_clang_18(self) -> None:
         self.install_clang_from_apt_llvm_org(18)
 
+    def install_clang_19(self) -> None:
+        self.install_clang_from_apt_llvm_org(19)
+
 
 # A manager that sets up the compiler toolchain on Ubuntu 24.04 LTS
 class CompilerToolchainManagerUbuntu2404(CompilerToolchainManagerUbuntu):
@@ -429,6 +484,9 @@ class CompilerToolchainManagerUbuntu2404(CompilerToolchainManagerUbuntu):
 
     def install_gcc_13(self) -> None:
         self.install_gcc_from_apt(13)
+
+    def install_gcc_14(self) -> None:
+        self.install_gcc_from_apt(14)
 
     def install_clang_13(self) -> None:
         self.install_clang_from_apt_llvm_org(13)
@@ -447,6 +505,9 @@ class CompilerToolchainManagerUbuntu2404(CompilerToolchainManagerUbuntu):
 
     def install_clang_18(self) -> None:
         self.install_clang_from_apt(18)
+
+    def install_clang_19(self) -> None:
+        self.install_clang_from_apt_llvm_org(19)
 
 
 # A manager that sets up the compiler toolchain on Windows
@@ -468,6 +529,10 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
 
     def install_gcc_13(self) -> None:
         print("Compiling this project with GCC 13 on Windows is not supported.")
+        print("Please use Microsoft Visual C++ instead.")
+
+    def install_gcc_14(self) -> None:
+        print("Compiling this project with GCC 14 on Windows is not supported.")
         print("Please use Microsoft Visual C++ instead.")
 
     def install_clang_13(self) -> None:
@@ -494,6 +559,10 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
         print("Compiling this project with Clang 18 on Windows is not supported.")
         print("Please use Microsoft Visual C++ instead.")
 
+    def install_clang_19(self) -> None:
+        print("Compiling this project with Clang 19 on Windows is not supported.")
+        print("Please use Microsoft Visual C++ instead.")
+
     def install_apple_clang_13(self) -> None:
         print("AppleClang 13 is not available on systems other than macOS.")
 
@@ -502,6 +571,9 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
 
     def install_apple_clang_15(self) -> None:
         print("AppleClang 15 is not available on systems other than macOS.")
+
+    def install_apple_clang_16(self) -> None:
+        print("AppleClang 16 is not available on systems other than macOS.")
 
 
 # A manager that sets up the compiler toolchain on FreeBSD
@@ -521,6 +593,9 @@ class CompilerToolchainManagerFreeBSD(CompilerToolchainManager):
     def install_gcc_13(self) -> None:
         pkg_install(["gcc13"])
 
+    def install_gcc_14(self) -> None:
+        pkg_install(["gcc14"])
+
     def install_clang_13(self) -> None:
         pkg_install(["llvm13"])
 
@@ -539,6 +614,9 @@ class CompilerToolchainManagerFreeBSD(CompilerToolchainManager):
     def install_clang_18(self) -> None:
         pkg_install(["llvm18"])
 
+    def install_clang_19(self) -> None:
+        pkg_install(["llvm19"])
+
     def install_apple_clang_13(self) -> None:
         print("AppleClang 13 is not available on systems other than macOS.")
 
@@ -547,3 +625,6 @@ class CompilerToolchainManagerFreeBSD(CompilerToolchainManager):
 
     def install_apple_clang_15(self) -> None:
         print("AppleClang 15 is not available on systems other than macOS.")
+
+    def install_apple_clang_16(self) -> None:
+        print("AppleClang 16 is not available on systems other than macOS.")
