@@ -2,13 +2,14 @@
 # MARK: - Chaos Control Center
 #
 from __future__ import annotations
-import sys
+import argparse
 import distro
 import traceback
 from subprocess import CalledProcessError
 from .EnvironmentConfigurator import *
 from .ProjectBuilder import *
 from .CMakeManager import CMakeManagerMacOS, CMakeManagerLinux, CMakeManagerWindows
+from .Menu import Menu
 
 
 class Chaos:
@@ -21,42 +22,46 @@ class Chaos:
         machine = platform.machine()
         if system == "Darwin":
             architecture = Architecture.kx86_64 if machine == "x86_64" else Architecture.kARM64
-            self.environmentConfigurator = EnvironmentConfiguratorMacOS(project.additional_tools_installer.macos)
-            self.compilerToolchainManager = CompilerToolchainManagerMacOS(architecture)
-            self.projectBuilder = ProjectBuilder(project, CMakeManagerMacOS())
-            self.clearConsole = lambda: os.system("clear")
+            self.configurator = EnvironmentConfiguratorMacOS(project.additional_tools_installer.macos)
+            self.toolchain_manager = CompilerToolchainManagerMacOS(architecture)
+            self.project_builder = ProjectBuilder(project, CMakeManagerMacOS())
+            self.clear_console = lambda: os.system("clear")
         elif system == "Linux":
             distribution = distro.id()
             version = distro.version()
             if distribution == "ubuntu":
-                self.environmentConfigurator = EnvironmentConfiguratorUbuntu(project.additional_tools_installer.ubuntu)
+                self.configurator = EnvironmentConfiguratorUbuntu(project.additional_tools_installer.ubuntu)
                 if version == "20.04":
-                    self.compilerToolchainManager = CompilerToolchainManagerUbuntu2004(Architecture.kx86_64)
+                    self.toolchain_manager = CompilerToolchainManagerUbuntu2004(Architecture.kx86_64)
                 elif version == "22.04":
-                    self.compilerToolchainManager = CompilerToolchainManagerUbuntu2204(Architecture.kx86_64)
+                    self.toolchain_manager = CompilerToolchainManagerUbuntu2204(Architecture.kx86_64)
                 elif version == "24.04":
-                    self.compilerToolchainManager = CompilerToolchainManagerUbuntu2404(Architecture.kx86_64)
+                    self.toolchain_manager = CompilerToolchainManagerUbuntu2404(Architecture.kx86_64)
                 else:
-                    print("Ubuntu {} is not tested.".format(version))
+                    print(f"Ubuntu {version} is not tested.")
                     raise EnvironmentError
-                self.projectBuilder = ProjectBuilder(project, CMakeManagerLinux())
-                self.clearConsole = lambda: os.system("clear")
+                self.project_builder = ProjectBuilder(project, CMakeManagerLinux())
+                self.clear_console = lambda: os.system("clear")
             else:
-                print("{} is not supported.".format(distro.name(True)))
+                print(f"{distro.name(True)} is not supported.")
                 raise EnvironmentError
         elif system == "Windows":
-            self.environmentConfigurator = EnvironmentConfiguratorWindows(project.additional_tools_installer.windows)
-            self.compilerToolchainManager = CompilerToolchainManagerWindows(Architecture.kx86_64)
-            self.projectBuilder = ProjectBuilder(project, CMakeManagerWindows())
-            self.clearConsole = lambda: os.system("cls")
+            self.configurator = EnvironmentConfiguratorWindows(project.additional_tools_installer.windows)
+            self.toolchain_manager = CompilerToolchainManagerWindows(Architecture.kx86_64)
+            self.project_builder = ProjectBuilder(project, CMakeManagerWindows())
+            self.clear_console = lambda: os.system("cls")
         elif system == "FreeBSD":
-            self.environmentConfigurator = EnvironmentConfiguratorFreeBSD(project.additional_tools_installer.freebsd)
-            self.compilerToolchainManager = CompilerToolchainManagerFreeBSD(Architecture.kx86_64)
-            self.projectBuilder = ProjectBuilder(project, CMakeManager())  # CMakeManager does not support FreeBSD
-            self.clearConsole = lambda: os.system("clear")
+            self.configurator = EnvironmentConfiguratorFreeBSD(project.additional_tools_installer.freebsd)
+            self.toolchain_manager = CompilerToolchainManagerFreeBSD(Architecture.kx86_64)
+            self.project_builder = ProjectBuilder(project, CMakeManager())  # CMakeManager does not support FreeBSD
+            self.clear_console = lambda: os.system("clear")
         else:
-            print("{} is not supported.".format(system))
+            print(f"{system} is not supported.")
             raise EnvironmentError
+
+    #
+    # MARK: Chaos Running in Chaos Mode
+    #
 
     def ci_install_toolchain(self, name: str) -> None:
         """
@@ -65,22 +70,24 @@ class Chaos:
         :raise `KeyError` if the given name is invalid;
                `CalledProcessError` if failed to install the toolchain.
         """
-        toolchains: dict[str, Callable[[], None]] = {
-            "gcc-10": self.compilerToolchainManager.install_gcc_10,
-            "gcc-11": self.compilerToolchainManager.install_gcc_11,
-            "gcc-12": self.compilerToolchainManager.install_gcc_12,
-            "gcc-13": self.compilerToolchainManager.install_gcc_13,
-            "clang-13": self.compilerToolchainManager.install_clang_13,
-            "clang-14": self.compilerToolchainManager.install_clang_14,
-            "clang-15": self.compilerToolchainManager.install_clang_15,
-            "clang-16": self.compilerToolchainManager.install_clang_16,
-            "clang-17": self.compilerToolchainManager.install_clang_17,
-            "clang-18": self.compilerToolchainManager.install_clang_18,
-            "apple-clang-13": self.compilerToolchainManager.install_apple_clang_13,
-            "apple-clang-14": self.compilerToolchainManager.install_apple_clang_14,
-            "apple-clang-15": self.compilerToolchainManager.install_apple_clang_15,
-        }
-        toolchains[name]()
+        match name:
+            case "gcc-10": return self.toolchain_manager.install_gcc_10()
+            case "gcc-11": return self.toolchain_manager.install_gcc_11()
+            case "gcc-12": return self.toolchain_manager.install_gcc_12()
+            case "gcc-13": return self.toolchain_manager.install_gcc_13()
+            case "gcc-14": return self.toolchain_manager.install_gcc_14()
+            case "clang-13": return self.toolchain_manager.install_clang_13()
+            case "clang-14": return self.toolchain_manager.install_clang_14()
+            case "clang-15": return self.toolchain_manager.install_clang_15()
+            case "clang-16": return self.toolchain_manager.install_clang_16()
+            case "clang-17": return self.toolchain_manager.install_clang_17()
+            case "clang-18": return self.toolchain_manager.install_clang_18()
+            case "clang-19": return self.toolchain_manager.install_clang_19()
+            case "apple-clang-13": self.toolchain_manager.install_apple_clang_13()
+            case "apple-clang-14": self.toolchain_manager.install_apple_clang_14()
+            case "apple-clang-15": self.toolchain_manager.install_apple_clang_15()
+            case "apple-clang-16": self.toolchain_manager.install_apple_clang_16()
+            case _: raise KeyError(f"{name} is not a valid compiler toolchain.")
 
     def ci_select_toolchain(self, build_name: str, host_name: str = None) -> None:
         """
@@ -95,153 +102,163 @@ class Chaos:
         build_profile_rel = ConanProfile(build_name + "_Release.conanprofile")
         host_profile_dbg = None if host_name is None else ConanProfile(host_name + "_Debug.conanprofile")
         host_profile_rel = None if host_name is None else ConanProfile(host_name + "_Release.conanprofile")
-        self.compilerToolchainManager.apply_compiler_toolchain(cmake_toolchain,
-                                                               build_profile_dbg, build_profile_rel,
-                                                               host_profile_dbg, host_profile_rel)
+        self.toolchain_manager.apply_compiler_toolchain(cmake_toolchain,
+                                                        build_profile_dbg,
+                                                        build_profile_rel,
+                                                        host_profile_dbg,
+                                                        host_profile_rel)
 
-    def ci_build_all(self, btype: str) -> None:
+    def ci_build_all(self, build_type: str) -> None:
         """
         [CI] Build all targets
-        :param btype: The raw build type
+        :param build_type: The raw build type
         :raise `ValueError` if the given build type is invalid;
                `CalledProcessError` if failed to build one of the targets.
         """
-        self.projectBuilder.rebuild_project(BuildType(btype))
+        self.project_builder.rebuild_project(BuildType(build_type))
 
-    def ci_run_tests(self, btype: str) -> None:
+    def ci_run_tests(self, build_type: str) -> None:
         """
         [CI] Run all tests
-        :param btype: The raw build type
+        :param build_type: The raw build type
         :raise `ValueError` if the given build type is invalid;
                `CalledProcessError` if one of the tests has failed.
         """
-        self.projectBuilder.run_all_tests(BuildType(btype))
+        self.project_builder.run_all_tests(BuildType(build_type))
 
     def ci_run_tests_with_coverage(self) -> None:
         """
         [CI] Run all tests and analyze code coverage
         :raise `CalledProcessError` if one of the tests has failed.
         """
-        self.projectBuilder.rebuild_and_run_all_tests_with_coverage()
+        self.project_builder.rebuild_and_run_all_tests_with_coverage()
 
     def ci_install_all(self, prefix: Path = None) -> None:
         """
         [CI] Install all project artifacts
         :param prefix: Specify the prefix path
         """
-        self.projectBuilder.install_project(prefix)
+        self.project_builder.install_project(prefix)
 
-    def ci(self) -> int:
+    def ci_entry_point(self, args: argparse.Namespace) -> int:
         """
         [CI] Main Entry Point of the Continuous Integration
+        :param args: The parsed command line arguments
         :return: The status code to be passed to `main()`.
         """
-        command = sys.argv[2]
         result = 0
         try:
-            if command == "--install-toolchain":
-                self.ci_install_toolchain(sys.argv[3])
-            elif command == "--select-toolchain":
-                if len(sys.argv) == 4:
-                    self.ci_select_toolchain(sys.argv[3])
-                else:
-                    self.ci_select_toolchain(sys.argv[3], sys.argv[4])
-            elif command == "--restore-toolchain":
-                self.ci_install_toolchain(sys.argv[3])
-            elif command == "--build-all":
-                self.ci_build_all(sys.argv[3])
-            elif command == "--run-tests":
-                self.ci_run_tests(sys.argv[3])
-            elif command == "--run-tests-with-coverage":
-                self.ci_run_tests_with_coverage()
-            elif command == "--install-all":
-                self.ci_install_all(sys.argv[3] if len(sys.argv) == 4 else None)
-            else:
-                print("Unrecognized Chaos command: {}.".format(command))
-                raise ValueError
+            match args.command:
+                case "--install-toolchain":
+                    self.ci_install_toolchain(args.name)
+                case "--select-toolchain":
+                    self.ci_select_toolchain(args.build_name, args.host_name)
+                case "--restore-toolchain":
+                    self.ci_install_toolchain(args.name)
+                case "--build-all":
+                    self.ci_build_all(args.type)
+                case "--run-tests":
+                    self.ci_run_tests(args.type)
+                case "--run-tests-with-coverage":
+                    self.ci_run_tests_with_coverage()
+                case "--install-all":
+                    self.ci_install_all(args.path)
+                case _:
+                    print(f"Unrecognized Chaos command: {args.command}.")
+                    raise ValueError
         except (KeyError, ValueError, CalledProcessError):
             print("Failed to perform the CI operation.")
             traceback.print_exc()
             result = -1
         return result
 
-    def control_action_mode(self, actions: list[Callable[[], None]], option: int) -> None:
-        """
-        [CC] Chaos Control Center Action Mode
-        :param actions: A list of available actions
-        :param option: The index of the action to be performed
-        :raise: `IndexError` if the given option is invalid;
-                `CalledProcessError` if the action has failed.
-        """
-        if option not in range(0, len(actions)):
-            print("The given option {} is invalid.".format(option))
-            raise IndexError
-        actions[option]()
+    #
+    # MARK: Create Menus
+    #
 
-    def control_interactive_mode(self, actions: list[Callable[[], None]]) -> None:
+    def create_compiler_menu(self) -> Menu:
+        """
+        Create a menu for installing compilers
+        :return: The compiler menu
+        """
+        menu = Menu(">> Select a compiler you want to install")
+        menu.add_item("GCC 10", self.toolchain_manager.install_gcc_10)
+        menu.add_item("GCC 11", self.toolchain_manager.install_gcc_11)
+        menu.add_item("GCC 12", self.toolchain_manager.install_gcc_12)
+        menu.add_item("GCC 13", self.toolchain_manager.install_gcc_13)
+        menu.add_item("GCC 14", self.toolchain_manager.install_gcc_14)
+        menu.add_item("Clang 13", self.toolchain_manager.install_clang_13)
+        menu.add_item("Clang 14", self.toolchain_manager.install_clang_14)
+        menu.add_item("Clang 15", self.toolchain_manager.install_clang_15)
+        menu.add_item("Clang 16", self.toolchain_manager.install_clang_16)
+        menu.add_item("Clang 17", self.toolchain_manager.install_clang_17)
+        menu.add_item("Clang 18", self.toolchain_manager.install_clang_18)
+        menu.add_item("Clang 19", self.toolchain_manager.install_clang_19)
+        return menu
+
+    def create_main_menu(self) -> Menu:
+        """
+        Create the main menu for the Chaos Control Center
+        :return: The main menu
+        """
+        title = "===============================\n"
+        title += "Welcome to Chaos Control Center\n"
+        title += "What can I help you today?\n"
+        title += "==============================="
+        menu = Menu(title)
+        menu.add_item(">> Configure Development Environment")
+        menu.add_separator()
+        menu.add_item("Install CMake, Ninja and Conan Package Manager", self.configurator.install_basic)
+        menu.add_item("Install additional required development tools", self.configurator.install_other)
+        menu.add_item("Install all required development tools", self.configurator.install_all)
+        menu.add_separator()
+        menu.add_item(">> Manage Compiler Toolchains")
+        menu.add_separator()
+        menu.add_submenu("Install a supported compiler", self.create_compiler_menu(), self.control_interactive_mode)
+        menu.add_item("Install all supported compilers", self.toolchain_manager.install_all_compilers)
+        menu.add_item("Select a compiler toolchain", self.toolchain_manager.select_compiler_toolchain)
+        menu.add_separator()
+        menu.add_item(">> Build, Test & Clean Projects")
+        menu.add_separator()
+        menu.add_item("Rebuild the project (DEBUG).", self.project_builder.rebuild_project_debug)
+        menu.add_item("Rebuild the project (RELEASE).", self.project_builder.rebuild_project_release)
+        menu.add_item("Rebuild and run all tests (DEBUG).", self.project_builder.rebuild_and_run_all_tests_debug)
+        menu.add_item("Rebuild and run all tests (RELEASE).", self.project_builder.rebuild_and_run_all_tests_release)
+        menu.add_item("Rebuild and run all tests with coverage.", self.project_builder.rebuild_and_run_all_tests_with_coverage)
+        menu.add_item("Clean the build folder.", self.project_builder.clean_build_folder)
+        menu.add_item("Clean the build folder and reset the toolchain.", self.project_builder.clean_all)
+        menu.add_item("Determine the minimum CMake version.", self.project_builder.determine_minimum_cmake_version_interactive)
+        return menu
+
+    #
+    # MARK: Chaos Running in Control Mode
+    #
+
+    def control_interactive_mode(self, menu: Menu) -> None:
         """
         [CC] Chaos Control Center Interactive Mode
-        :param actions: A list of available actions
-        :return: The status code to be passed to `main()`.
+        :param menu: A menu that provides options that users can select
         """
         while True:
-            self.clearConsole()
-            print()
-            print("===============================")
-            print("Welcome to Chaos Control Center")
-            print("What can I help you today?     ")
-            print("===============================")
-            print()
-            print(">> Configure Development Environment")
-            print()
-            print("[00] Install CMake, Ninja and Conan Package Manager.")
-            print("[01] Install additional required development tools.")
-            print("[02] Install all required development tools.")
-            print()
-            print(">> Manage Compiler Toolchains")
-            print()
-            print("[03] Install GCC 10.")
-            print("[04] Install GCC 11.")
-            print("[05] Install GCC 12.")
-            print("[06] Install GCC 13.")
-            print("[07] Install Clang 13.")
-            print("[08] Install Clang 14.")
-            print("[09] Install Clang 15.")
-            print("[10] Install Clang 16.")
-            print("[11] Install Clang 17.")
-            print("[12] Install Clang 18.")
-            print("[13] Install all supported compilers.")
-            print("[14] Select a compiler toolchain.")
-            print("[15] Generate the Xcode configuration.")
-            print()
-            print(">> Build, Test & Clean Projects")
-            print()
-            print("[16] Rebuild the project (DEBUG).")
-            print("[17] Rebuild the project (RELEASE).")
-            print("[18] Rebuild and run all tests (DEBUG).")
-            print("[19] Rebuild and run all tests (RELEASE).")
-            print("[20] Rebuild and run all tests with coverage.")
-            print("[21] Clean the build folder.")
-            print("[22] Clean the build folder and reset the toolchain.")
-            print("[23] Determine the minimum CMake version.")
-            print()
-            print("Press Ctrl-C or Ctrl-D to exit the menu.")
-            option = 0
+            self.clear_console()
+            menu.render()
+            print("Press Ctrl-C or Ctrl-D to exit from the current menu.")
             try:
                 option = int(input("Input the number and press ENTER: "))
-                if option not in range(0, len(actions)):
-                    raise IndexError
+                menu.select(option)
+                print()
+                input("Press Enter to continue...")
             except ValueError:
                 print("Not a number! Please try again.")
+                input("Press Enter to continue...")
                 continue
-            except IndexError:
-                print("The option number {} is invalid.", option)
+            except KeyError:
+                print(f"The option number you entered is not valid.")
+                input("Press Enter to continue...")
                 continue
             except (KeyboardInterrupt, EOFError):
                 print("Goodbye.")
                 break
-            actions[option]()
-            input("\nPress a key to continue...")
 
     def control(self, option: int) -> int:
         """
@@ -249,67 +266,81 @@ class Chaos:
         :param option: Pass `-1` to enter interactive mode, otherwise a valid index to perform an operation
         :return: The status code to be passed to `main()`.
         """
-        actions: list[Callable[[], None]] = [
-            self.environmentConfigurator.install_basic,
-            self.environmentConfigurator.install_other,
-            self.environmentConfigurator.install_all,
-            self.compilerToolchainManager.install_gcc_10,
-            self.compilerToolchainManager.install_gcc_11,
-            self.compilerToolchainManager.install_gcc_12,
-            self.compilerToolchainManager.install_gcc_13,
-            self.compilerToolchainManager.install_clang_13,
-            self.compilerToolchainManager.install_clang_14,
-            self.compilerToolchainManager.install_clang_15,
-            self.compilerToolchainManager.install_clang_16,
-            self.compilerToolchainManager.install_clang_17,
-            self.compilerToolchainManager.install_clang_18,
-            self.compilerToolchainManager.install_all_compilers,
-            self.compilerToolchainManager.select_compiler_toolchain,
-            self.compilerToolchainManager.generate_xcode_configuration,
-            self.projectBuilder.rebuild_project_debug,
-            self.projectBuilder.rebuild_project_release,
-            self.projectBuilder.rebuild_and_run_all_tests_debug,
-            self.projectBuilder.rebuild_and_run_all_tests_release,
-            self.projectBuilder.rebuild_and_run_all_tests_with_coverage,
-            self.projectBuilder.clean_build_folder,
-            self.projectBuilder.clean_all,
-            self.projectBuilder.determine_minimum_cmake_version_interactive,
-        ]
-        result = 0
+        menu = self.create_main_menu()
         try:
             if option >= 0:
-                self.control_action_mode(actions, option)
+                menu.build_index_map()
+                menu.select(option)
             else:
-                self.control_interactive_mode(actions)
-        except (IndexError, ValueError, CalledProcessError):
+                self.control_interactive_mode(menu)
+            return 0
+        except (KeyError, ValueError, CalledProcessError):
             print("The Chaos Control Center has terminated unexpectedly.")
             traceback.print_exc()
-            result = -1
-        return result
+            return -1
 
 
 def main(project: Project) -> int:
+    # Create the top-level parser
+    parser = argparse.ArgumentParser(description="A control center for CMake + Conan + C++20 (and later) projects")
+
+    # Add a positional argument for running a specific action
+    parser.add_argument("index", nargs="?", type=int, help="Run a specific action if provided or enter the interactive mode")
+
+    # Create subparsers for different running modes
+    mode_subparsers = parser.add_subparsers(dest="mode", help="Subcommands under chaos mode")
+
+    # Create a subparser for "chaos" mode
+    chaos_mode_subparser = mode_subparsers.add_parser("chaos", help="Chaos mode operations")
+
+    # Create subparsers for different commands under "chaos" mode
+    chaos_command_subparsers = chaos_mode_subparser.add_subparsers(dest="command", required=True)
+
+    # Chaos Command: --install-toolchain <ToolchainName>
+    chaos_install_toolchain_parser = chaos_command_subparsers.add_parser("--install-toolchain", help="Install a compiler toolchain")
+    chaos_install_toolchain_parser.add_argument("name", help="Name of the compiler toolchain to install")
+
+    # Chaos Command: --select-toolchain <BuildToolchainName> [<HostToolchainName>]
+    chaos_select_toolchain_parser = chaos_command_subparsers.add_parser("--select-toolchain", help="Select a compiler toolchain")
+    chaos_select_toolchain_parser.add_argument("build_name", help="Name of the toolchain specifying the build environment")
+    chaos_select_toolchain_parser.add_argument("host_name", nargs="?", help="Name of the toolchain specifying the host environment")
+
+    # Chaos Command: --restore <Name>
+    chaos_restore_toolchain_parser = chaos_command_subparsers.add_parser("--restore-toolchain", help="Restore a compiler toolchain")
+    chaos_restore_toolchain_parser.add_argument("name", help="Name of the compiler toolchain to restore")
+
+    # Chaos Command: --build-all <BuildType>
+    chaos_build_all_parser = chaos_command_subparsers.add_parser("--build-all", help="Build all targets in DEBUG or RELEASE mode")
+    chaos_build_all_parser.add_argument("type", help="The build type (DEBUG or RELEASE)")
+
+    # Chaos Command: --run-tests <BuildType>
+    chaos_run_tests_parser = chaos_command_subparsers.add_parser("--run-tests", help="Run all tests in DEBUG or RELEASE mode")
+    chaos_run_tests_parser.add_argument("type", help="The build type (DEBUG or RELEASE)")
+
+    # Chaos Command: -run-tests-with-coverage [<BuildType>]
+    chaos_analyze_coverage_parser = chaos_command_subparsers.add_parser("-run-tests-with-coverage", help="Run all tests and analyze code coverage")
+    chaos_analyze_coverage_parser.add_argument("type", nargs="?", help="The build type (DEBUG or RELEASE)")
+
+    # Chaos Command: --install-all <Path>
+    install_all_parser = chaos_command_subparsers.add_parser("--install-all", help="Install all targets")
+    install_all_parser.add_argument("path", help="The prefix path for installation")
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Create the chaos control center
     chaos = Chaos(project)
-    # Default: Interactive mode
-    option = -1
 
-    if len(sys.argv) > 2:
-        if sys.argv[1] == "chaos":
-            # CI mode
-            return chaos.ci()
-        else:
-            print("Usage:")
-            print("{} to enter interactive mode.", sys.argv[0])
-            print("{} <option> to run an action directly.", sys.argv[0])
-            print("{} chaos <command> <args>... to run the script in CI mode.", sys.argv[0])
-            return -1
+    # Handle the parsed arguments
+    # Guard: Check whether users want to run an action directly
+    if args.index is not None:
+        # Non-interactive Mode: Run an action at the specified index
+        return chaos.control(args.index)
 
-    if len(sys.argv) == 2:
-        # Action mode
-        try:
-            option = int(sys.argv[1])
-        except ValueError:
-            print("The option value must be an integer.")
-            return -1
+    # Guard: Check whether users want to run an action in the CI environment
+    if args.mode == "chaos":
+        # CI Mode: Run the specified action with specified arguments
+        return chaos.ci_entry_point(args)
 
-    return chaos.control(option)
+    # Users want to enter the interactive mode
+    return chaos.control(-1)
