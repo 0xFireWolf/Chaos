@@ -63,6 +63,12 @@ class Chaos:
     # MARK: Chaos Running in Chaos Mode
     #
 
+    def ci_install_tools(self) -> None:
+        """
+        [CI] Install all required development tools
+        """
+        self.configurator.install_all()
+
     def ci_install_toolchain(self, name: str) -> None:
         """
         [CI] Install the toolchain that has the given name
@@ -149,6 +155,8 @@ class Chaos:
         result = 0
         try:
             match args.command:
+                case "--install-tools":
+                    self.ci_install_tools()
                 case "--install-toolchain":
                     self.ci_install_toolchain(args.name)
                 case "--select-toolchain":
@@ -295,6 +303,9 @@ def main(project: Project) -> int:
 
     # Create subparsers for different commands under "chaos" mode
     chaos_command_subparsers = chaos_mode_subparser.add_subparsers(dest="command", required=True)
+
+    # Chaos Command: --install-tools
+    chaos_install_tools_parser = chaos_command_subparsers.add_parser("--install-tools", help="Install all required development tools")
 
     # Chaos Command: --install-toolchain <ToolchainName>
     chaos_install_toolchain_parser = chaos_command_subparsers.add_parser("--install-toolchain", help="Install a compiler toolchain")
