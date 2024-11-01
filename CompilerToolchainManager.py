@@ -19,10 +19,6 @@ kCurrentConanBuildProfileRelease = "CurrentBuildProfileRelease.conanprofile"
 kCurrentConanHostProfileDebug = "CurrentHostProfileDebug.conanprofile"
 kCurrentConanHostProfileRelease = "CurrentHostProfileRelease.conanprofile"
 
-kXcodeConfigFile = "conanbuildinfo.xcconfig"
-kXcodeConfigFileDebug = "conanbuildinfo.debug.xcconfig"
-kXcodeConfigFileRelease = "conanbuildinfo.release.xcconfig"
-
 
 # An abstract manager that sets up the compiler toolchain on the host system
 class CompilerToolchainManager(ABC):
@@ -255,25 +251,6 @@ class CompilerToolchainManager(ABC):
                 print("Failed to find the Conan profile that matches the selected compiler toolchain.")
                 print("Please select another compiler toolchain and try again.")
                 continue
-
-    # TODO: DEPRECATED
-    def generate_xcode_configuration_with_profile(self, profile: str, config: str) -> None:
-        """
-        [Action] Generate the Xcode configuration from the given Conan profile
-        """
-        path = tempfile.mkdtemp()
-        subprocess.run(["conan", "install", ".", "--install-folder", path, "--build", "missing", "--profile", profile]).check_returncode()
-        shutil.copy(path + "/" + kXcodeConfigFile, "./" + config)
-        shutil.rmtree(path)
-
-    # TODO: DEPRECATED
-    def generate_xcode_configuration(self) -> None:
-        """
-        [Action] Generate the Xcode configuration from the current Conan profile
-        """
-        raise NotImplementedError("Not yet compatible with Conan 2.x.")
-        # self.generate_xcode_configuration_with_profile(kCurrentConanProfileDebug, kXcodeConfigFileDebug)
-        # self.generate_xcode_configuration_with_profile(kCurrentConanProfileRelease, kXcodeConfigFileRelease)
 
 
 # A manager that sets up the compiler toolchain on macOS
