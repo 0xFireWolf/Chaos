@@ -3,25 +3,29 @@
 #
 
 import tempfile
-import shutil
+from abc import ABC, abstractmethod
 from typing import Callable
 from .Utilities import *
 
 
 # An abstract configurator that sets up the development environment on the host system
-class EnvironmentConfigurator:
+class EnvironmentConfigurator(ABC):
     def __init__(self, installer: Callable[[], None] = None):
         self.other_tools_installer = installer
 
+    @abstractmethod
     def install_build_essentials(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_cmake(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_ninja(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
     def install_conan(self) -> None:
         raise NotImplementedError
 
