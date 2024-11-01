@@ -3,16 +3,12 @@
 #
 
 import tempfile
-import pathlib
 from abc import ABC, abstractmethod
-
+from functools import cached_property
 from .BuildSystemDescriptor import *
 from .Utilities import *
 from .XcodeFinder import *
 
-kDefaultCMakeToolchainsFolder = "Toolchains"
-kDefaultConanProfilesFolderV1 = "Profiles"
-kDefaultConanProfilesFolderV2 = "Profiles2"
 kCurrentToolchainFile = "CurrentToolchain.cmake"
 kCurrentConanBuildProfileDebug = "CurrentBuildProfileDebug.conanprofile"
 kCurrentConanBuildProfileRelease = "CurrentBuildProfileRelease.conanprofile"
@@ -24,13 +20,19 @@ kCurrentConanHostProfileRelease = "CurrentHostProfileRelease.conanprofile"
 class CompilerToolchainManager(ABC):
     def __init__(self, host: HostSystem, architecture: Architecture):
         # Filter out toolchains that run on a different host system
-        self.hostSystem = host
+        self.host_system = host
         # Filter out toolchains that have a different architecture
         self.architecture = architecture
+
+    @property
+    def cmake_toolchains_folder_name(self) -> str:
         # The name of the folder in which CMake toolchains are stores
-        self.cmake_toolchains_folder = kDefaultCMakeToolchainsFolder
+        return "Toolchains"
+
+    @cached_property
+    def conan_profiles_folder_name(self) -> str:
         # The name of the folder in which Conan profiles are stored
-        self.conan_profiles_folder = kDefaultConanProfilesFolderV2 if is_conan_v2_installed() else kDefaultConanProfilesFolderV1
+        return "Profiles2" if is_conan_v2_installed() else "Profiles"
 
     @abstractmethod
     def install_gcc_10(self) -> None:
@@ -127,7 +129,7 @@ class CompilerToolchainManager(ABC):
         :return: A list of parsed conan profiles.
         :raise: `ValueError` if failed to parse one of the profiles in the given folder.
         """
-        return list(filter(lambda profile: profile.identifier.compatible(self.hostSystem, self.architecture),
+        return list(filter(lambda profile: profile.identifier.compatible(self.host_system, self.architecture),
                            self.fetch_all_conan_profiles(folder)))
 
     def fetch_compatible_conan_profiles_as_map(self, folder: str) -> (dict[BuildSystemIdentifier, ConanProfile],
@@ -165,7 +167,7 @@ class CompilerToolchainManager(ABC):
         :return: A list of parsed compiler toolchains.
         :raise: `ValueError` if failed to parse one of the toolchains in the given folder.
         """
-        return list(filter(lambda toolchain: toolchain.identifier.compatible(self.hostSystem, self.architecture),
+        return list(filter(lambda toolchain: toolchain.identifier.compatible(self.host_system, self.architecture),
                            self.fetch_all_compiler_toolchains(folder)))
 
     def fetch_compatible_compiler_toolchains_as_map(self, folder: str) -> dict[BuildSystemIdentifier, Toolchain]:
@@ -204,16 +206,11 @@ class CompilerToolchainManager(ABC):
         remove_file_if_exist(Path(kCurrentConanBuildProfileRelease))
         remove_file_if_exist(Path(kCurrentConanHostProfileDebug))
         remove_file_if_exist(Path(kCurrentConanHostProfileRelease))
-        os.symlink(pathlib.Path("{}/{}".format(self.cmake_toolchains_folder, toolchain.filename)),
-                   pathlib.Path(kCurrentToolchainFile))
-        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, build_profile_debug.filename)),
-                   pathlib.Path(kCurrentConanBuildProfileDebug))
-        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, build_profile_release.filename)),
-                   pathlib.Path(kCurrentConanBuildProfileRelease))
-        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, host_profile_debug.filename)),
-                   pathlib.Path(kCurrentConanHostProfileDebug))
-        os.symlink(pathlib.Path("{}/{}".format(self.conan_profiles_folder, host_profile_release.filename)),
-                   pathlib.Path(kCurrentConanHostProfileRelease))
+        os.symlink(Path(self.cmake_toolchains_folder_name) / toolchain.filename, Path(kCurrentToolchainFile))
+        os.symlink(Path(self.conan_profiles_folder_name) / build_profile_debug.filename, Path(kCurrentConanBuildProfileDebug))
+        os.symlink(Path(self.conan_profiles_folder_name) / build_profile_release.filename, Path(kCurrentConanBuildProfileRelease))
+        os.symlink(Path(self.conan_profiles_folder_name) / host_profile_debug.filename, Path(kCurrentConanHostProfileDebug))
+        os.symlink(Path(self.conan_profiles_folder_name) / host_profile_release.filename, Path(kCurrentConanHostProfileRelease))
         print()
         print("The toolchain and the corresponding Conan profiles are both set.")
 
@@ -221,8 +218,8 @@ class CompilerToolchainManager(ABC):
         """
         [Action] Select a compiler toolchain
         """
-        toolchains = self.fetch_compatible_compiler_toolchains_as_map(self.cmake_toolchains_folder)
-        profiles_dbg, profiles_rel = self.fetch_compatible_conan_profiles_as_map(self.conan_profiles_folder)
+        toolchains = self.fetch_compatible_compiler_toolchains_as_map(self.cmake_toolchains_folder_name)
+        profiles_dbg, profiles_rel = self.fetch_compatible_conan_profiles_as_map(self.conan_profiles_folder_name)
         assert len(toolchains.keys()) == len(profiles_dbg.keys())
         assert len(toolchains.keys()) == len(profiles_rel.keys())
         identifiers = sorted(list(toolchains.keys()))
