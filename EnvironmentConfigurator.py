@@ -70,7 +70,7 @@ class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
         brew_install(["ninja"])
 
     def install_conan(self) -> None:
-        brew_install(["conan"])
+        pip_install(["conan"])
 
 
 # A configurator that sets up the development environment on Ubuntu 20.04 LTS / Ubuntu 22.04 LTS
