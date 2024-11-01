@@ -13,8 +13,8 @@ kCFBundleShortVersionString = "CFBundleShortVersionString"
 class XcodeBundle:
     def __init__(self, url: Path):
         """
-        Attempt to parse a Xcode bundle at the given path
-        :param url: The path to a Xcode bundle (e.g., `/Applications/Xcode.app`)
+        Attempt to parse an Xcode bundle at the given path
+        :param url: The path to an Xcode bundle (e.g., `/Applications/Xcode.app`)
         :raise `KeyError` if one of the required `CFBundle` properties is missing in `Info.plist`.
                `ValueError` if the required `CFBundle` properties do not match the one of `Xcode`.
         """
