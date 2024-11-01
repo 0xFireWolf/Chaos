@@ -9,9 +9,6 @@ from .Project import Project
 import glob
 import platform
 
-kConanCMakeIntegrationFileV1 = "conan_paths.cmake"
-kConanCMakeIntegrationFileV2 = "conan_toolchain.cmake"
-
 
 # A project builder that builds, tests, and cleans the project
 class ProjectBuilder:
@@ -23,6 +20,14 @@ class ProjectBuilder:
         """
         self.project = project
         self.cmake_manager = cmake_manager
+
+    @cached_property
+    def conan_cmake_integration_file(self) -> str:
+        """
+        Get the name of Conan's CMake integration file
+        :return: The file name.
+        """
+        return "conan_toolchain.cmake" if is_conan_v2_installed() else "conan_paths.cmake"
 
     #
     # MARK: - Small Steps
@@ -176,9 +181,7 @@ class ProjectBuilder:
 
         # Compute required properties for CMake
         toolchain_file = self.project.source_directory / kCurrentToolchainFile
-        chainload_file = self.project.build_directory / (kConanCMakeIntegrationFileV2
-                                                         if is_conan_v2_installed()
-                                                         else kConanCMakeIntegrationFileV1)
+        chainload_file = self.project.build_directory / self.conan_cmake_integration_file
 
         # Configure the project
         self.create_fresh_build_folder()
