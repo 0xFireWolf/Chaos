@@ -50,12 +50,18 @@ class EnvironmentConfigurator(ABC):
 # A configurator that sets up the development environment on macOS
 class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
     def install_build_essentials(self) -> None:
-        subprocess.run(["sudo", "xcode-select", "--install"])
-        path = tempfile.mkdtemp()
-        subprocess.run(["curl", "-O", "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"], cwd=path).check_returncode()
-        os.chmod(path + "/install.sh", 0o755)
-        subprocess.run([path + "/install.sh"]).check_returncode()
-        shutil.rmtree(path)
+        # Check whether Homebrew has already been installed
+        try:
+            version = subprocess.check_output(["brew", "--version"], text=True).strip()
+            print(f"{version} has already been installed.")
+        except FileNotFoundError:
+            print("Homebrew is not installed. Installing...")
+            subprocess.run(["sudo", "xcode-select", "--install"])
+            path = tempfile.mkdtemp()
+            subprocess.run(["curl", "-O", "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"], cwd=path).check_returncode()
+            os.chmod(path + "/install.sh", 0o755)
+            subprocess.run([path + "/install.sh"]).check_returncode()
+            shutil.rmtree(path)
 
     def install_cmake(self) -> None:
         brew_install(["cmake"])
