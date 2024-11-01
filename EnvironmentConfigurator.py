@@ -87,6 +87,7 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
     def install_conan(self) -> None:
         apt_install(["python3-pip"])
         pip_install(["conan"])
+        subprocess.run(["sudo", "rm", "-rf", "/usr/local/bin/conan"])
         subprocess.run(["sudo", "ln", "-s", os.path.expanduser("~") + "/.local/bin/conan", "/usr/local/bin/conan"]).check_returncode()
 
 
