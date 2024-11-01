@@ -112,4 +112,6 @@ def is_conan_v2_installed() -> bool:
     Check whether Conan 2.x instead of 1.x is installed on the local computer
     :return: `true` if Conan 2.x has been installed, `false` otherwise.
     """
-    return subprocess.check_output(["conan", "--version"]).startswith(b"Conan version 2")
+    if not hasattr(is_conan_v2_installed, "result"):
+        is_conan_v2_installed.result = subprocess.check_output(["conan", "--version"], text=True).startswith("Conan version 2")
+    return is_conan_v2_installed.result
