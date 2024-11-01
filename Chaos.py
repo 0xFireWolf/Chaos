@@ -323,7 +323,7 @@ def main(project: Project) -> int:
 
     # Chaos Command: --select-toolchain <BuildToolchainName> [<HostToolchainName>]
     group.add_argument("--select-toolchain",
-                       nargs=2,
+                       nargs="+",
                        metavar=("BUILD_NAME", "HOST_NAME"),
                        action=required_length(1, 2),
                        help="Select a compiler toolchain named <BUILD_NAME> that specifies the build environment " \
@@ -356,7 +356,7 @@ def main(project: Project) -> int:
 
     # Chaos Command: --install-all <Path>
     group.add_argument("--install-all",
-                       nargs=1,
+                       nargs="?",
                        metavar="PATH",
                        action=required_length(0, 1),
                        help="Install all targets using the default prefix path or [PATH] if specified")
