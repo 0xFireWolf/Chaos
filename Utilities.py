@@ -15,7 +15,9 @@ def brew_install(packages: list[str]) -> None:
     """
     executable_path = Path(shutil.which("brew"))
     print(f"Found the Homebrew at {executable_path}.", flush=True)
-    subprocess.run([executable_path, "update"]).check_returncode()
+    if not hasattr(brew_install, "updated"):
+        subprocess.run([executable_path, "update"]).check_returncode()
+        brew_install.updated = True
     subprocess.run([executable_path, "install"] + packages).check_returncode()
 
 
