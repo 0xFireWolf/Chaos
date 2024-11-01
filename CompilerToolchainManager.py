@@ -26,12 +26,18 @@ class CompilerToolchainManager(ABC):
 
     @property
     def cmake_toolchains_folder_name(self) -> str:
-        # The name of the folder in which CMake toolchains are stores
+        """
+        Get the name of the folder in which CMake toolchains are stores
+        :return: The folder name.
+        """
         return "Toolchains"
 
     @cached_property
     def conan_profiles_folder_name(self) -> str:
-        # The name of the folder in which Conan profiles are stored
+        """
+        Get the name of the folder in which Conan profiles are stored
+        :return: The folder name.
+        """
         return "Profiles2" if is_conan_v2_installed() else "Profiles"
 
     @abstractmethod
