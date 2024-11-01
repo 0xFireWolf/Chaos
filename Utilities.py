@@ -32,7 +32,7 @@ def apt_install(packages: list[str]) -> None:
 def apt_add_repository(name: str) -> None:
     """
     Add an APT repository of the given name
-    :param name: Name of the repository
+    :param name: The repository name
     :raise `CalledProcessError` on error.
     """
     subprocess.run(["sudo", "add-apt-repository", "-y", name]).check_returncode()
@@ -54,7 +54,7 @@ def pip_install(packages: list[str]) -> None:
     :param packages: Name of the packages
     :raise `CalledProcessError` on error.
     """
-    subprocess.run(["sudo", "pip", "install"] + packages).check_returncode()
+    subprocess.run(["sudo", "pip", "install", "--break-system-packages"] + packages).check_returncode()
 
 
 def winget_install(packages: list[str]) -> None:
