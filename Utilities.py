@@ -67,7 +67,7 @@ def winget_install(packages: list[str]) -> None:
     """
     for package in packages:
         if subprocess.run(["winget", "list", package]).returncode != 0:
-            subprocess.run(["winget", "install", package]).check_returncode()
+            subprocess.run(["winget", "install", package, "--scope", "machine"]).check_returncode()
         else:
             subprocess.run(["winget", "upgrade", package]).check_returncode()
 
