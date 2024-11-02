@@ -98,6 +98,7 @@ class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
         powershell("Set-ExecutionPolicy Bypass -Scope Process -Force; "
                    "[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; "
                    "iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))")
+        winget_install(["Git.Git"])
 
     def install_cmake(self) -> None:
         winget_install(["Kitware.CMake"])
