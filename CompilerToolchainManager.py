@@ -469,7 +469,7 @@ class CompilerToolchainManagerUbuntu2404(CompilerToolchainManagerUbuntu):
         self.install_gcc_from_apt(14)
 
     def install_clang_13(self) -> None:
-        self.install_clang_from_apt_llvm_org(13)
+        brew_install(["llvm@13"])
 
     def install_clang_14(self) -> None:
         self.install_clang_from_apt(14)
