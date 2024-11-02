@@ -66,10 +66,11 @@ def winget_install(packages: list[str]) -> None:
     :raise `CalledProcessError` on error.
     """
     for package in packages:
-        if subprocess.run(["winget", "list", package]).returncode != 0:
+        if subprocess.run(["winget", "list", package], stdout=subprocess.DEVNULL).returncode != 0:
             subprocess.run(["winget", "install", package, "--scope", "machine"]).check_returncode()
         else:
-            subprocess.run(["winget", "upgrade", package]).check_returncode()
+            # Attempt to upgrade the package
+            subprocess.run(["winget", "upgrade", package, "--scope", "machine"])
 
 
 def choco_install(packages: list[str]) -> None:
