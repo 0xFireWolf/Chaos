@@ -22,10 +22,6 @@ class EnvironmentConfigurator(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def install_ninja(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
     def install_conan(self) -> None:
         raise NotImplementedError
 
@@ -39,7 +35,6 @@ class EnvironmentConfigurator(ABC):
     def install_basic(self) -> None:
         self.install_build_essentials()
         self.install_cmake()
-        self.install_ninja()
         self.install_conan()
 
     def install_all(self) -> None:
@@ -66,9 +61,6 @@ class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
     def install_cmake(self) -> None:
         brew_install(["cmake"])
 
-    def install_ninja(self) -> None:
-        brew_install(["ninja"])
-
     def install_conan(self) -> None:
         pip_install(["conan"])
 
@@ -81,9 +73,6 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
     def install_cmake(self) -> None:
         apt_install(["cmake"])
 
-    def install_ninja(self) -> None:
-        apt_install(["ninja-build"])
-
     def install_conan(self) -> None:
         apt_install(["python3-pip"])
         pip_install(["conan"])
@@ -94,17 +83,10 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
 # A configurator that sets up the development environment on Windows 10 or later
 class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
     def install_build_essentials(self) -> None:
-        # Install Chocolatey
-        powershell("Set-ExecutionPolicy Bypass -Scope Process -Force; "
-                   "[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; "
-                   "iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))")
         winget_install(["Git.Git"])
 
     def install_cmake(self) -> None:
         winget_install(["Kitware.CMake"])
-
-    def install_ninja(self) -> None:
-        choco_install(["ninja"])
 
     def install_conan(self) -> None:
         winget_install(["JFrog.Conan"])
@@ -117,9 +99,6 @@ class EnvironmentConfiguratorFreeBSD(EnvironmentConfigurator):
 
     def install_cmake(self) -> None:
         pkg_install(["cmake"])
-
-    def install_ninja(self) -> None:
-        pkg_install(["ninja"])
 
     def install_conan(self) -> None:
         pkg_install(["py311-sqlite3"])
