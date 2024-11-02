@@ -216,7 +216,7 @@ class Chaos:
         menu = Menu(title)
         menu.add_item(">> Configure Development Environment")
         menu.add_separator()
-        menu.add_item("Install CMake, Ninja and Conan Package Manager", self.configurator.install_basic)
+        menu.add_item("Install Build Essentials, CMake and Conan Package Manager", self.configurator.install_basic)
         menu.add_item("Install additional required development tools", self.configurator.install_other)
         menu.add_item("Install all required development tools", self.configurator.install_all)
         menu.add_separator()
