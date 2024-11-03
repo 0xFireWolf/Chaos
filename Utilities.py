@@ -4,6 +4,7 @@
 import shutil
 import subprocess
 import os
+import sys
 from pathlib import Path
 
 
@@ -56,8 +57,7 @@ def pip_install(packages: list[str]) -> None:
     :param packages: Name of the packages
     :raise `CalledProcessError` on error.
     """
-    subprocess.run(["pip", "install", "--break-system-packages"] + packages).check_returncode()
-
+    subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages"] + packages).check_returncode()
 
 def winget_install(packages: list[str]) -> None:
     """
