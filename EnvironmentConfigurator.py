@@ -57,6 +57,7 @@ class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
             os.chmod(path + "/install.sh", 0o755)
             subprocess.run([path + "/install.sh"]).check_returncode()
             shutil.rmtree(path)
+        brew_install(["wget"])
 
     def install_cmake(self) -> None:
         brew_install(["cmake"])
