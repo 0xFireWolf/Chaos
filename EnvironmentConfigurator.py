@@ -25,6 +25,21 @@ class EnvironmentConfigurator(ABC):
     def install_conan(self) -> None:
         raise NotImplementedError
 
+    def install_homebrew(self) -> None:
+        # Check whether Homebrew has already been installed
+        try:
+            version = subprocess.check_output(["brew", "--version"], text=True).strip()
+            print(f"{version} has already been installed.")
+        except FileNotFoundError:
+            print("Homebrew is not installed. Installing...")
+            subprocess.run(["sudo", "xcode-select", "--install"])
+            path = tempfile.mkdtemp()
+            subprocess.run(["curl", "-O", "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"],
+                           cwd=path).check_returncode()
+            os.chmod(path + "/install.sh", 0o755)
+            subprocess.run([path + "/install.sh"]).check_returncode()
+            shutil.rmtree(path)
+
     def install_other(self) -> None:
         if self.other_tools_installer is not None:
             print("Installing additional required development tools...")
@@ -45,18 +60,7 @@ class EnvironmentConfigurator(ABC):
 # A configurator that sets up the development environment on macOS
 class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
     def install_build_essentials(self) -> None:
-        # Check whether Homebrew has already been installed
-        try:
-            version = subprocess.check_output(["brew", "--version"], text=True).strip()
-            print(f"{version} has already been installed.")
-        except FileNotFoundError:
-            print("Homebrew is not installed. Installing...")
-            subprocess.run(["sudo", "xcode-select", "--install"])
-            path = tempfile.mkdtemp()
-            subprocess.run(["curl", "-O", "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"], cwd=path).check_returncode()
-            os.chmod(path + "/install.sh", 0o755)
-            subprocess.run([path + "/install.sh"]).check_returncode()
-            shutil.rmtree(path)
+        self.install_homebrew()
         brew_install(["wget"])
 
     def install_cmake(self) -> None:
@@ -70,6 +74,18 @@ class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
 class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
     def install_build_essentials(self) -> None:
         apt_install(["build-essential", "vim"])
+        self.install_homebrew()
+        subprocess.run(f"echo >> {os.path.expanduser("~")}/.bashrc", shell=True, check=True)
+        subprocess.run(
+            f"echo 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"' >> {os.path.expanduser("~")}/.bashrc",
+            shell=True,
+            check=True,
+        )
+        subprocess.run(
+            "eval \"$(${HOME}/linuxbrew/.linuxbrew/bin/brew shellenv)\"",
+            shell=True,
+            check=True,
+        )
 
     def install_cmake(self) -> None:
         apt_install(["cmake"])
