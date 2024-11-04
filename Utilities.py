@@ -97,7 +97,7 @@ def remove_file_if_exist(file: Path) -> None:
     Remove the given file if it exists
     :param file: The name of the file
     """
-    if os.path.exists(file):
+    if os.path.lexists(file):
         os.remove(file)
 
 
