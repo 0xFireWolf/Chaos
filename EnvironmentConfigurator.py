@@ -75,17 +75,8 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
     def install_build_essentials(self) -> None:
         apt_install(["build-essential", "vim"])
         self.install_homebrew()
-        subprocess.run(f"echo >> {os.path.expanduser("~")}/.bashrc", shell=True, check=True)
-        subprocess.run(
-            f"echo 'eval \"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"' >> {os.path.expanduser("~")}/.bashrc",
-            shell=True,
-            check=True,
-        )
-        subprocess.run(
-            "eval \"$(${HOME}/linuxbrew/.linuxbrew/bin/brew shellenv)\"",
-            shell=True,
-            check=True,
-        )
+        subprocess.run(["sudo", "rm", "-rf", "/usr/local/bin/brew"])
+        subprocess.run(["sudo", "ln", "-s", "/home/linuxbrew/.linuxbrew/bin/brew", "/usr/local/bin/brew"]).check_returncode()
 
     def install_cmake(self) -> None:
         apt_install(["cmake"])
