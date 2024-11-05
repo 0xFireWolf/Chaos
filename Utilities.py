@@ -83,13 +83,14 @@ def choco_install(packages: list[str]) -> None:
         subprocess.run(["choco", "install", "-y", package]).check_returncode()
 
 
-def powershell(command: str) -> None:
+def powershell(command: str, cwd: Path = Path.cwd()) -> None:
     """
     Run the given command in Powershell
     :param command: A Powershell command
+    :param cwd: The working directory
     :raise `CalledProcessError` on error.
     """
-    subprocess.run(["powershell", "-Command", command]).check_returncode()
+    subprocess.run(["powershell", "-Command", command], cwd=cwd).check_returncode()
 
 
 def remove_file_if_exist(file: Path) -> None:
@@ -118,11 +119,3 @@ def is_conan_v2_installed() -> bool:
     if not hasattr(is_conan_v2_installed, "result"):
         is_conan_v2_installed.result = subprocess.check_output(["conan", "--version"], text=True).startswith("Conan version 2")
     return is_conan_v2_installed.result
-
-
-def powershell(command: str) -> None:
-    """
-    Run the given command in Powershell
-    :param command: A powershell command
-    """
-    subprocess.run(["powershell", "-Command", command]).check_returncode()
