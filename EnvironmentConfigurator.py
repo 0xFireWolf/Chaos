@@ -98,7 +98,7 @@ class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
         Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
         """
         # Execute the PowerShell script
-        subprocess.run(["powershell", "-Command", powershell_script], shell=True)
+        subprocess.run(["powershell", "-Command", powershell_script], shell=True).check_returncode()
 
     def install_build_essentials(self) -> None:
         winget_path = shutil.which("winget")
