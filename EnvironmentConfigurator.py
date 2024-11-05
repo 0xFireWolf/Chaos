@@ -87,23 +87,23 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
 # A configurator that sets up the development environment on Windows 10 or later
 class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
     def install_winget(self) -> None:
-        powershell_script = """
-        $progressPreference = 'silentlyContinue'
-        Write-Information "Downloading WinGet and its dependencies..."
-        Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
-        Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile Microsoft.VCLibs.x64.14.00.Desktop.appx
-        Invoke-WebRequest -Uri https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx -OutFile Microsoft.UI.Xaml.2.8.x64.appx
-        Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx
-        Add-AppxPackage Microsoft.UI.Xaml.2.8.x64.appx
-        Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
-        """
-        # Execute the PowerShell script
-        subprocess.run(["powershell", "-Command", powershell_script], shell=True).check_returncode()
+        print("Installing the Windows Package Manager...")
+        commands = [
+        "$progressPreference = 'silentlyContinue'",
+        "Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle",
+        "Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile Microsoft.VCLibs.x64.14.00.Desktop.appx",
+        "Invoke-WebRequest -Uri https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx -OutFile Microsoft.UI.Xaml.2.8.x64.appx",
+        "Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx",
+        "Add-AppxPackage Microsoft.UI.Xaml.2.8.x64.appx",
+        "Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+        ]
+        for command in commands:
+            powershell(command)
+        print("Windows Package Manager has been installed.")
 
     def install_build_essentials(self) -> None:
         winget_path = shutil.which("winget")
         if winget_path is None:
-            print("Installing the Windows Package Manager...")
             self.install_winget()
         else:
             print(f"Found winget at {winget_path}.")
