@@ -107,7 +107,7 @@ def remove_folder_if_exists(folder: Path) -> None:
     Remove the given folder if it exists
     :param folder: The name of the folder
     """
-    if os.path.exists(folder):
+    if os.path.lexists(folder):
         shutil.rmtree(folder)
 
 
