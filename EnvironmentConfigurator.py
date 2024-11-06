@@ -103,7 +103,7 @@ class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
                     raise ValueError(f"Failed to download {filename}. Status code: {response.status_code}")
                 with open(Path(temp_dir) / filename, "wb") as file:
                     file.write(response.content)
-                print(f"Installing {filenames}...")
+                print(f"Installing {filename}...")
                 powershell(f"Add-AppxPackage {filename}", cwd=Path(temp_dir))
                 print(f"{filename} has been installed.")
 
