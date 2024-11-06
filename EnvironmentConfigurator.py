@@ -119,7 +119,7 @@ class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
         winget_install(["Kitware.CMake"])
 
     def install_conan(self) -> None:
-        winget_install(["JFrog.Conan"])
+        pip_install(["conan"])
 
 
 # A configurator that sets up the development environment on FreeBSD
