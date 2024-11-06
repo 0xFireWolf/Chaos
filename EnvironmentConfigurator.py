@@ -3,6 +3,7 @@
 #
 
 import tempfile
+import requests
 from abc import ABC, abstractmethod
 from typing import Callable
 from .Utilities import *
@@ -88,18 +89,23 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
 class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
     def install_winget(self) -> None:
         print("Installing the Windows Package Manager...")
-        commands = [
-        "$progressPreference = 'silentlyContinue'",
-        "Invoke-WebRequest -Uri https://aka.ms/getwinget -OutFile Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle",
-        "Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile Microsoft.VCLibs.x64.14.00.Desktop.appx",
-        "Invoke-WebRequest -Uri https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx -OutFile Microsoft.UI.Xaml.2.8.x64.appx",
-        "Add-AppxPackage Microsoft.VCLibs.x64.14.00.Desktop.appx",
-        "Add-AppxPackage Microsoft.UI.Xaml.2.8.x64.appx",
-        "Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-        ]
-        for command in commands:
-            powershell(command)
-        print("Windows Package Manager has been installed.")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            uris = ["https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx",
+                    "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx",
+                    "https://aka.ms/getwinget"]
+            filenames = ["Microsoft.VCLibs.x64.14.00.Desktop.appx",
+                         "Microsoft.UI.Xaml.2.8.x64.appx",
+                         "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"]
+            for (uri, filename) in zip(uris, filenames):
+                print(f"Downloading {filename}...")
+                response = requests.get(uri)
+                if response.status_code != 200:
+                    raise ValueError(f"Failed to download {filename}. Status code: {response.status_code}")
+                with open(Path(temp_dir) / filename, "wb") as file:
+                    file.write(response.content)
+                print(f"Installing {filenames}...")
+                powershell(f"Add-AppxPackage {filename}", cwd=Path(temp_dir))
+                print(f"{filename} has been installed.")
 
     def install_build_essentials(self) -> None:
         winget_path = shutil.which("winget")
