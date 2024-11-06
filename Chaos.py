@@ -243,9 +243,6 @@ class Chaos:
         menu.add_item("Rebuild and run all tests with coverage", self.project_builder.rebuild_and_run_all_tests_with_coverage)
         menu.add_item("Clean the build folder", self.project_builder.clean_build_folder)
         menu.add_item("Clean the build folder and reset the toolchain", self.project_builder.clean_all)
-        menu.add_separator()
-        menu.add_item(">> Misc")
-        menu.add_separator()
         menu.add_item("Remove all Conan packages", self.project_builder.conan_remove_all)
         menu.add_item("Determine the minimum CMake version", self.project_builder.determine_minimum_cmake_version_interactive)
         return menu
