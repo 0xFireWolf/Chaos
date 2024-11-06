@@ -148,6 +148,12 @@ class Chaos:
         """
         self.project_builder.install_project(prefix)
 
+    def ci_remove_conan_packages(self) -> None:
+        """
+        [CI] Remove all packages from Conan's local cache
+        """
+        self.project_builder.conan_remove_all()
+
     def ci_entry_point(self, args: argparse.Namespace) -> int:
         """
         [CI] Main Entry Point of the Continuous Integration
@@ -171,6 +177,8 @@ class Chaos:
                 self.ci_run_tests_with_coverage()
             elif args.install_all is not None:
                 self.ci_install_all(*args.install_all)
+            elif args.remove_packages is True:
+                self.ci_remove_conan_packages()
             else:
                 print(f"Unrecognized Chaos command: {args.command}.")
                 raise ValueError
@@ -228,14 +236,18 @@ class Chaos:
         menu.add_separator()
         menu.add_item(">> Build, Test & Clean Projects")
         menu.add_separator()
-        menu.add_item("Rebuild the project (DEBUG).", self.project_builder.rebuild_project_debug)
-        menu.add_item("Rebuild the project (RELEASE).", self.project_builder.rebuild_project_release)
-        menu.add_item("Rebuild and run all tests (DEBUG).", self.project_builder.rebuild_and_run_all_tests_debug)
-        menu.add_item("Rebuild and run all tests (RELEASE).", self.project_builder.rebuild_and_run_all_tests_release)
-        menu.add_item("Rebuild and run all tests with coverage.", self.project_builder.rebuild_and_run_all_tests_with_coverage)
-        menu.add_item("Clean the build folder.", self.project_builder.clean_build_folder)
-        menu.add_item("Clean the build folder and reset the toolchain.", self.project_builder.clean_all)
-        menu.add_item("Determine the minimum CMake version.", self.project_builder.determine_minimum_cmake_version_interactive)
+        menu.add_item("Rebuild the project (DEBUG)", self.project_builder.rebuild_project_debug)
+        menu.add_item("Rebuild the project (RELEASE)", self.project_builder.rebuild_project_release)
+        menu.add_item("Rebuild and run all tests (DEBUG)", self.project_builder.rebuild_and_run_all_tests_debug)
+        menu.add_item("Rebuild and run all tests (RELEASE)", self.project_builder.rebuild_and_run_all_tests_release)
+        menu.add_item("Rebuild and run all tests with coverage", self.project_builder.rebuild_and_run_all_tests_with_coverage)
+        menu.add_item("Clean the build folder", self.project_builder.clean_build_folder)
+        menu.add_item("Clean the build folder and reset the toolchain", self.project_builder.clean_all)
+        menu.add_separator()
+        menu.add_item(">> Misc")
+        menu.add_separator()
+        menu.add_item("Remove all Conan packages", self.project_builder.conan_remove_all)
+        menu.add_item("Determine the minimum CMake version", self.project_builder.determine_minimum_cmake_version_interactive)
         return menu
 
     #
@@ -360,6 +372,11 @@ def main(project: Project) -> int:
                        metavar="PATH",
                        action=required_length(0, 1),
                        help="Install all targets using the default prefix path or [PATH] if specified")
+
+    # Chaos Command: --remove-packages
+    group.add_argument("--remove-packages",
+                       action="store_true",
+                       help="Remove all packages from Conan's local cache")
 
     # Parse arguments
     return chaos.ci_entry_point(parser.parse_args())
