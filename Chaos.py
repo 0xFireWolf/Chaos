@@ -101,7 +101,7 @@ class Chaos:
         """
         [CI] Select the toolchain that has the given name
         :param build_name: The name of the toolchain that specifies the build environment
-        :param host_name: Te name of the toolchain that specifies the host environment
+        :param host_name: The name of the toolchain that specifies the host environment
         :raise `ValueError` if the given toolchain name is invalid;
                `CalledProcessError` if failed to select the toolchain.
         """
@@ -116,14 +116,15 @@ class Chaos:
                                                         host_profile_dbg,
                                                         host_profile_rel)
 
-    def ci_build_all(self, build_type: str) -> None:
+    def ci_build_all(self, build_type: str, cmake_generate_flags: list[str] = None) -> None:
         """
         [CI] Build all targets
         :param build_type: The raw build type
+        :param cmake_generate_flags: Additional flags passed to `cmake` when generates files for the native build system
         :raise `ValueError` if the given build type is invalid;
                `CalledProcessError` if failed to build one of the targets.
         """
-        self.project_builder.rebuild_project(BuildType(build_type))
+        self.project_builder.rebuild_project(BuildType(build_type), cmake_generate_flags=cmake_generate_flags)
 
     def ci_run_tests(self, build_type: str) -> None:
         """
@@ -154,10 +155,11 @@ class Chaos:
         """
         self.project_builder.conan_remove_all()
 
-    def ci_entry_point(self, args: argparse.Namespace) -> int:
+    def ci_entry_point(self, args: argparse.Namespace, unknown_args: list[str]) -> int:
         """
         [CI] Main Entry Point of the Continuous Integration
         :param args: The parsed command line arguments
+        :param unknown_args: The unknown command line arguments
         :return: The status code to be passed to `main()`.
         """
         try:
@@ -170,7 +172,7 @@ class Chaos:
             elif args.restore_toolchain is not None:
                 self.ci_install_toolchain(*args.restore_toolchain)
             elif args.build_all is not None:
-                self.ci_build_all(*args.build_all)
+                self.ci_build_all(*args.build_all, cmake_generate_flags=unknown_args or None)
             elif args.run_tests is not None:
                 self.ci_run_tests(*args.run_tests)
             elif args.run_tests_with_coverage is True:
@@ -279,7 +281,7 @@ class Chaos:
 
     def control(self, option: int = -1) -> int:
         """
-        [CC] Main entry point of the Chaos Control Center
+        [CC] The main entry point of the Chaos Control Center
         :param option: Pass `-1` to enter interactive mode, otherwise a valid index to perform an operation
         :return: The status code to be passed to `main()`.
         """
@@ -316,7 +318,7 @@ def main(project: Project) -> int:
     # Create the top-level parser
     parser = argparse.ArgumentParser(description="A control center for CMake + Conan + C++20 (and later) projects")
 
-    # Add mutually exclusive group for commands
+    # Add a mutually exclusive group for commands
     group = parser.add_mutually_exclusive_group()
 
     # Chaos Command: --install-tools
@@ -376,4 +378,4 @@ def main(project: Project) -> int:
                        help="Remove all packages from Conan's local cache")
 
     # Parse arguments
-    return chaos.ci_entry_point(parser.parse_args())
+    return chaos.ci_entry_point(*parser.parse_known_args())
