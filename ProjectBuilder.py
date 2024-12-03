@@ -2,6 +2,8 @@
 # MARK: - Build, Test & Clean Projects
 #
 from __future__ import annotations
+
+import os
 from typing import Any
 from .CompilerToolchainManager import *
 from .CMakeManager import CMakeManager, CMake
@@ -101,6 +103,9 @@ class ProjectBuilder:
                 f"-DCMAKE_BUILD_TYPE={build_type.value}",
                 f"-DCMAKE_TOOLCHAIN_FILE={toolchain_file}",
                 f"-DCHAOS_CHAINLOAD_TOOLCHAIN_FILE={chainload_toolchain_file}"]
+        # Check if users specify to use the bundled libc++ library on macOS
+        if int(os.getenv("USE_BUNDLED_LIBCPP", 0)) == 1:
+            args.append("-DCHAOS_USE_BUNDLED_LIBCPP=ON")
         # Append CMake flags specified by the project
         if self.project.cmake_generate_flags is not None:
             args.extend(self.project.cmake_generate_flags)
