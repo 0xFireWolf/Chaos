@@ -3,6 +3,7 @@
 #
 from __future__ import annotations
 import argparse
+import os
 import sys
 import distro
 import traceback
@@ -191,6 +192,83 @@ class Chaos:
             return -1
 
     #
+    # MARK: Local Bootstrapping
+    #
+
+    def bootstrapping_create_ramdisk(self, mount_point: Path, size: int) -> None:
+        sectors = size * 1024 * 1024 * 1024 / 512
+        device = subprocess.check_output(["hdiutil", "attach", "-nomount", f"ram://{sectors}"], text=True).strip()
+        subprocess.run(["newfs_hfs", "-v", mount_point.stem, device]).check_returncode()
+        subprocess.run(["diskutil", "mount", "-mountPoint", mount_point, device]).check_returncode()
+
+    def bootstrapping_conan_install(self, build_directory: Path, profile: ConanProfile) -> None:
+        profile_path = Path.cwd() / self.toolchain_manager.conan_profiles_folder_name / profile.filename
+        subprocess.run(["conan",
+                        "install", Path.cwd(),
+                        "--output-folder", build_directory,
+                        "--update",
+                        "--build", "missing",
+                        "--profile:build", profile_path,
+                        "--profile:host", profile_path])
+
+    def bootstrapping_clion_local(self, toolchain_name: str, with_coverage: bool = False, size: int = 8) -> None:
+        profile_dbg = ConanProfile(toolchain_name + "_Debug.conanprofile")
+        profile_rel = ConanProfile(toolchain_name + "_Release.conanprofile")
+        compiler = profile_dbg.identifier.compiler
+        clion_toolchain_name = f"{compiler.type.value.lower()}-{compiler.version}-native"
+        clion_build_directories_with_profiles: dict[Path, ConanProfile] = {
+            Path.cwd() / f"cmake-build-debug-{clion_toolchain_name}": profile_dbg,
+            Path.cwd() / f"cmake-build-release-{clion_toolchain_name}": profile_rel,
+        }
+        if with_coverage:
+            clion_build_directories_with_profiles[Path.cwd() / f"cmake-build-debug-{clion_toolchain_name}-coverage"] = profile_dbg
+            clion_build_directories_with_profiles[Path.cwd() / f"cmake-build-release-{clion_toolchain_name}-coverage"] = profile_rel
+        for build_directory, profile in clion_build_directories_with_profiles.items():
+            print("Bootstrapping CLion for Local Development...")
+            print(f"    - Build Directory: {build_directory}")
+            print(f"    - Conan Profile: {profile}")
+            remove_folder_if_exists(build_directory)
+            os.mkdir(build_directory)
+            self.bootstrapping_create_ramdisk(build_directory, size)
+            self.bootstrapping_conan_install(build_directory, profile)
+
+    def bootstrapping_clion_interactive(self) -> None:
+        self.clear_console()
+
+        print("Please select a toolchain: \n")
+        toolchains = self.toolchain_manager.fetch_compatible_compiler_toolchains_as_map(self.toolchain_manager.cmake_toolchains_folder_name)
+        identifiers = sorted(list(toolchains.keys()))
+        for index, identifier in enumerate(identifiers):
+            print("[{:02}] {}".format(index, toolchains[identifier]))
+        print()
+        toolchain_index = int(input("Please enter the toolchain index: "))
+        toolchain_name = Path(toolchains[identifiers[toolchain_index]].filename).stem
+
+        print()
+        with_coverage_input = input("Do you want to create build directories for coverage as well (Y/N, Default: Y): ").strip()
+        with_coverage = True if not with_coverage_input else with_coverage_input == "Y"
+
+        print()
+        ramdisk_size_input = input("Please enter the ramdisk size: (Unit: GB, Default: 8 GB)").strip()
+        ramdisk_size = 8 if not ramdisk_size_input else int(ramdisk_size_input)
+
+        print()
+        print("Bootstrapping CLion for Local Development:")
+        print(f"    - Toolchain Name: {toolchain_name}")
+        print(f"    - With Coverage: {with_coverage}")
+        print(f"    - Ramdisk Size: {ramdisk_size} GB")
+        print()
+        self.bootstrapping_clion_local(toolchain_name, with_coverage, ramdisk_size)
+
+    def cleanup_build_directories_for_clion(self) -> None:
+        build_directories = [Path(entry.path) for entry in os.scandir(Path.cwd())
+                             if entry.name.startswith("cmake-build") and Path(entry.path).is_mount()]
+        for build_directory in build_directories:
+            print(f"Ejecting the build directory {build_directory.name}...")
+            subprocess.run(["diskutil", "eject", build_directory]).check_returncode()
+            shutil.rmtree(build_directory)
+
+    #
     # MARK: Create Menus
     #
 
@@ -247,6 +325,8 @@ class Chaos:
         menu.add_item("Clean the build folder and reset the toolchain", self.project_builder.clean_all)
         menu.add_item("Remove all Conan packages", self.project_builder.conan_remove_all)
         menu.add_item("Determine the minimum CMake version", self.project_builder.determine_minimum_cmake_version_interactive)
+        menu.add_item("Bootstrap build directories for CLion (macOS)", self.bootstrapping_clion_interactive)
+        menu.add_item("Clean build directories for CLion (macOS)", self.cleanup_build_directories_for_clion)
         return menu
 
     #
