@@ -199,7 +199,7 @@ class Chaos:
         sectors = size * 1024 * 1024 * 1024 / 512
         device = subprocess.check_output(["hdiutil", "attach", "-nomount", f"ram://{sectors}"], text=True).strip()
         subprocess.run(["newfs_hfs", "-v", mount_point.stem, device]).check_returncode()
-        subprocess.run(["diskutil", "mount", "-mountPoint", mount_point, device]).check_returncode()
+        subprocess.run(["diskutil", "mount", "nobrowse", "-mountPoint", mount_point, device]).check_returncode()
 
     def bootstrapping_conan_install(self, build_directory: Path, profile: ConanProfile) -> None:
         profile_path = Path.cwd() / self.toolchain_manager.conan_profiles_folder_name / profile.filename
