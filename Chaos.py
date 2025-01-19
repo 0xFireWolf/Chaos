@@ -202,14 +202,18 @@ class Chaos:
         subprocess.run(["diskutil", "mount", "nobrowse", "-mountPoint", mount_point, device]).check_returncode()
 
     def bootstrapping_conan_install(self, build_directory: Path, profile: ConanProfile) -> None:
+        # TODO: Refactor this
         profile_path = Path.cwd() / self.toolchain_manager.conan_profiles_folder_name / profile.filename
-        subprocess.run(["conan",
-                        "install", Path.cwd(),
-                        "--output-folder", build_directory,
-                        "--update",
-                        "--build", "missing",
-                        "--profile:build", profile_path,
-                        "--profile:host", profile_path])
+        conan_args = ["conan",
+                      "install", Path.cwd(),
+                      "--output-folder", build_directory,
+                      "--update",
+                      "--build", "missing",
+                      "--profile:build", profile_path,
+                      "--profile:host", profile_path]
+        if self.project_builder.project.conan_flags is not None:
+            conan_args.extend(self.project_builder.project.conan_flags)
+        subprocess.run(conan_args).check_returncode()
 
     def bootstrapping_clion_local(self, toolchain_name: str, with_coverage: bool = False, size: int = 8) -> None:
         profile_dbg = ConanProfile(toolchain_name + "_Debug.conanprofile")
