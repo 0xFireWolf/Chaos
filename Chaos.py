@@ -3,8 +3,6 @@
 #
 from __future__ import annotations
 import argparse
-import os
-import sys
 import distro
 import traceback
 from subprocess import CalledProcessError
@@ -85,6 +83,7 @@ class Chaos:
             case "gcc-12": return self.toolchain_manager.install_gcc_12()
             case "gcc-13": return self.toolchain_manager.install_gcc_13()
             case "gcc-14": return self.toolchain_manager.install_gcc_14()
+            case "gcc-15": return self.toolchain_manager.install_gcc_15()
             case "clang-13": return self.toolchain_manager.install_clang_13()
             case "clang-14": return self.toolchain_manager.install_clang_14()
             case "clang-15": return self.toolchain_manager.install_clang_15()
@@ -92,6 +91,7 @@ class Chaos:
             case "clang-17": return self.toolchain_manager.install_clang_17()
             case "clang-18": return self.toolchain_manager.install_clang_18()
             case "clang-19": return self.toolchain_manager.install_clang_19()
+            case "clang-20": return self.toolchain_manager.install_clang_20()
             case "apple-clang-13": self.toolchain_manager.install_apple_clang_13()
             case "apple-clang-14": self.toolchain_manager.install_apple_clang_14()
             case "apple-clang-15": self.toolchain_manager.install_apple_clang_15()
@@ -287,6 +287,7 @@ class Chaos:
         menu.add_item("GCC 12", self.toolchain_manager.install_gcc_12)
         menu.add_item("GCC 13", self.toolchain_manager.install_gcc_13)
         menu.add_item("GCC 14", self.toolchain_manager.install_gcc_14)
+        menu.add_item("GCC 15", self.toolchain_manager.install_gcc_15)
         menu.add_item("Clang 13", self.toolchain_manager.install_clang_13)
         menu.add_item("Clang 14", self.toolchain_manager.install_clang_14)
         menu.add_item("Clang 15", self.toolchain_manager.install_clang_15)
@@ -294,6 +295,7 @@ class Chaos:
         menu.add_item("Clang 17", self.toolchain_manager.install_clang_17)
         menu.add_item("Clang 18", self.toolchain_manager.install_clang_18)
         menu.add_item("Clang 19", self.toolchain_manager.install_clang_19)
+        menu.add_item("Clang 20", self.toolchain_manager.install_clang_20)
         return menu
 
     def create_main_menu(self) -> Menu:
