@@ -96,6 +96,7 @@ class Chaos:
             case "apple-clang-14": self.toolchain_manager.install_apple_clang_14()
             case "apple-clang-15": self.toolchain_manager.install_apple_clang_15()
             case "apple-clang-16": self.toolchain_manager.install_apple_clang_16()
+            case "apple-clang-17": self.toolchain_manager.install_apple_clang_17()
             case _: raise KeyError(f"{name} is not a valid compiler toolchain.")
 
     def ci_select_toolchain(self, build_name: str, host_name: str = None) -> None:
