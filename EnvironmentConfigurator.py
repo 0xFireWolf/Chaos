@@ -50,7 +50,7 @@ class EnvironmentConfigurator(ABC):
 
     def install_basic(self) -> None:
         self.install_build_essentials()
-        self.install_cmake()
+        #self.install_cmake()
         self.install_conan()
 
     def install_all(self) -> None:
