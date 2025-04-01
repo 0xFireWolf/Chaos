@@ -112,6 +112,10 @@ class CompilerToolchainManager(ABC):
     def install_apple_clang_16(self) -> None:
         raise NotImplementedError
 
+    @abstractmethod
+    def install_apple_clang_17(self) -> None:
+        raise NotImplementedError
+
     def install_all_compilers(self) -> None:
         self.install_gcc_10()
         self.install_gcc_11()
@@ -338,7 +342,19 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
         self.select_xcode_installation(15)
 
     def install_apple_clang_16(self) -> None:
-        self.select_xcode_installation(16)
+        for minor in reversed(range(0, 3)):
+            try:
+                print(f"Trying to find Xcode 16.{minor}...")
+                self.select_xcode_installation(16, minor)
+                print(f"Found Xcode 16.{minor}!")
+                return
+            except RuntimeError:
+                print(f"Xcode 16.{minor} is not installed on your local machine.")
+                continue
+        raise RuntimeError("Failed to find Xcode 16.x shipped with AppleClang 16.")
+
+    def install_apple_clang_17(self) -> None:
+        self.select_xcode_installation(16, 3)
 
 
 # A manager that sets up the compiler toolchain on Ubuntu
@@ -357,6 +373,9 @@ class CompilerToolchainManagerUbuntu(CompilerToolchainManager, ABC):
 
     def install_apple_clang_16(self) -> None:
         print("AppleClang 16 is not available on systems other than macOS.")
+
+    def install_apple_clang_17(self) -> None:
+        print("AppleClang 17 is not available on systems other than macOS.")
 
     def install_gcc_from_apt(self, version: int) -> None:
         apt_install([f"gcc-{version}", f"g++-{version}"])
@@ -598,6 +617,9 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
     def install_apple_clang_16(self) -> None:
         print("AppleClang 16 is not available on systems other than macOS.")
 
+    def install_apple_clang_17(self) -> None:
+        print("AppleClang 17 is not available on systems other than macOS.")
+
 
 # A manager that sets up the compiler toolchain on FreeBSD
 class CompilerToolchainManagerFreeBSD(CompilerToolchainManager):
@@ -657,3 +679,6 @@ class CompilerToolchainManagerFreeBSD(CompilerToolchainManager):
 
     def install_apple_clang_16(self) -> None:
         print("AppleClang 16 is not available on systems other than macOS.")
+
+    def install_apple_clang_17(self) -> None:
+        print("AppleClang 17 is not available on systems other than macOS.")
