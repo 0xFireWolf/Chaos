@@ -317,7 +317,7 @@ class Chaos:
         menu.add_separator()
         menu.add_item(">> Manage Compiler Toolchains")
         menu.add_separator()
-        menu.add_submenu("Install a supported compiler", self.create_compiler_menu(), self.control_interactive_mode)
+        menu.add_submenu("Install a supported compiler", self.create_compiler_menu(), Menu.interact)
         menu.add_item("Install all supported compilers", self.toolchain_manager.install_all_compilers)
         menu.add_item("Select a compiler toolchain", self.toolchain_manager.select_compiler_toolchain)
         menu.add_separator()
@@ -340,32 +340,6 @@ class Chaos:
     # MARK: Chaos Running in Control Mode
     #
 
-    def control_interactive_mode(self, menu: Menu) -> None:
-        """
-        [CC] Chaos Control Center Interactive Mode
-        :param menu: A menu that provides options that users can select
-        """
-        while True:
-            self.clear_console()
-            menu.render()
-            print("Press Ctrl-C or Ctrl-D to exit from the current menu.")
-            try:
-                option = int(input("Input the number and press ENTER: "))
-                menu.select(option)
-                print()
-                input("Press Enter to continue...")
-            except ValueError:
-                print("Not a number! Please try again.")
-                input("Press Enter to continue...")
-                continue
-            except KeyError:
-                print(f"The option number you entered is not valid.")
-                input("Press Enter to continue...")
-                continue
-            except (KeyboardInterrupt, EOFError):
-                print("Goodbye.")
-                break
-
     def control(self, option: int = -1) -> int:
         """
         [CC] The main entry point of the Chaos Control Center
@@ -378,7 +352,7 @@ class Chaos:
                 menu.build_index_map()
                 menu.select(option)
             else:
-                self.control_interactive_mode(menu)
+                Menu.interact(menu)
             return 0
         except (KeyError, ValueError, CalledProcessError):
             print("The Chaos Control Center has terminated unexpectedly.")
