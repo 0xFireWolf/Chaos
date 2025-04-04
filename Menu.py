@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 from typing import Callable
+import os
+import platform
 
 # Represents an item in a menu
 class MenuItem:
@@ -98,3 +100,30 @@ class Menu:
         identifier = self.index_map[index]
         item = self.items[identifier]
         item.handler()
+
+    @staticmethod
+    def interact(menu: Menu) -> None:
+        """
+        The default handler for interacting with menus
+        :param menu: A menu to interact with
+        """
+        clear_console = lambda: os.system("cls" if platform.system() == "Windows" else "clear")
+        while True:
+            clear_console()
+            menu.render()
+            print("Press Ctrl-C or Ctrl-D to exit from the current menu.")
+            try:
+                option = int(input("Input the number and press ENTER: "))
+            except ValueError:
+                print("Not a number! Please try again.")
+                input("Press Enter to continue...")
+                continue
+            except KeyError:
+                print(f"The option number you entered is not valid.")
+                input("Press Enter to continue...")
+                continue
+            except (KeyboardInterrupt, EOFError):
+                break
+            menu.select(option)
+            print()
+            input("Press Enter to continue...")
