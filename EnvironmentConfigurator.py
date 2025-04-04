@@ -57,6 +57,10 @@ class EnvironmentConfigurator(ABC):
         self.install_basic()
         self.install_other()
 
+    def setup_conan_remote(self) -> None:
+        subprocess.run(["conan", "remote", "list"]).check_returncode()
+        subprocess.run(["conan", "remote", "update", "conancenter", "--url=https://center2.conan.io"]).check_returncode()
+
 
 # A configurator that sets up the development environment on macOS
 class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
@@ -68,6 +72,7 @@ class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
 
     def install_conan(self) -> None:
         pip_install(["conan"])
+        self.setup_conan_remote()
 
 
 # A configurator that sets up the development environment on Ubuntu 20.04 LTS / Ubuntu 22.04 LTS
@@ -83,6 +88,7 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
         pip_install(["conan"])
         subprocess.run(["sudo", "rm", "-rf", "/usr/local/bin/conan"])
         subprocess.run(["sudo", "ln", "-s", os.path.expanduser("~") + "/.local/bin/conan", "/usr/local/bin/conan"]).check_returncode()
+        self.setup_conan_remote()
 
 
 # A configurator that sets up the development environment on Windows 10 or later
@@ -120,6 +126,7 @@ class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
 
     def install_conan(self) -> None:
         pip_install(["conan"])
+        self.setup_conan_remote()
 
 
 # A configurator that sets up the development environment on FreeBSD
@@ -133,3 +140,4 @@ class EnvironmentConfiguratorFreeBSD(EnvironmentConfigurator):
     def install_conan(self) -> None:
         pkg_install(["py311-sqlite3"])
         pip_install(["conan"])
+        self.setup_conan_remote()
