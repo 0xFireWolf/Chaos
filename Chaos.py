@@ -180,7 +180,7 @@ class Chaos:
             elif args.run_tests_with_coverage is True:
                 self.ci_run_tests_with_coverage()
             elif args.install_all is not None:
-                self.ci_install_all(*args.install_all)
+                self.ci_install_all(None if args.install_all == "" else args.install_all)
             elif args.remove_packages is True:
                 self.ci_remove_conan_packages()
             else:
@@ -429,8 +429,9 @@ def main(project: Project) -> int:
     # Chaos Command: --install-all <Path>
     group.add_argument("--install-all",
                        nargs="?",
+                       const="",
+                       default=None,
                        metavar="PATH",
-                       action=required_length(0, 1),
                        help="Install all targets using the default prefix path or [PATH] if specified")
 
     # Chaos Command: --remove-packages
