@@ -517,7 +517,7 @@ class CompilerToolchainManagerUbuntu2404(CompilerToolchainManagerUbuntu):
         self.install_gcc_from_apt(14)
 
     def install_gcc_15(self) -> None:
-        self.install_gcc_from_apt(15)
+        brew_install(["gcc@15"])
 
     def install_clang_13(self) -> None:
         brew_install(["llvm@13"])
