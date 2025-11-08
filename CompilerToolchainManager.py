@@ -354,7 +354,17 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
         raise RuntimeError("Failed to find Xcode 16.x shipped with AppleClang 16.")
 
     def install_apple_clang_17(self) -> None:
-        self.select_xcode_installation(16, 3)
+        candidates = [(26, 2), (26, 1), (26, 0), (16, 4), (16, 3)]
+        for major, minor in candidates:
+            try:
+                print(f"Trying to find Xcode {major}.{minor}...")
+                self.select_xcode_installation(major, minor)
+                print(f"Found Xcode {major}.{minor}!")
+                return
+            except RuntimeError:
+                print(f"Xcode {major}.{minor} is not installed on your local machine.")
+                continue
+        raise RuntimeError("Failed to find Xcode 26/16.x shipped with AppleClang 17.")
 
 
 # A manager that sets up the compiler toolchain on Ubuntu
