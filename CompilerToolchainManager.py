@@ -97,6 +97,10 @@ class CompilerToolchainManager(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def install_clang_21(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
     def install_apple_clang_13(self) -> None:
         raise NotImplementedError
 
@@ -131,6 +135,7 @@ class CompilerToolchainManager(ABC):
         self.install_clang_18()
         self.install_clang_19()
         self.install_clang_20()
+        self.install_clang_21()
 
     def fetch_all_conan_profiles(self, folder: str) -> list[ConanProfile]:
         """
@@ -320,6 +325,9 @@ class CompilerToolchainManagerMacOS(CompilerToolchainManager):
     def install_clang_20(self) -> None:
         brew_install(["llvm@20"])
 
+    def install_clang_21(self) -> None:
+        brew_install(["llvm@21"])
+
     def select_xcode_installation(self, major: int, minor: int = None, patch: int = None) -> None:
         bundle = XcodeFinder([Path("/Applications")], "Xcode.*\\.app").find(major, minor, patch)
         if bundle is None:
@@ -460,6 +468,9 @@ class CompilerToolchainManagerUbuntu2004(CompilerToolchainManagerUbuntu):
     def install_clang_20(self) -> None:
         self.install_clang_from_apt_llvm_org(20)
 
+    def install_clang_21(self) -> None:
+        self.install_clang_from_apt_llvm_org(21)
+
 
 # A manager that sets up the compiler toolchain on Ubuntu 22.04 LTS
 class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
@@ -508,6 +519,9 @@ class CompilerToolchainManagerUbuntu2204(CompilerToolchainManagerUbuntu):
     def install_clang_20(self) -> None:
         self.install_clang_from_apt_llvm_org(20)
 
+    def install_clang_21(self) -> None:
+        self.install_clang_from_apt_llvm_org(21)
+
 
 # A manager that sets up the compiler toolchain on Ubuntu 24.04 LTS
 class CompilerToolchainManagerUbuntu2404(CompilerToolchainManagerUbuntu):
@@ -552,6 +566,9 @@ class CompilerToolchainManagerUbuntu2404(CompilerToolchainManagerUbuntu):
 
     def install_clang_20(self) -> None:
         self.install_clang_from_apt_llvm_org(20)
+
+    def install_clang_21(self) -> None:
+        self.install_clang_from_apt_llvm_org(21)
 
 
 # A manager that sets up the compiler toolchain on Windows
@@ -613,6 +630,10 @@ class CompilerToolchainManagerWindows(CompilerToolchainManager):
 
     def install_clang_20(self) -> None:
         print("Compiling this project with Clang 20 on Windows is not supported.")
+        print("Please use Microsoft Visual C++ instead.")
+
+    def install_clang_21(self) -> None:
+        print("Compiling this project with Clang 21 on Windows is not supported.")
         print("Please use Microsoft Visual C++ instead.")
 
     def install_apple_clang_13(self) -> None:
@@ -677,6 +698,9 @@ class CompilerToolchainManagerFreeBSD(CompilerToolchainManager):
 
     def install_clang_20(self) -> None:
         pkg_install(["llvm20"])
+
+    def install_clang_21(self) -> None:
+        pkg_install(["llvm21"])
 
     def install_apple_clang_13(self) -> None:
         print("AppleClang 13 is not available on systems other than macOS.")
