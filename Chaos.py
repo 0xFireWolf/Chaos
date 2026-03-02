@@ -93,6 +93,7 @@ class Chaos:
             case "clang-19": return self.toolchain_manager.install_clang_19()
             case "clang-20": return self.toolchain_manager.install_clang_20()
             case "clang-21": return self.toolchain_manager.install_clang_21()
+            case "clang-22": return self.toolchain_manager.install_clang_22()
             case "apple-clang-13": return self.toolchain_manager.install_apple_clang_13()
             case "apple-clang-14": return self.toolchain_manager.install_apple_clang_14()
             case "apple-clang-15": return self.toolchain_manager.install_apple_clang_15()
@@ -299,6 +300,7 @@ class Chaos:
         menu.add_item("Clang 19", self.toolchain_manager.install_clang_19)
         menu.add_item("Clang 20", self.toolchain_manager.install_clang_20)
         menu.add_item("Clang 21", self.toolchain_manager.install_clang_21)
+        menu.add_item("Clang 22", self.toolchain_manager.install_clang_22)
         return menu
 
     def create_main_menu(self) -> Menu:
