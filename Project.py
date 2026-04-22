@@ -54,3 +54,23 @@ class Project:
 
         # An installer that can be used to install additional development tools needed to build this project
         self.additional_tools_installer = additional_tools_installer or DefaultAdditionalToolInstaller()
+
+    @property
+    def current_toolchain_link_path(self) -> Path:
+        return self.source_directory / "CurrentToolchain.cmake"
+
+    @property
+    def current_build_profile_debug_link_path(self) -> Path:
+        return self.source_directory / "CurrentBuildProfileDebug.conanprofile"
+
+    @property
+    def current_build_profile_release_link_path(self) -> Path:
+        return self.source_directory / "CurrentBuildProfileRelease.conanprofile"
+
+    @property
+    def current_host_profile_debug_link_path(self) -> Path:
+        return self.source_directory / "CurrentHostProfileDebug.conanprofile"
+
+    @property
+    def current_host_profile_release_link_path(self) -> Path:
+        return self.source_directory / "CurrentHostProfileRelease.conanprofile"
