@@ -76,40 +76,42 @@ class InstallationSource(OrderedStrEnum):
     kPKG = "PKG"
 
 
-@total_ordering
+@dataclass(frozen=True, order=True, unsafe_hash=True)
 class BuildSystemIdentifier:
-    def __init__(self, architecture: str, compiler: str, standard_library: str,
-                 host_system: str, installation_source: str):
+    architecture: Architecture
+    compiler: Compiler
+    standard_library: StandardLibrary
+    host_system: HostSystem
+    installation_source: InstallationSource
+
+    @classmethod
+    def from_strings(cls,
+                     architecture_string: str,
+                     compiler_string: str,
+                     standard_library_string: str,
+                     host_system_string: str,
+                     installation_source_string: str) -> BuildSystemIdentifier:
         """
          A 4-tuple that identifies a specific toolchain/profile
         """
-        self.architecture = Architecture(architecture)
-        self.compiler = Compiler(compiler)
-        self.standard_library = StandardLibrary(standard_library)
-        self.host_system = HostSystem(host_system)
-        self.installation_source = InstallationSource(installation_source)
-
-    def __str__(self) -> str:
-        return "Arch: {}, Compiler: {}, Stdlib: {}, HostOS: {}, From: {}" \
-            .format(self.architecture.value, self.compiler, self.standard_library.value,
-                    self.host_system.value, self.installation_source.value)
-
-    def __lt__(self, other: BuildSystemIdentifier) -> bool:
-        return self.compiler < other.compiler
-
-    def __eq__(self, other: BuildSystemIdentifier) -> bool:
-        return (self.architecture == other.architecture and
-                self.compiler == other.compiler and
-                self.standard_library == other.standard_library and
-                self.host_system == other.host_system and
-                self.installation_source == other.installation_source)
-
-    def __hash__(self):
-        return hash((self.architecture,
-                     self.compiler,
-                     self.standard_library,
-                     self.host_system,
-                     self.installation_source))
+        try:
+            architecture = Architecture(architecture_string)
+        except ValueError:
+            raise ValueError(f"'{architecture_string}' is not a valid architecture.")
+        compiler = Compiler.parse(compiler_string)
+        try:
+            standard_library = StandardLibrary(standard_library_string)
+        except ValueError:
+            raise ValueError(f"'{standard_library_string}' is not a valid standard library.")
+        try:
+            host_system = HostSystem(host_system_string)
+        except ValueError:
+            raise ValueError(f"'{host_system_string}' is not a valid host system.")
+        try:
+            installation_source = InstallationSource(installation_source_string)
+        except ValueError:
+            raise ValueError(f"'{installation_source_string}' is not a valid installation source.")
+        return cls(architecture, compiler, standard_library, host_system, installation_source)
 
     def compatible(self, host_system: HostSystem, architecture: Architecture) -> bool:
         return self.host_system == host_system and self.architecture == architecture
