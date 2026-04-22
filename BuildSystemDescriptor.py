@@ -59,21 +59,11 @@ class StandardLibrary(OrderedStrEnum):
     kDefault = "Default"
 
 
-@total_ordering
 class HostSystem(Enum):
     kMacOS = "macOS"
     kUbuntu = "Ubuntu"
     kWindows = "Windows"
     kFreeBSD = "FreeBSD"
-
-    def __eq__(self, other: HostSystem) -> bool:
-        return self.value == other.value
-
-    def __lt__(self, other: HostSystem) -> bool:
-        return self.value < other.value
-
-    def __hash__(self):
-        return hash(self.value)
 
 
 @total_ordering
