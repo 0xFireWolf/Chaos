@@ -38,39 +38,6 @@ class ProjectBuilder:
         remove_folder_if_exists(self.project.build_directory)
         os.mkdir(self.project.build_directory)
 
-    def cmake_build(self,
-                    cmake: CMake,
-                    build_type: BuildType,
-                    parallel_level: int = os.cpu_count(),
-                    cmake_build_flags: list[str] = None,
-                    native_build_flags: list[str] = None) -> None:
-        """
-        [Action] [Step] Use CMake to invoke the native build system to build the project
-        :param cmake: The CMake binary that will be used to invoke the native build system to build the project
-        :param build_type: The build type
-        :param parallel_level: The number of threads to build the project
-        :param cmake_build_flags: Additional flags passed to `cmake`
-        :param native_build_flags: Additional flags passed to the native build system
-        """
-        print(f"Building the project using CMake v{cmake.major}.{cmake.minor}.{cmake.patch}...")
-        # Start with the default flags
-        args = ["--build", self.project.build_directory,
-                "--config", build_type.value,
-                "--clean-first",
-                "--parallel", str(parallel_level)]
-        # Append CMake flags specified by the project
-        if self.project.cmake_build_flags is not None:
-            args.extend(self.project.cmake_build_flags)
-        # Append CMake flags specified by the caller
-        if cmake_build_flags is not None:
-            args.extend(cmake_build_flags)
-        # Append native build system flags specified by the caller
-        if native_build_flags is not None:
-            args.append("--")
-            args.extend(native_build_flags)
-        # Build the project
-        cmake.call(args)
-
     #
     # MARK: - Rebuild Project
     #
