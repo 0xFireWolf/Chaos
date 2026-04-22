@@ -140,8 +140,8 @@ class ConanProfile:
 
     @classmethod
     def parse(cls, path: Path) -> ConanProfile:
-        filename = path.stem
-        tokens = filename.split("_")
+        filename = path.name
+        tokens = path.stem.split("_")
         if len(tokens) not in (5, 6):
             raise ValueError(f"'{filename}' is not a valid Conan profile name.")
         *identifier_tokens, build_type_str = tokens
