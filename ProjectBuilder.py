@@ -55,6 +55,23 @@ class ProjectBuilder:
             return self.project.current_build_profile_release_link_path, self.project.current_host_profile_release_link_path
 
     #
+    # MARK: - Construct Additional Conan Flags
+    #
+
+    def make_conan_flags(self, conan_flags: list[str] | None) -> list[str] | None:
+        """
+        Construct the final list of flags that will be passed to `conan install`
+        :param conan_flags: A list of caller-provided flags
+        :return: The merged list of project-level and caller-provided flags, or None if no flags are present.
+        """
+        flags = list[str]()
+        if self.project.conan_flags is not None:
+            flags.extend(self.project.conan_flags)
+        if conan_flags is not None:
+            flags.extend(conan_flags)
+        return flags if len(flags) > 0 else None
+
+    #
     # MARK: - Rebuild Project
     #
 
