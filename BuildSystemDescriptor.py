@@ -3,9 +3,8 @@
 #
 
 from dataclasses import dataclass
+from pathlib import Path
 from .Sidekicks import OrderedStrEnum
-import os
-from functools import total_ordering
 
 
 class BuildType(OrderedStrEnum):
@@ -138,24 +137,31 @@ class CMakeToolchain:
         return self.filename
 
 
+@dataclass(frozen=True)
 class ConanProfile:
-    def __init__(self, filename: str):
-        tokens = filename.removesuffix(os.path.splitext(filename)[-1]).split("_")
+    filename: str
+    identifier: BuildSystemIdentifier
+    build_type: BuildType
+
+    @classmethod
+    def parse(cls, path: Path) -> ConanProfile:
+        filename = path.stem
+        tokens = filename.split("_")
         if len(tokens) == 5:
-            self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], "Default", tokens[2], tokens[3])
-            self.buildType = BuildType(tokens[4])
+            identifier = BuildSystemIdentifier.from_strings(tokens[0], tokens[1], "Default", tokens[2], tokens[3])
+            build_type = BuildType(tokens[4])
         elif len(tokens) == 6:
-            self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4])
-            self.buildType = BuildType(tokens[5])
+            identifier = BuildSystemIdentifier.from_strings(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4])
+            build_type = BuildType(tokens[5])
         else:
-            raise ValueError
-        self.filename = filename
+            raise ValueError(f"'{filename}' is not a valid profile name.")
+        return cls(filename, identifier, build_type)
 
     def __str__(self) -> str:
         return self.filename
 
 
+@dataclass(frozen=True)
 class ConanProfilePair:
-    def __init__(self, debug: ConanProfile = None, release: ConanProfile = None):
-        self.debug = debug
-        self.release = release
+    debug: ConanProfile
+    release: ConanProfile
