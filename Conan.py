@@ -1,5 +1,5 @@
 #
-# MARK: - A helper class that can be used to invoke `conan`
+# MARK: - A Helper Class that Invokes `conan`
 #
 
 from __future__ import annotations
