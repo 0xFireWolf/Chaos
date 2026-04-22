@@ -142,14 +142,17 @@ class ConanProfile:
     def parse(cls, path: Path) -> ConanProfile:
         filename = path.stem
         tokens = filename.split("_")
-        if len(tokens) == 5:
-            identifier = BuildSystemIdentifier.from_strings(tokens[0], tokens[1], "Default", tokens[2], tokens[3])
-            build_type = BuildType(tokens[4])
-        elif len(tokens) == 6:
-            identifier = BuildSystemIdentifier.from_strings(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4])
-            build_type = BuildType(tokens[5])
-        else:
-            raise ValueError(f"'{filename}' is not a valid profile name.")
+        if len(tokens) not in (5, 6):
+            raise ValueError(f"'{filename}' is not a valid Conan profile name.")
+        *identifier_tokens, build_type_str = tokens
+        try:
+            identifier = BuildSystemIdentifier.from_tokens(identifier_tokens)
+        except ValueError as error:
+            raise ValueError(f"'{filename}' is not a valid Conan profile name: {error}.") from error
+        try:
+            build_type = BuildType(build_type_str)
+        except ValueError as error:
+            raise ValueError(f"'{filename}' is not a valid Conan profile name: {error}.") from error
         return cls(filename, identifier, build_type)
 
     def __str__(self) -> str:
