@@ -53,20 +53,10 @@ class Compiler:
         return hash((self.type, self.version))
 
 
-@total_ordering
-class StandardLibrary(Enum):
+class StandardLibrary(OrderedStrEnum):
     kGNU = "libstdc++"
     kClang = "libc++"
     kDefault = "Default"
-
-    def __eq__(self, other: StandardLibrary) -> bool:
-        return self.value == other.value
-
-    def __lt__(self, other: StandardLibrary) -> bool:
-        return self.value < other.value
-
-    def __hash__(self):
-        return hash(self.value)
 
 
 @total_ordering
