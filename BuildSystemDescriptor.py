@@ -14,20 +14,10 @@ class BuildType(OrderedStrEnum):
     kRelease = "Release"
 
 
-@total_ordering
-class Architecture(Enum):
+class Architecture(OrderedStrEnum):
     kx86_64 = "x86-64"
     kARM32 = "ARM32"
     kARM64 = "ARM64"
-
-    def __eq__(self, other: Architecture) -> bool:
-        return self.value == other.value
-
-    def __lt__(self, other: Architecture) -> bool:
-        return self.value < other.value
-
-    def __hash__(self):
-        return hash(self.value)
 
 
 @total_ordering
