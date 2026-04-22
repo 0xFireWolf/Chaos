@@ -39,6 +39,22 @@ class ProjectBuilder:
         os.mkdir(self.project.build_directory)
 
     #
+    # MARK: - Choose Conan Profiles
+    #
+
+    def choose_conan_profiles(self, build_type: BuildType) -> tuple[Path, Path]:
+        """
+        Determine the pair of Conan profiles that will be used to install 3rd-party dependencies
+        :param build_type: The build type
+        :return: A pair of paths, in which the first path points to the current build profile to be used,
+                 and the second path points to the current host profile to be used.
+        """
+        if build_type == BuildType.kDebug:
+            return self.project.current_build_profile_debug_link_path, self.project.current_host_profile_debug_link_path
+        else:
+            return self.project.current_build_profile_release_link_path, self.project.current_host_profile_release_link_path
+
+    #
     # MARK: - Rebuild Project
     #
 
