@@ -2,6 +2,7 @@
 # MARK: - Compiler Toolchains and Conan Profiles
 #
 
+from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from .Sidekicks import OrderedStrEnum
