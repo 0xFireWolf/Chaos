@@ -9,7 +9,7 @@ import os
 from functools import total_ordering
 
 
-class BuildType(Enum):
+class BuildType(OrderedStrEnum):
     kDebug = "Debug"
     kRelease = "Release"
 
