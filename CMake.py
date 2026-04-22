@@ -1,5 +1,5 @@
 #
-# MARK: - A helper class that can be used to invoke `cmake`
+# MARK: - A Helper Class that Invokes `cmake`
 #
 
 from __future__ import annotations
