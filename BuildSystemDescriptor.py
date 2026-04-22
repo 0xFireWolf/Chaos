@@ -59,7 +59,7 @@ class StandardLibrary(OrderedStrEnum):
     kDefault = "Default"
 
 
-class HostSystem(Enum):
+class HostSystem(OrderedStrEnum):
     kMacOS = "macOS"
     kUbuntu = "Ubuntu"
     kWindows = "Windows"
