@@ -41,14 +41,14 @@ class Compiler:
         if len(tokens) != 2:
             raise ValueError(f"'{description}' is not a valid compiler description.")
         try:
-            type = CompilerType(tokens[0])
+            compiler_type = CompilerType(tokens[0])
         except ValueError:
             raise ValueError(f"'{tokens[0]}' is not a valid compiler type.")
         try:
-            version = int(tokens[1])
+            compiler_version = int(tokens[1])
         except ValueError:
             raise ValueError(f"'{tokens[1]}' is not a valid compiler version.")
-        return cls(type, version)
+        return cls(compiler_type, compiler_version)
 
     def __str__(self) -> str:
         return f"{self.type} {self.version}"
