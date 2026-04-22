@@ -25,7 +25,7 @@ class CompilerType(OrderedStrEnum):
     kMSVC = "MSVC"
 
 
-@dataclass(frozen=True, order=True, unsafe_hash=True)
+@dataclass(frozen=True, order=True)
 class Compiler:
     type: CompilerType
     version: int
@@ -75,7 +75,7 @@ class InstallationSource(OrderedStrEnum):
     kPKG = "PKG"
 
 
-@dataclass(frozen=True, order=True, unsafe_hash=True)
+@dataclass(frozen=True, order=True)
 class BuildSystemIdentifier:
     architecture: Architecture
     compiler: Compiler
