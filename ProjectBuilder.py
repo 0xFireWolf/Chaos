@@ -222,7 +222,7 @@ class ProjectBuilder:
         """
         [Action] Install all project artifacts
         """
-        self.cmake_install(CMake.default(), prefix)
+        self.cmake.install(build_directory=self.project.build_directory, prefix=prefix)
 
     # Action
     def conan_remove_all(self) -> None:
