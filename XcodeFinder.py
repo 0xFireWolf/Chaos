@@ -81,6 +81,13 @@ class XcodeFinder:
         """
         return [bundle for directory in self.directories for bundle in self.find_all_in_directory(directory)]
 
+    def find_all_as_map(self) -> dict[Version, XcodeBundle]:
+        """
+        Find all Xcode bundles and return them as a map keyed by version
+        :return: A map that associates each version with its corresponding Xcode bundle.
+        """
+        return {bundle.version: bundle for bundle in self.find_all()}
+
     def find(self, version: Version) -> XcodeBundle | None:
         """
         Find the Xcode bundle of the given version
