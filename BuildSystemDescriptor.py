@@ -121,9 +121,9 @@ class CMakeToolchain:
 
     @classmethod
     def parse(cls, path: Path) -> CMakeToolchain:
-        filename = path.stem
+        filename = path.name
         try:
-            identifier = BuildSystemIdentifier.from_tokens(filename.split("_"))
+            identifier = BuildSystemIdentifier.from_tokens(path.stem.split("_"))
         except ValueError as error:
             raise ValueError(f"'{filename}' is not a valid CMake toolchain filename: {error}.") from error
         return cls(filename, identifier)
