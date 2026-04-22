@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 from enum import Enum
+from .Sidekicks import OrderedStrEnum
 import os
 from functools import total_ordering
 
