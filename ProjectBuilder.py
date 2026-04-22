@@ -27,14 +27,6 @@ class ProjectBuilder:
         self.cmake = cmake
         self.conan = conan
 
-    @cached_property
-    def conan_cmake_integration_file(self) -> str:
-        """
-        Get the name of Conan's CMake integration file
-        :return: The file name.
-        """
-        return "conan_toolchain.cmake" if is_conan_v2_installed() else "conan_paths.cmake"
-
     #
     # MARK: - Small Steps
     #
