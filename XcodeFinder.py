@@ -3,7 +3,7 @@ import re
 import plistlib
 import subprocess
 from pathlib import Path
-from operator import attrgetter
+from .Version import Version
 
 
 kCFBundleIdentifier = "CFBundleIdentifier"
@@ -11,32 +11,19 @@ kCFBundleShortVersionString = "CFBundleShortVersionString"
 
 
 class XcodeBundle:
-    def __init__(self, url: Path):
+    def __init__(self, path: Path):
         """
         Attempt to parse an Xcode bundle at the given path
-        :param url: The path to an Xcode bundle (e.g., `/Applications/Xcode.app`)
+        :param path: The path to an Xcode bundle (e.g., `/Applications/Xcode.app`)
         :raise `KeyError` if one of the required `CFBundle` properties is missing in `Info.plist`.
                `ValueError` if the required `CFBundle` properties do not match the one of `Xcode`.
         """
-        with open(url / "Contents" / "Info.plist", "rb") as info:
+        with open(path / "Contents" / "Info.plist", "rb") as info:
             plist = plistlib.load(info)
             if plist[kCFBundleIdentifier] != "com.apple.dt.Xcode":
                 raise ValueError("Mismatched bundle identifier.")
-            tokens: list[str] = plist[kCFBundleShortVersionString].split(".")
-            if len(tokens) != 2 and len(tokens) != 3:
-                raise ValueError("Invalid bundle version.")
-            self.url = url
-            self.major = int(tokens[0])
-            self.minor = int(tokens[1])
-            self.patch = int(tokens[2]) if len(tokens) == 3 else 0
-
-    @property
-    def version(self) -> str:
-        """
-        Get the bundle version
-        :return: The version string.
-        """
-        return "{}.{}.{}".format(self.major, self.minor, self.patch)
+            self.path = path
+            self.version = Version.parse(plist[kCFBundleShortVersionString])
 
     @property
     def developer_directory(self) -> Path:
@@ -44,7 +31,7 @@ class XcodeBundle:
         Get the path to the developer directory
         :return: The path to the developer directory that can be recognized by `xcode-select`.
         """
-        return self.url / "Contents" / "Developer"
+        return self.path / "Contents" / "Developer"
 
     def activate(self) -> None:
         """
@@ -58,7 +45,7 @@ class XcodeBundle:
         Get the string representation of this Xcode installation
         :return: A user-friendly string.
         """
-        return "{}\n\tVersion: {}".format(self.url, self.version)
+        return f"{self.path}\n\tVersion: {self.version}"
 
 
 class XcodeFinder:
