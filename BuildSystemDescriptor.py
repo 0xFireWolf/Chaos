@@ -78,6 +78,9 @@ class InstallationSource(OrderedStrEnum):
 
 @dataclass(frozen=True, order=True)
 class BuildSystemIdentifier:
+    """
+    A 5-tuple that identifies a specific toolchain/profile
+    """
     architecture: Architecture
     compiler: Compiler
     standard_library: StandardLibrary
@@ -86,32 +89,26 @@ class BuildSystemIdentifier:
 
     @classmethod
     def from_strings(cls,
-                     architecture_string: str,
-                     compiler_string: str,
-                     standard_library_string: str,
-                     host_system_string: str,
-                     installation_source_string: str) -> BuildSystemIdentifier:
-        """
-         A 4-tuple that identifies a specific toolchain/profile
-        """
-        try:
-            architecture = Architecture(architecture_string)
-        except ValueError:
-            raise ValueError(f"'{architecture_string}' is not a valid architecture.")
-        compiler = Compiler.parse(compiler_string)
-        try:
-            standard_library = StandardLibrary(standard_library_string)
-        except ValueError:
-            raise ValueError(f"'{standard_library_string}' is not a valid standard library.")
-        try:
-            host_system = HostSystem(host_system_string)
-        except ValueError:
-            raise ValueError(f"'{host_system_string}' is not a valid host system.")
-        try:
-            installation_source = InstallationSource(installation_source_string)
-        except ValueError:
-            raise ValueError(f"'{installation_source_string}' is not a valid installation source.")
-        return cls(architecture, compiler, standard_library, host_system, installation_source)
+                     architecture: str,
+                     compiler: str,
+                     standard_library: str,
+                     host_system: str,
+                     installation_source: str) -> BuildSystemIdentifier:
+        return cls(Architecture(architecture),
+                   Compiler.parse(compiler),
+                   StandardLibrary(standard_library),
+                   HostSystem(host_system),
+                   InstallationSource(installation_source))
+
+    @classmethod
+    def from_tokens(cls, tokens: list[str]) -> BuildSystemIdentifier:
+        match tokens:
+            case [architecture, compiler, host_system, installation_source]:
+                return cls.from_strings(architecture, compiler, "Default", host_system, installation_source)
+            case [architecture, compiler, standard_library, host_system, installation_source]:
+                return cls.from_strings(architecture, compiler, standard_library, host_system, installation_source)
+            case _:
+                raise ValueError(f"Expected 4 or 5 identifier tokens, got {len(tokens)}: {tokens}.")
 
     def compatible(self, host_system: HostSystem, architecture: Architecture) -> bool:
         return self.host_system == host_system and self.architecture == architecture
