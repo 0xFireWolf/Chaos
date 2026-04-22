@@ -117,16 +117,22 @@ class BuildSystemIdentifier:
         return self.host_system == host_system and self.architecture == architecture
 
 
-class Toolchain:
-    def __init__(self, filename: str):
-        tokens = filename.removesuffix(os.path.splitext(filename)[-1]).split("_")
+@dataclass(frozen=True)
+class CMakeToolchain:
+    filename: str
+    identifier: BuildSystemIdentifier
+
+    @classmethod
+    def parse(cls, path: Path) -> CMakeToolchain:
+        filename = path.stem
+        tokens = filename.split("_")
         if len(tokens) == 4:
-            self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], "Default", tokens[2], tokens[3])
+            identifier = BuildSystemIdentifier.from_strings(tokens[0], tokens[1], "Default", tokens[2], tokens[3])
         elif len(tokens) == 5:
-            self.identifier = BuildSystemIdentifier(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4])
+            identifier = BuildSystemIdentifier.from_strings(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4])
         else:
-            raise ValueError
-        self.filename = filename
+            raise ValueError(f"'{filename}' is not a valid toolchain name.")
+        return cls(filename, identifier)
 
     def __str__(self) -> str:
         return self.filename
