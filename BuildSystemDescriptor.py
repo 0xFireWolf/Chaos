@@ -66,23 +66,13 @@ class HostSystem(Enum):
     kFreeBSD = "FreeBSD"
 
 
-@total_ordering
-class InstallationSource(Enum):
+class InstallationSource(OrderedStrEnum):
     kHomebrew = "Homebrew"
     kAPT = "APT"
     kXcode = "Xcode"
     kARM = "ARM"
     kVisualStudio = "VisualStudio"
     kPKG = "PKG"
-
-    def __eq__(self, other: InstallationSource) -> bool:
-        return self.value == other.value
-
-    def __lt__(self, other: InstallationSource) -> bool:
-        return self.value < other.value
-
-    def __hash__(self):
-        return hash(self.value)
 
 
 @total_ordering
