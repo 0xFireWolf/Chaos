@@ -1,12 +1,14 @@
 #
 # MARK: - Build, Test & Clean Projects
 #
-from __future__ import annotations
 
-import os
+from __future__ import annotations
+from .CMake import CMake
+from .Conan import Conan
+
 from typing import Any
 from .CompilerToolchainManager import *
-from .CMakeManager import CMakeManager, CMake
+from .CMakeManager import CMakeManager
 from .Project import Project
 import glob
 import platform
@@ -14,14 +16,16 @@ import platform
 
 # A project builder that builds, tests, and cleans the project
 class ProjectBuilder:
-    def __init__(self, project: Project, cmake_manager: CMakeManager):
+    def __init__(self, project: Project, cmake: CMake, conan: Conan):
         """
         Initialize the project builder
         :param project: A C++ project to be built
-        :param cmake_manager: A CMake manager for the current system
+        :param cmake: A handle to the `cmake` binary used to configure, build, and install the project
+        :param conan: A handle to the `conan` binary used to install the project's dependencies
         """
         self.project = project
-        self.cmake_manager = cmake_manager
+        self.cmake = cmake
+        self.conan = conan
 
     @cached_property
     def conan_cmake_integration_file(self) -> str:
