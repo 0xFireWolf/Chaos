@@ -38,44 +38,6 @@ class ProjectBuilder:
         remove_folder_if_exists(self.project.build_directory)
         os.mkdir(self.project.build_directory)
 
-    def cmake_generate(self,
-                       cmake: CMake,
-                       build_type: BuildType,
-                       toolchain_file: Path,
-                       chainload_toolchain_file: Path,
-                       cmake_generate_flags: list[str] = None) -> None:
-        """
-        [Action] [Step] Use CMake to generate files for the native build system
-        :param cmake: The CMake binary that will be used to generate files for the native build system
-        :param build_type: The build type
-        :param toolchain_file: Path to the primary CMake toolchain file
-        :param chainload_toolchain_file: Path to the secondary CMake toolchain file
-        :param cmake_generate_flags: Additional flags passed to `cmake`
-        """
-        print(f"Generating files for the native build system using CMake v{cmake.major}.{cmake.minor}.{cmake.patch}...")
-        print(f"\tSource Directory: {self.project.source_directory}")
-        print(f"\tBuild Directory: {self.project.build_directory}")
-        print(f"\tBuild Type: {build_type.value}")
-        print(f"\tCMake Toolchain: {toolchain_file}")
-        print(f"\tChainload Toolchain: {chainload_toolchain_file}")
-        # Start with the default flags
-        args = ["-S", self.project.source_directory,
-                "-B", self.project.build_directory,
-                f"-DCMAKE_BUILD_TYPE={build_type.value}",
-                f"-DCMAKE_TOOLCHAIN_FILE={toolchain_file}",
-                f"-DCHAOS_CHAINLOAD_TOOLCHAIN_FILE={chainload_toolchain_file}"]
-        # Check if users specify to use the bundled libc++ library on macOS
-        if int(os.getenv("USE_BUNDLED_LIBCPP", 0)) == 1:
-            args.append("-DCHAOS_USE_BUNDLED_LIBCPP=ON")
-        # Append CMake flags specified by the project
-        if self.project.cmake_generate_flags is not None:
-            args.extend(self.project.cmake_generate_flags)
-        # Append CMake flags specified by the caller
-        if cmake_generate_flags is not None:
-            args.extend(cmake_generate_flags)
-        # Generate files for the native build system
-        cmake.call(args)
-
     def cmake_build(self,
                     cmake: CMake,
                     build_type: BuildType,
