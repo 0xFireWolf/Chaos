@@ -20,21 +20,11 @@ class Architecture(OrderedStrEnum):
     kARM64 = "ARM64"
 
 
-@total_ordering
-class CompilerType(Enum):
+class CompilerType(OrderedStrEnum):
     kGCC = "GCC"
     kClang = "Clang"
     kAppleClang = "AppleClang"
     kMSVC = "MSVC"
-
-    def __eq__(self, other: CompilerType) -> bool:
-        return self.value == other.value
-
-    def __lt__(self, other: CompilerType) -> bool:
-        return self.value < other.value
-
-    def __hash__(self):
-        return hash(self.value)
 
 
 @total_ordering
