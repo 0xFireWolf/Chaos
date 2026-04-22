@@ -122,13 +122,10 @@ class CMakeToolchain:
     @classmethod
     def parse(cls, path: Path) -> CMakeToolchain:
         filename = path.stem
-        tokens = filename.split("_")
-        if len(tokens) == 4:
-            identifier = BuildSystemIdentifier.from_strings(tokens[0], tokens[1], "Default", tokens[2], tokens[3])
-        elif len(tokens) == 5:
-            identifier = BuildSystemIdentifier.from_strings(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4])
-        else:
-            raise ValueError(f"'{filename}' is not a valid toolchain name.")
+        try:
+            identifier = BuildSystemIdentifier.from_tokens(filename.split("_"))
+        except ValueError as error:
+            raise ValueError(f"'{filename}' is not a valid CMake toolchain filename: {error}.") from error
         return cls(filename, identifier)
 
     def __str__(self) -> str:
