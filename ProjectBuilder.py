@@ -38,41 +38,6 @@ class ProjectBuilder:
         remove_folder_if_exists(self.project.build_directory)
         os.mkdir(self.project.build_directory)
 
-    def conan_install(self,
-                      build_profile: Path,
-                      host_profile: Path,
-                      conan_flags: list[str] = None) -> None:
-        """
-        [Action] [Step] Install all required dependencies via Conan 1.x or 2.x
-        :param build_profile: Path to a Conan profile that is used to build all dependencies on the host machine
-        :param host_profile: Path to a Conan profile that is used to host all dependencies on the target machine
-        :param conan_flags: Additional flags passed to `conan`
-        """
-        # Start with the default flags
-        args = []
-        if is_conan_v2_installed():
-            args.extend(["conan", "install", self.project.source_directory,
-                         "--output-folder", self.project.build_directory,
-                         "--update", "--build", "missing",
-                         "--profile:build", build_profile, "--profile:host", host_profile])
-        else:
-            if build_profile != host_profile:
-                raise ValueError("Cross compiling with two separated profiles is not supported by Conan 1.x.")
-            args.extend(["conan", "install", self.project.source_directory,
-                         "--install-folder", self.project.build_directory,
-                         "--update", "--build", "missing",
-                         "--profile", build_profile])
-        # Append Conan flags specified by the project
-        if self.project.conan_flags is not None:
-            args.extend(self.project.conan_flags)
-        # Append Conan flags specified by the caller
-        if conan_flags is not None:
-            args.extend(conan_flags)
-        # Install all required packages
-        print("Installing all required packages via Conan...", flush=True)
-        print(f"Conan Args: {' '.join([str(arg) for arg in args])}", flush=True)
-        subprocess.run(args).check_returncode()
-
     def cmake_generate(self,
                        cmake: CMake,
                        build_type: BuildType,
