@@ -2,8 +2,7 @@
 # MARK: - Compiler Toolchains and Conan Profiles
 #
 
-from __future__ import annotations
-from enum import Enum
+from dataclasses import dataclass
 from .Sidekicks import OrderedStrEnum
 import os
 from functools import total_ordering
@@ -27,30 +26,32 @@ class CompilerType(OrderedStrEnum):
     kMSVC = "MSVC"
 
 
-@total_ordering
+@dataclass(frozen=True, order=True, unsafe_hash=True)
 class Compiler:
-    def __init__(self, description: str):
+    type: CompilerType
+    version: int
+
+    @classmethod
+    def parse(cls, description: str) -> Compiler:
         """
         Initialize a compiler from its description
         :param description: A string formatted as "<Identifier>-<Version>"
         """
-        tokens: list[str] = description.split("-")
+        tokens = description.split("-")
         if len(tokens) != 2:
-            raise ValueError
-        self.type = CompilerType(tokens[0])
-        self.version = int(tokens[1])
-
-    def __eq__(self, other: Compiler) -> bool:
-        return self.type == other.type and self.version == other.version
-
-    def __lt__(self, other: Compiler) -> bool:
-        return (self.type.value, self.version) < (other.type.value, other.version)
+            raise ValueError(f"'{description}' is not a valid compiler description.")
+        try:
+            type = CompilerType(tokens[0])
+        except ValueError:
+            raise ValueError(f"'{tokens[0]}' is not a valid compiler type.")
+        try:
+            version = int(tokens[1])
+        except ValueError:
+            raise ValueError(f"'{tokens[1]}' is not a valid compiler version.")
+        return cls(type, version)
 
     def __str__(self) -> str:
-        return "{} {}".format(self.type.value, self.version)
-
-    def __hash__(self):
-        return hash((self.type, self.version))
+        return f"{self.type} {self.version}"
 
 
 class StandardLibrary(OrderedStrEnum):
