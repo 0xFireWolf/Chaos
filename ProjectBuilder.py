@@ -88,6 +88,19 @@ class ProjectBuilder:
             flags.extend(cmake_generate_flags)
         return flags if len(flags) > 0 else None
 
+    def make_cmake_build_flags(self, cmake_build_flags: list[str] | None) -> list[str] | None:
+        """
+        Construct the final list of flags to be passed to `cmake` during the build step
+        :param cmake_build_flags: Additional flags provided by the caller.
+        :return: The merged list of project-level and caller-provided flags, or None if no flags are present.
+        """
+        flags = list[str]()
+        if self.project.cmake_build_flags is not None:
+            flags.extend(self.project.cmake_build_flags)
+        if cmake_build_flags is not None:
+            flags.extend(cmake_build_flags)
+        return flags if len(flags) > 0 else None
+
     #
     # MARK: - Rebuild Project
     #
