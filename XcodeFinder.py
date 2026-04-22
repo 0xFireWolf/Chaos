@@ -81,21 +81,13 @@ class XcodeFinder:
         """
         return [bundle for directory in self.directories for bundle in self.find_all_in_directory(directory)]
 
-    def find(self, major: int, minor: int = None, patch: int = None) -> XcodeBundle:
+    def find(self, version: Version) -> XcodeBundle | None:
         """
-        Find the Xcode bundle of a specific version
-        :param major: The major version
-        :param minor: An optional minor version (Pass `None` to find the latest minor release)
-        :param patch: An optional patch version (Pass `None` to find the latest patch release)
+        Find the Xcode bundle of the given version
+        :param version: The version of the Xcode bundle to find
         :return: The Xcode bundle of the given version on success, `None` otherwise.
         """
-        bundles = [bundle for bundle in self.find_all() if bundle.major == major]
-        if minor is None:
-            bundles = sorted(bundles, key=attrgetter("minor"), reverse=True)
-        else:
-            bundles = [bundle for bundle in bundles if bundle.minor == minor]
-            if patch is None:
-                bundles = sorted(bundles, key=attrgetter("patch"), reverse=True)
-            else:
-                bundles = [bundle for bundle in bundles if bundle.patch == patch]
-        return bundles[0] if len(bundles) != 0 else None
+        for bundle in self.find_all():
+            if bundle.version == version:
+                return bundle
+        return None
