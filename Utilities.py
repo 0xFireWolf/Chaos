@@ -32,8 +32,9 @@ def apt_install(packages: list[str]) -> None:
     :param packages: Name of the packages
     :raise `CalledProcessError` on error.
     """
-    subprocess.run(["sudo", "apt", "update", "-y"])
-    subprocess.run(["sudo", "apt", "-y", "install"] + packages).check_returncode()
+    if subprocess.run(["sudo", "apt-get", "update", "-y"]).returncode != 0:
+        print("Warning: Unable to refresh the package index files.", flush=True)
+    subprocess.run(["sudo", "apt-get", "-y", "install"] + packages, check=True)
 
 
 def apt_add_repository(name: str) -> None:
