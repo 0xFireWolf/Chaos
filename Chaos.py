@@ -75,12 +75,10 @@ class Chaos:
                 if version == "24.04":
                     self.toolchain_installer = CompilerToolchainInstallerUbuntu2404(Architecture.kx86_64)
                 else:
-                    print(f"Ubuntu {version} is not supported.")
-                    raise EnvironmentError
+                    raise EnvironmentError(f"Ubuntu {version} is not supported.")
                 self.cmake_manager = CMakeManagerLinux()
             else:
-                print(f"{distro.name(True)} is not supported.")
-                raise EnvironmentError
+                raise EnvironmentError(f"{distro.name(True)} is not supported.")
         elif system == "Windows":
             self.host_system = HostSystem.kWindows
             self.architecture = Architecture.kx86_64
@@ -94,8 +92,7 @@ class Chaos:
             self.toolchain_installer = CompilerToolchainInstallerFreeBSD(Architecture.kx86_64)
             self.cmake_manager = CMakeManagerUnsupported()
         else:
-            print(f"{system} is not supported.")
-            raise EnvironmentError
+            raise EnvironmentError(f"{system} is not supported.")
 
     #
     # MARK: Select Compiler Toolchains
