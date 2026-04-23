@@ -11,10 +11,11 @@ import distro
 import subprocess
 import traceback
 import platform
+import shutil
 import sys
 import os
 
-from CompilerToolchainInstaller import (
+from .CompilerToolchainInstaller import (
     UnsupportedToolchainError,
     kSupportedGccVersions,
     kSupportedClangVersions,
@@ -42,7 +43,7 @@ from .CMakeToolchainDirectory import CMakeToolchainDirectory
 from .ConanProfileDirectory import ConanProfileDirectory
 from .BuildSystemDescriptor import BuildType, CMakeToolchain, ConanProfilePair, HostSystem, Architecture, Compiler
 from .Menu import Menu
-from Utilities import remove_folder_if_exists
+from .Utilities import remove_folder_if_exists
 
 
 class Chaos:
