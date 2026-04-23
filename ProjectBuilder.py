@@ -221,7 +221,11 @@ class ProjectBuilder:
     #
 
     # Action
-    def run_test(self, name: str, build_type: BuildType, cwd: Path = None, env: dict[str, Any] = None) -> None:
+    def run_test(self,
+                 name: str,
+                 build_type: BuildType,
+                 cwd: Path | None = None,
+                 env: dict[str, Any] | None = None) -> None:
         """
         [Action] Run a single test
         :param name: The name of the test
