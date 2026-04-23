@@ -185,19 +185,14 @@ class Chaos:
         [CI] Select the toolchain that has the given name
         :param build_name: The name of the toolchain that specifies the build environment
         :param host_name: The name of the toolchain that specifies the host environment
-        :raise `ValueError` if the given toolchain name is invalid;
-               `CalledProcessError` if failed to select the toolchain.
+        :raise FileNotFoundError: if the given toolchain or profile name does not exist;
+        :raise ValueError: if the given name is malformed;
+        :raise CalledProcessError: if failed to select the toolchain.
         """
-        cmake_toolchain = Toolchain(build_name + ".cmake")
-        build_profile_dbg = ConanProfile(build_name + "_Debug.conanprofile")
-        build_profile_rel = ConanProfile(build_name + "_Release.conanprofile")
-        host_profile_dbg = None if host_name is None else ConanProfile(host_name + "_Debug.conanprofile")
-        host_profile_rel = None if host_name is None else ConanProfile(host_name + "_Release.conanprofile")
-        self.toolchain_manager.apply_compiler_toolchain(cmake_toolchain,
-                                                        build_profile_dbg,
-                                                        build_profile_rel,
-                                                        host_profile_dbg,
-                                                        host_profile_rel)
+        toolchain = self.cmake_toolchain_directory.find(build_name)
+        build_profiles = self.conan_profile_directory.find(build_name)
+        host_profiles = self.conan_profile_directory.find(host_name) if host_name else build_profiles
+        self.apply_compiler_toolchain(toolchain, build_profiles, host_profiles)
 
     def ci_build_all(self, build_type: str, cmake_generate_flags: list[str] = None) -> None:
         """
