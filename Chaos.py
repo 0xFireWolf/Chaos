@@ -298,7 +298,13 @@ class Chaos:
     #
 
     def bootstrapping_create_ramdisk(self, mount_point: Path, size: int) -> None:
-        sectors = size * 1024 * 1024 * 1024 / 512
+        """
+        [Helper] Create and mount an HFS+ ramdisk of the given size at the given mount point (macOS only)
+        :param mount_point: The path at which to mount the ramdisk
+        :param size: The size of the ramdisk in gigabytes
+        :raise CalledProcessError: if any of `hdiutil`, `newfs_hfs`, or `diskutil` exits with a non-zero status code.
+        """
+        sectors = size * 1024 * 1024 * 1024 // 512
         device = subprocess.check_output(["hdiutil", "attach", "-nomount", f"ram://{sectors}"], text=True).strip()
         subprocess.run(["newfs_hfs", "-v", mount_point.stem, device]).check_returncode()
         subprocess.run(["diskutil", "mount", "nobrowse", "-mountPoint", mount_point, device]).check_returncode()
