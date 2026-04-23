@@ -74,10 +74,10 @@ class CMake:
                  source_directory: Path,
                  build_directory: Path,
                  build_type: BuildType,
-                 toolchain_file: Path = None,
-                 chainload_toolchain_file: Path = None,
-                 defines: dict[str, str] = None,
-                 extra_args: list[str] = None) -> None:
+                 toolchain_file: Path | None = None,
+                 chainload_toolchain_file: Path | None = None,
+                 defines: dict[str, str] | None = None,
+                 extra_args: list[str] | None = None) -> None:
         """
         Invoke `cmake` to generate files for the native build system
         :param source_directory: Path to the source directory in which `CMakeLists.txt` resides
@@ -116,10 +116,10 @@ class CMake:
     def build(self, *,
               build_directory: Path,
               build_type: BuildType,
-              parallel_level: int = None,
+              parallel_level: int | None = None,
               clean_first: bool = True,
-              extra_args: list[str] = None,
-              native_args: list[str] = None) -> None:
+              extra_args: list[str] | None = None,
+              native_args: list[str] | None = None) -> None:
         """
         Invoke `cmake` to build the project via the native build system
         :param build_directory: Path to the build directory in which files for the native build system are stored
@@ -152,8 +152,8 @@ class CMake:
 
     def install(self, *,
                 build_directory: Path,
-                prefix: Path = None,
-                extra_args: list[str] = None) -> None:
+                prefix: Path | None = None,
+                extra_args: list[str] | None = None) -> None:
         """
         Invoke `cmake` to install the project artifacts
         :param build_directory: Path to the build directory in which files for the native build system are stored
