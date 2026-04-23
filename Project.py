@@ -3,7 +3,7 @@
 #
 from __future__ import annotations
 from pathlib import Path
-from .AdditionalToolsInstaller import AdditionalToolInstaller, DefaultAdditionalToolInstaller
+from .AdditionalToolsInstaller import AdditionalToolsInstaller
 
 
 class Project:
@@ -18,7 +18,7 @@ class Project:
                  test_executables: list[str] | None = None,
                  coverage_source_directory_name: str = "Sources",
                  coverage_exclude_patterns: list[str] | None = None,
-                 additional_tools_installer: AdditionalToolInstaller | None = None):
+                 additional_tools_installer: AdditionalToolsInstaller | None = None):
         # The project name
         self.name = name
 
@@ -53,7 +53,7 @@ class Project:
         self.coverage_exclude_patterns: list[str] = [] if coverage_exclude_patterns is None else coverage_exclude_patterns
 
         # An installer that can be used to install additional development tools needed to build this project
-        self.additional_tools_installer = additional_tools_installer or DefaultAdditionalToolInstaller()
+        self.additional_tools_installer: AdditionalToolsInstaller = additional_tools_installer or AdditionalToolsInstaller()
 
     @property
     def current_toolchain_link_path(self) -> Path:
