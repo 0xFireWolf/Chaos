@@ -153,26 +153,24 @@ class ProjectBuilder:
                         conan_flags: list[str] = None,
                         cmake_generate_flags: list[str] = None,
                         cmake_build_flags: list[str] = None) -> None:
-        """
-        [Action] [Helper] Rebuild the project
-        :param build_type: The build type
-        :param conan_flags: Additional flags passed to `conan`
-        :param cmake_generate_flags: Additional flags passed to `cmake` when generates files for the native build system
-        :param cmake_build_flags: Additional flags passed to `cmake` when building the project
-        """
-        # Get the default CMake
-        cmake = CMake.default()
+        # Configure the project
+        self.configure(build_type, conan_flags, cmake_generate_flags)
 
-        # Calculate required properties for the native build system
-        native_build_flags = None
-        parallel_level = os.cpu_count()
+        # Determine the flags passed to the native build system
         if platform.system() == "Windows":
-            native_build_flags = [f"/p:CL_MPCount={parallel_level}"]
+            native_build_flags = [f"/p:CL_MPCount={os.cpu_count()}"]
             parallel_level = 1
+        else:
+            native_build_flags = None
+            parallel_level = os.cpu_count()
 
-        # Rebuild the project
-        self.configure(cmake, build_type, conan_flags, cmake_generate_flags)
-        self.cmake_build(cmake, build_type, parallel_level, cmake_build_flags, native_build_flags)
+        # Build the project
+        self.cmake.build(build_directory=self.project.build_directory,
+                         build_type=build_type,
+                         parallel_level=parallel_level,
+                         clean_first=True,
+                         extra_args=self.make_cmake_build_flags(cmake_build_flags),
+                         native_args=native_build_flags)
 
     # Action
     def rebuild_project_debug(self) -> None:
