@@ -135,11 +135,13 @@ class Conan:
         print(f"Ensuring Conan remote '{name}' points to '{url}'...")
         raw_output = self._run_with_output(["remote", "list", "-f", "json"])
         try:
-            remotes = json.loads(raw_output)
+            remotes: list[dict[str, object]] = json.loads(raw_output)
         except json.JSONDecodeError as error:
             raise RuntimeError(f"Failed to parse the output of `conan remote list`: {error}") from error
 
-        existing = next((remote for remote in remotes if remote.get("name") == name), None)
+        existing: dict[str, object] | None = next(
+            (remote for remote in remotes if remote.get("name") == name), None
+        )
         if existing is None:
             print(f"Remote '{name}' does not exist; adding it.")
             self._run(["remote", "add", name, url])
