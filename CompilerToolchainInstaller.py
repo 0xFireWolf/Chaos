@@ -10,7 +10,7 @@ import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
 from .BuildSystemDescriptor import HostSystem, Architecture
-from .Utilities import apt_install, brew_install, pkg_install
+from .Utilities import apt_install, apt_add_repository, brew_install, pkg_install
 from .XcodeFinder import XcodeBundle, XcodeFinder
 
 
@@ -279,7 +279,8 @@ class CompilerToolchainInstallerUbuntu2404(CompilerToolchainInstallerUbuntu):
         if 10 <= version <= 14:
             self.install_gcc_from_apt(version)
         elif version == 15:
-            brew_install(["gcc@15"])
+            apt_add_repository("ppa:ubuntu-toolchain-r/test")
+            self.install_gcc_from_apt(version)
         else:
             raise UnsupportedToolchainError(f"GCC {version} is not available on Ubuntu 24.04.")
 
