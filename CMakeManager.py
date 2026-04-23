@@ -31,6 +31,19 @@ class CMakeManager(ABC):
         response.raise_for_status()
         return response
 
+    @staticmethod
+    def _parse_version_from_folder_name(folder_name: str) -> Version:
+        """
+        [Helper] Parse the CMake version from an extracted installer folder name
+        :param folder_name: The folder name (e.g., `cmake-3.28.1-linux-x86_64`)
+        :return: The parsed CMake version.
+        :raise ValueError: if the folder name does not contain a recognizable version string.
+        """
+        match = re.search(r"cmake-(\d+\.\d+\.\d+)", folder_name)
+        if match is None:
+            raise ValueError(f"Cannot parse CMake version from folder name: {folder_name}")
+        return Version.parse(match.group(1))
+
     def get_installer_filenames_with_patterns(self, major: int, minor: int, patterns: list[str]) -> list[str]:
         """
         [Helper] Get all CMake installers that have the given major and minor version
