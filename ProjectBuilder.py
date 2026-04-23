@@ -210,6 +210,9 @@ class ProjectBuilder:
 
     # Action
     def clean_all(self) -> None:
+        """
+        [Action] Remove the build folder and the links to the selected compiler toolchain files
+        """
         remove_folder_if_exists(self.project.build_directory)
         remove_file_if_exist(self.project.current_toolchain_link_path)
         remove_file_if_exist(self.project.current_build_profile_debug_link_path)
