@@ -73,11 +73,23 @@ def winget_install(packages: list[str]) -> None:
     :raise `CalledProcessError` on error.
     """
     for package in packages:
-        if subprocess.run(["winget", "list", package], stdout=subprocess.DEVNULL).returncode != 0:
-            subprocess.run(["winget", "install", package, "--scope", "machine"]).check_returncode()
+        if subprocess.run(["winget", "list",
+                           "--id", package, "--exact",
+                           "--accept-source-agreements"],
+                          stdout=subprocess.DEVNULL).returncode != 0:
+            subprocess.run(["winget", "install",
+                            "--id", package, "--exact",
+                            "--scope", "machine",
+                            "--accept-source-agreements",
+                            "--accept-package-agreements"], check=True)
         else:
             # Attempt to upgrade the package
-            subprocess.run(["winget", "upgrade", package, "--scope", "machine"])
+            if subprocess.run(["winget", "upgrade",
+                               "--id", package, "--exact",
+                               "--scope", "machine",
+                               "--accept-source-agreements", 
+                               "--accept-package-agreements"]).returncode != 0:
+                print(f"Warning: Failed to upgrade the package {package}.", flush=True)
 
 
 def choco_install(packages: list[str]) -> None:
