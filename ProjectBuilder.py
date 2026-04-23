@@ -149,6 +149,13 @@ class ProjectBuilder:
                         conan_flags: list[str] = None,
                         cmake_generate_flags: list[str] = None,
                         cmake_build_flags: list[str] = None) -> None:
+        """
+        Rebuild the project
+        :param build_type: The build type
+        :param conan_flags: Optional additional arguments passed to `conan install`
+        :param cmake_generate_flags: Optional additional arguments passed to `cmake` during the generate step
+        :param cmake_build_flags: Optional additional arguments passed to `cmake` during the build step
+        """
         # Configure the project
         self.configure(build_type, conan_flags, cmake_generate_flags)
 
