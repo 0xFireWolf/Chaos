@@ -1,46 +1,16 @@
 #
 # MARK: - Download and Manage CMake Binaries
 #
+
 from __future__ import annotations
+from io import BytesIO
+from pathlib import Path
 import abc
 import re
 import requests
 import tarfile
 import zipfile
-import subprocess
-import shutil
-from io import BytesIO
-from pathlib import Path
-from os import PathLike
-
-
-class CMake:
-    def __init__(self, major: int, minor: int, patch: int, path: Path):
-        self.major = major
-        self.minor = minor
-        self.patch = patch
-        self.path = path
-
-    def call(self, args: list[str | bytes | PathLike[str] | PathLike[bytes]]) -> None:
-        """
-        Call CMake with the given list of arguments
-        :param args: A list of arguments passed to the CMake binary
-        """
-        args.insert(0, self.path)
-        print(f"CMake v{self.major}.{self.minor}.{self.patch} Args: {' '.join([str(arg) for arg in args])}", flush=True)
-        subprocess.run(args).check_returncode()
-
-    @classmethod
-    def default(cls) -> CMake:
-        """
-        Get the default CMake binary installed on the local machine
-        :return: A descriptor that describes the default CMake binary.
-        """
-        executable_path = Path(shutil.which("cmake"))
-        output = subprocess.check_output([executable_path, "--version"], text=True)
-        versions = re.findall(r"cmake version (\d+)\.(\d+)\.(\d+)", output)[0]
-        print(f"Found the default CMake v{versions[0]}.{versions[1]}.{versions[2]} at {executable_path}.")
-        return CMake(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
+from .CMake import CMake
 
 
 class CMakeManager(abc.ABC):
