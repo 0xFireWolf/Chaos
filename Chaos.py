@@ -186,7 +186,7 @@ class Chaos:
             case _:
                 raise KeyError(f"{name} is not a valid compiler toolchain.")
 
-    def ci_select_toolchain(self, build_name: str, host_name: str = None) -> None:
+    def ci_select_toolchain(self, build_name: str, host_name: str | None = None) -> None:
         """
         [CI] Select the toolchain that has the given name
         :param build_name: The name of the toolchain that specifies the build environment
@@ -217,7 +217,7 @@ class Chaos:
             raise KeyError(f"{name} is not a valid Apple Clang compiler toolchain.")
         self.toolchain_installer.install_apple_clang(version)
 
-    def ci_build_all(self, build_type: str, cmake_generate_flags: list[str] = None) -> None:
+    def ci_build_all(self, build_type: str, cmake_generate_flags: list[str] | None = None) -> None:
         """
         [CI] Build all targets
         :param build_type: The raw build type
@@ -243,7 +243,7 @@ class Chaos:
         """
         self.project_builder.rebuild_and_run_all_tests_with_coverage()
 
-    def ci_install_all(self, prefix: Path = None) -> None:
+    def ci_install_all(self, prefix: Path | None = None) -> None:
         """
         [CI] Install all project artifacts
         :param prefix: Specify the prefix path
