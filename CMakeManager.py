@@ -129,6 +129,7 @@ class CMakeManager(ABC):
         return binaries
 
 
+# A manager that downloads and manages CMake binaries for macOS
 class CMakeManagerMacOS(CMakeManager):
     def get_installer_filenames(self, major: int, minor: int) -> list[str]:
         """
