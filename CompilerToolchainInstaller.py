@@ -287,8 +287,6 @@ class CompilerToolchainInstallerUbuntu2404(CompilerToolchainInstallerUbuntu):
     def install_clang(self, version: int) -> None:
         if version not in kSupportedClangVersions:
             raise UnsupportedToolchainError(f"Clang {version} is not a supported version on Ubuntu 24.04.")
-        if version == 13:
-            brew_install(["llvm@13"])
         elif 14 <= version <= 19:
             self.install_clang_from_apt(version)
         elif 20 <= version <= 22:
