@@ -28,17 +28,6 @@ class ProjectBuilder:
         self.conan = conan
 
     #
-    # MARK: - Small Steps
-    #
-
-    def create_fresh_build_folder(self) -> None:
-        """
-        [Action] [Step] Create a fresh build folder
-        """
-        remove_folder_if_exists(self.project.build_directory)
-        os.mkdir(self.project.build_directory)
-
-    #
     # MARK: - Choose Conan Profiles
     #
 
@@ -104,6 +93,13 @@ class ProjectBuilder:
     #
     # MARK: - Rebuild Project
     #
+
+    def create_fresh_build_folder(self) -> None:
+        """
+        Create a fresh build folder
+        """
+        remove_folder_if_exists(self.project.build_directory)
+        os.mkdir(self.project.build_directory)
 
     def configure(self,
                   build_type: BuildType,
