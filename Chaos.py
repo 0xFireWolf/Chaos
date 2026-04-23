@@ -406,6 +406,10 @@ class Chaos:
         Menu.interact(menu)
 
     def cleanup_build_directories_for_clion(self) -> None:
+        """
+        [Action] Eject all CLion ramdisk-backed build directories and remove the corresponding folders
+        :raise CalledProcessError: if `diskutil eject` fails on any of the build directories.
+        """
         build_directories = [Path(entry.path) for entry in os.scandir(Path.cwd())
                              if entry.name.startswith("cmake-build") and Path(entry.path).is_mount()]
         for build_directory in build_directories:
