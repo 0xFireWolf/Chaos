@@ -511,9 +511,10 @@ class Chaos:
         menu.add_item("Clean the build folder", self.project_builder.clean_build_folder)
         menu.add_item("Clean the build folder and reset the toolchain", self.project_builder.clean_all)
         menu.add_item("Remove all Conan packages", self.project_builder.remove_all_packages)
-        menu.add_item("Determine the minimum CMake version", self.project_builder.determine_minimum_cmake_version_interactive)
-        menu.add_item("Bootstrap build directories for CLion (macOS)", self.bootstrapping_clion_interactive)
-        menu.add_item("Clean build directories for CLion (macOS)", self.cleanup_build_directories_for_clion)
+        menu.add_item("Determine the minimum CMake version", self.determine_minimum_cmake_version_interactive)
+        if self.host_system == HostSystem.kMacOS:
+            menu.add_item("Bootstrap build directories for CLion (macOS)", self.bootstrapping_clion_interactive)
+            menu.add_item("Clean build directories for CLion (macOS)", self.cleanup_build_directories_for_clion)
         return menu
 
     #
