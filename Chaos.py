@@ -66,6 +66,7 @@ class Chaos:
             self.architecture = Architecture.kx86_64 if machine == "x86_64" else Architecture.kARM64
             self.configurator = EnvironmentConfiguratorMacOS(project.additional_tools_installer.macos)
             self.toolchain_installer = CompilerToolchainInstallerMacOS(self.architecture)
+            self.cmake_manager = CMakeManagerMacOS()
         elif system == "Linux":
             distribution = distro.id()
             version = distro.version()
@@ -78,6 +79,7 @@ class Chaos:
                 else:
                     print(f"Ubuntu {version} is not supported.")
                     raise EnvironmentError
+                self.cmake_manager = CMakeManagerLinux()
             else:
                 print(f"{distro.name(True)} is not supported.")
                 raise EnvironmentError
@@ -86,11 +88,13 @@ class Chaos:
             self.architecture = Architecture.kx86_64
             self.configurator = EnvironmentConfiguratorWindows(project.additional_tools_installer.windows)
             self.toolchain_installer = CompilerToolchainInstallerUnsupported(HostSystem.kWindows, Architecture.kx86_64)
+            self.cmake_manager = CMakeManagerWindows()
         elif system == "FreeBSD":
             self.host_system = HostSystem.kFreeBSD
             self.architecture = Architecture.kx86_64
             self.configurator = EnvironmentConfiguratorFreeBSD(project.additional_tools_installer.freebsd)
             self.toolchain_installer = CompilerToolchainInstallerFreeBSD(Architecture.kx86_64)
+            self.cmake_manager = CMakeManagerUnsupported()
         else:
             print(f"{system} is not supported.")
             raise EnvironmentError
