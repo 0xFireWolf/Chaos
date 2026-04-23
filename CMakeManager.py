@@ -189,10 +189,11 @@ class CMakeManagerLinux(CMakeManager):
         return CMake(executable_path, version)
 
 
+# A manager that downloads and manages CMake binaries for Windows
 class CMakeManagerWindows(CMakeManager):
     def get_installer_filenames(self, major: int, minor: int) -> list[str]:
         """
-        [Helper] Get all CMake installers that have the given major and minor version for Windows
+        Get all CMake installers that have the given major and minor version for Windows
         :param major: The major version of CMake installers
         :param minor: The minor version of CMake installers
         :return: A list of file names sorted in ascending order.
@@ -207,12 +208,12 @@ class CMakeManagerWindows(CMakeManager):
         Download the CMake installer from the given URL, extract and store the CMake binary to the given directory
         :param from_url: URL to the CMake installer to be downloaded
         :param to_directory: Path to the directory to store the extracted CMake binary
-        :return: A descriptor that describes the downloaded CMake binary.
+        :return: A handle to the downloaded CMake binary.
         """
         folder_name = from_url.rsplit("/", 1)[-1].removesuffix(".zip")
-        versions = re.findall(r"cmake-(\d+)\.(\d+)\.(\d+)", folder_name)[0]
+        version = self._parse_version_from_folder_name(folder_name)
         executable_path = to_directory / folder_name / "bin" / "cmake.exe"
-        print(f"Downloading CMake v{versions[0]}.{versions[1]}.{versions[2]} for Windows...")
-        with zipfile.ZipFile(BytesIO(requests.get(from_url).content)) as archive:
+        print(f"Downloading CMake v{version} for Windows...")
+        with zipfile.ZipFile(BytesIO(self._http_get(from_url).content)) as archive:
             archive.extractall(path=to_directory)
-        return CMake(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
+        return CMake(executable_path, version)
