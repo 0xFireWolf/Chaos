@@ -52,8 +52,9 @@ def pkg_install(packages: list[str]) -> None:
     :param packages: Name of the packages
     :raise `CalledProcessError` on error.
     """
-    subprocess.run(["sudo", "pkg", "update"])
-    subprocess.run(["sudo", "pkg", "install", "-y"] + packages).check_returncode()
+    if subprocess.run(["sudo", "pkg", "update"]).returncode != 0:
+        print("Warning: Unable to refresh the package index files.", flush=True)
+    subprocess.run(["sudo", "pkg", "install", "-y"] + packages, check=True)
 
 
 def pip_install(packages: list[str]) -> None:
