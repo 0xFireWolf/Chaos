@@ -9,6 +9,7 @@ from pathlib import Path
 import argparse
 import distro
 import subprocess
+import tempfile
 import traceback
 import platform
 import shutil
@@ -38,10 +39,10 @@ from .Project import Project
 from .ProjectBuilder import ProjectBuilder
 from .CMake import CMake
 from .Conan import Conan
-from .CMakeManager import CMakeManagerMacOS, CMakeManagerLinux, CMakeManagerWindows
+from .CMakeManager import CMakeManagerMacOS, CMakeManagerLinux, CMakeManagerWindows, CMakeManagerUnsupported
 from .CMakeToolchainDirectory import CMakeToolchainDirectory
 from .ConanProfileDirectory import ConanProfileDirectory
-from .BuildSystemDescriptor import BuildType, CMakeToolchain, ConanProfilePair, HostSystem, Architecture, Compiler
+from .BuildSystemDescriptor import BuildType, CMakeToolchain, ConanProfile, ConanProfilePair, HostSystem, Architecture
 from .Menu import Menu
 from .Utilities import remove_folder_if_exists
 
