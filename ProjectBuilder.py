@@ -210,11 +210,11 @@ class ProjectBuilder:
     # Action
     def clean_all(self) -> None:
         remove_folder_if_exists(self.project.build_directory)
-        remove_file_if_exist(kCurrentToolchainFile)
-        remove_file_if_exist(kCurrentConanBuildProfileDebug)
-        remove_file_if_exist(kCurrentConanBuildProfileRelease)
-        remove_file_if_exist(kCurrentConanHostProfileDebug)
-        remove_file_if_exist(kCurrentConanHostProfileRelease)
+        remove_file_if_exist(self.project.current_toolchain_link_path)
+        remove_file_if_exist(self.project.current_build_profile_debug_link_path)
+        remove_file_if_exist(self.project.current_build_profile_release_link_path)
+        remove_file_if_exist(self.project.current_host_profile_debug_link_path)
+        remove_file_if_exist(self.project.current_host_profile_release_link_path)
 
     #
     # MARK: - Run Tests
