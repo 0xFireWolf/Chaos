@@ -3,22 +3,18 @@
 #
 
 from __future__ import annotations
+from dataclasses import dataclass
 from typing import Callable
-import os
-import platform
+from .Utilities import clear_console
+
 
 # Represents an item in a menu
+@dataclass
 class MenuItem:
-    def __init__(self, identifier: int, title: str, handler: Callable[[], None] | None) -> None:
-        """
-        Initialize a menu item with the given title and handler
-        :param identifier: The unique identifier of the menu item
-        :param title: The human-readable title of the menu item
-        :param handler: A callback function that will be invoked when users select this menu item
-        """
-        self.identifier = identifier
-        self.title = title
-        self.handler = handler
+    # The human-readable title of the menu item
+    title: str
+    # A callback function that will be invoked when users select this menu item
+    handler: Callable[[], None] | None
 
 
 # Represents a menu that lists user-selectable items
@@ -30,13 +26,10 @@ class Menu:
         """
         self.title = title
         self.items: list[MenuItem] = []
-        # Each menu item has a unique identifier, which also serves as the index into `self.items`
-        # The identifier tracker keeps track of the next available slot in `self.items`
-        self.identifier_tracker = 0
         # A menu item is selectable if it has a non-null handler
         # Such a menu item also has a numbered index that users can enter to select it
-        # The index map associates the numbered index with the identifier of each selectable menu item
-        # This map is updated by the `render` function that allocates a numbered index for each selectable menu item
+        # The index map associates the numbered index with the list index of each selectable menu item
+        # This map is populated by `build_index_map` before the menu can be rendered or selected
         self.index_map: dict[int, int] = {}
 
     def add_item(self, title: str, handler: Callable[[], None] | None = None) -> None:
@@ -45,8 +38,7 @@ class Menu:
         :param title: The human-readable title of the menu item
         :param handler: A callback function that will be invoked when users select this menu
         """
-        self.items.append(MenuItem(self.identifier_tracker, title, handler))
-        self.identifier_tracker += 1
+        self.items.append(MenuItem(title, handler))
 
     def add_submenu(self, title: str, submenu: Menu, handler: Callable[[Menu], None]) -> None:
         """
@@ -55,7 +47,7 @@ class Menu:
         :param submenu: The submenu to associate with the newly created menu item
         :param handler: A callback function that will be invoked to render the submenu and handle user interactions in the submenu
         """
-        self.add_item(title, lambda : handler(submenu))
+        self.add_item(title, lambda: handler(submenu))
 
     def add_separator(self) -> None:
         """
@@ -65,41 +57,46 @@ class Menu:
 
     def build_index_map(self) -> None:
         """
-        Build the index map for the non-interactive mode
+        Populate the index map used by `render` and `select`
+
+        This must be called before the menu can be rendered or a selection can be made.
+        `interact` calls this automatically before entering its main loop.
         """
-        index = 0
-        for item in self.items:
+        self.index_map = {}
+        numeric_index = 0
+        for list_index, item in enumerate(self.items):
             if item.handler is not None:
-                self.index_map[index] = item.identifier
-                index += 1
+                self.index_map[numeric_index] = list_index
+                numeric_index += 1
 
     def render(self) -> None:
         """
         Render the menu
+
+        `build_index_map` must have been called prior to invoking this method.
         """
         print()
         print(self.title)
         print()
-        index = 0
+        numeric_index = 0
         for item in self.items:
             if item.handler is None:
                 # Non-selectable menu item
                 print(item.title)
             else:
                 # Selectable menu item
-                print(f"[{index:02}] {item.title}")
-                self.index_map[index] = item.identifier
-                index += 1
+                print(f"[{numeric_index:02}] {item.title}")
+                numeric_index += 1
         print()
 
     def select(self, index: int) -> None:
         """
         Select the menu item that has the given index
         :param index: The index of a selectable menu item
+        :raise KeyError: if the given index is not associated with any selectable menu item.
         """
-        identifier = self.index_map[index]
-        item = self.items[identifier]
-        item.handler()
+        list_index = self.index_map[index]
+        self.items[list_index].handler()
 
     @staticmethod
     def interact(menu: Menu) -> None:
@@ -107,23 +104,26 @@ class Menu:
         The default handler for interacting with menus
         :param menu: A menu to interact with
         """
-        clear_console = lambda: os.system("cls" if platform.system() == "Windows" else "clear")
+        menu.build_index_map()
         while True:
             clear_console()
             menu.render()
             print("Press Ctrl-C or Ctrl-D to exit from the current menu.")
+            # Parse and validate the user input
+            # Note that handler exceptions are intentionally not caught here so that they propagate to the caller
             try:
                 option = int(input("Input the number and press ENTER: "))
             except ValueError:
                 print("Not a number! Please try again.")
                 input("Press Enter to continue...")
                 continue
-            except KeyError:
-                print(f"The option number you entered is not valid.")
-                input("Press Enter to continue...")
-                continue
             except (KeyboardInterrupt, EOFError):
                 break
+            if option not in menu.index_map:
+                print("The option number you entered is not valid.")
+                input("Press Enter to continue...")
+                continue
+            # Invoke the handler associated with the selected menu item
             menu.select(option)
             print()
             input("Press Enter to continue...")
