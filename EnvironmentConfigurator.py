@@ -3,13 +3,16 @@
 #
 
 import tempfile
-import requests
 import subprocess
 import shutil
-import os
+import sys
 from abc import ABC, abstractmethod
 from typing import Callable
 from pathlib import Path
+
+import requests
+
+from .Conan import Conan
 from .Utilities import (
     apt_install,
     brew_install,
@@ -37,21 +40,6 @@ class EnvironmentConfigurator(ABC):
     def install_conan(self) -> None:
         pass
 
-    # def install_homebrew(self) -> None:
-    #     # Check whether Homebrew has already been installed
-    #     try:
-    #         version = subprocess.check_output(["brew", "--version"], text=True).strip()
-    #         print(f"{version} has already been installed.")
-    #     except FileNotFoundError:
-    #         print("Homebrew is not installed. Installing...")
-    #         subprocess.run(["sudo", "xcode-select", "--install"])
-    #         path = tempfile.mkdtemp()
-    #         subprocess.run(["curl", "-O", "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"],
-    #                        cwd=path).check_returncode()
-    #         os.chmod(path + "/install.sh", 0o755)
-    #         subprocess.run([path + "/install.sh"]).check_returncode()
-    #         shutil.rmtree(path)
-
     def install_other(self) -> None:
         if self.other_tools_installer is not None:
             print("Installing additional required development tools...")
@@ -68,9 +56,8 @@ class EnvironmentConfigurator(ABC):
         self.install_basic()
         self.install_other()
 
-    def setup_conan_remote(self) -> None:
-        subprocess.run(["conan", "remote", "list"]).check_returncode()
-        subprocess.run(["conan", "remote", "update", "conancenter", "--url=https://center2.conan.io"]).check_returncode()
+    def ensure_conancenter_url(self) -> None:
+        Conan.default().ensure_conan_remote("conancenter", "https://center2.conan.io")
 
 
 # A configurator that sets up the development environment on macOS
@@ -83,10 +70,10 @@ class EnvironmentConfiguratorMacOS(EnvironmentConfigurator):
 
     def install_conan(self) -> None:
         pip_install(["conan"])
-        self.setup_conan_remote()
+        self.ensure_conancenter_url()
 
 
-# A configurator that sets up the development environment on Ubuntu 20.04 LTS / Ubuntu 22.04 LTS
+# A configurator that sets up the development environment on Ubuntu
 class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
     def install_build_essentials(self) -> None:
         apt_install(["build-essential", "vim"])
@@ -97,9 +84,10 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
     def install_conan(self) -> None:
         apt_install(["python3-pip"])
         pip_install(["conan"])
-        subprocess.run(["sudo", "rm", "-rf", "/usr/local/bin/conan"])
-        subprocess.run(["sudo", "ln", "-s", os.path.expanduser("~") + "/.local/bin/conan", "/usr/local/bin/conan"]).check_returncode()
-        self.setup_conan_remote()
+        conan_user_path = Path.home() / ".local" / "bin" / "conan"
+        subprocess.run(["sudo", "rm", "-f", "/usr/local/bin/conan"], check=True)
+        subprocess.run(["sudo", "ln", "-s", str(conan_user_path), "/usr/local/bin/conan"], check=True)
+        self.ensure_conancenter_url()
 
 
 # A configurator that sets up the development environment on Windows 10 or later
@@ -115,13 +103,13 @@ class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
                          "Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"]
             for (uri, filename) in zip(uris, filenames):
                 print(f"Downloading {filename}...")
-                response = requests.get(uri)
-                if response.status_code != 200:
-                    raise ValueError(f"Failed to download {filename}. Status code: {response.status_code}")
-                with open(Path(temp_dir) / filename, "wb") as file:
+                full_path = Path(temp_dir) / filename
+                response = requests.get(uri, timeout=30)
+                response.raise_for_status()
+                with open(full_path, "wb") as file:
                     file.write(response.content)
                 print(f"Installing {filename}...")
-                powershell(f"Add-AppxPackage {filename}", cwd=Path(temp_dir))
+                powershell(f'Add-AppxPackage "{full_path}"')
                 print(f"{filename} has been installed.")
 
     def install_build_essentials(self) -> None:
@@ -137,18 +125,19 @@ class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
 
     def install_conan(self) -> None:
         pip_install(["conan"])
-        self.setup_conan_remote()
+        self.ensure_conancenter_url()
 
 
 # A configurator that sets up the development environment on FreeBSD
 class EnvironmentConfiguratorFreeBSD(EnvironmentConfigurator):
     def install_build_essentials(self) -> None:
-        pass
+        print("FreeBSD ships with a base toolchain; no build essentials to install.")
 
     def install_cmake(self) -> None:
         pkg_install(["cmake"])
 
     def install_conan(self) -> None:
-        pkg_install(["py311-sqlite3"])
+        major_minor = f"{sys.version_info.major}{sys.version_info.minor}"
+        pkg_install([f"py{major_minor}-sqlite3"])
         pip_install(["conan"])
-        self.setup_conan_remote()
+        self.ensure_conancenter_url()
