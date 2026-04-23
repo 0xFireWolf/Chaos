@@ -471,7 +471,7 @@ def main(project: Project) -> int:
                        help="Select a compiler toolchain named <BUILD_NAME> that specifies the build environment " \
                        "and an optional compiler toolchain named <HOST_NAME> that specifies the host environment")
 
-    # Chaos Command: --restore <Name>
+    # Chaos Command: --restore-toolchain <Name>
     group.add_argument("--restore-toolchain",
                        nargs=1,
                        metavar="NAME",
