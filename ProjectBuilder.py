@@ -162,6 +162,7 @@ class ProjectBuilder:
 
         # Determine the flags passed to the native build system
         if platform.system() == "Windows":
+            # Enable file-level parallelism inside MSBuild
             native_build_flags = [f"/p:CL_MPCount={os.cpu_count()}"]
             parallel_level = 1
         else:
