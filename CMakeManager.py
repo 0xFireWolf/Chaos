@@ -91,7 +91,7 @@ class CMakeManager(ABC):
         result = [(int(major), int(minor)) for (major, minor) in re.findall(r'href="v(\d+)\.(\d+)/"', html)]
         return sorted(list(filter(lambda pair: pair[0] >= min_major and pair[1] >= min_minor, result)))
 
-    def get_all_installer_urls(self, min_major: int, min_minor: int) -> dict[(int, int), list[str]]:
+    def get_all_installer_urls(self, min_major: int, min_minor: int) -> dict[tuple[int, int], list[str]]:
         """
         Get URLs of all CMake installers that are greater or equal to the given major and minor version
         :param min_major: The minimum major version of CMake installers
