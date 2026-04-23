@@ -85,12 +85,12 @@ def choco_install(packages: list[str]) -> None:
 
 def powershell(command: str, cwd: Path = Path.cwd()) -> None:
     """
-    Run the given command in Powershell
-    :param command: A Powershell command
+    Run the given command in PowerShell
+    :param command: A PowerShell command
     :param cwd: The working directory
     :raise `CalledProcessError` on error.
     """
-    subprocess.run(["powershell", "-Command", command], cwd=cwd).check_returncode()
+    subprocess.run(["PowerShell", "-Command", command], cwd=cwd).check_returncode()
 
 
 def remove_file_if_exist(file: Path) -> None:
