@@ -325,19 +325,29 @@ class Chaos:
             extra_args=self.project.conan_flags,
         )
 
-    def bootstrapping_clion_local(self, toolchain_name: str, with_coverage: bool = False, size: int = 8) -> None:
-        profile_dbg = ConanProfile(toolchain_name + "_Debug.conanprofile")
-        profile_rel = ConanProfile(toolchain_name + "_Release.conanprofile")
-        compiler = profile_dbg.identifier.compiler
+    def bootstrapping_clion_local(self,
+                                  toolchain: CMakeToolchain,
+                                  profile_pair: ConanProfilePair,
+                                  with_coverage: bool = False,
+                                  size: int = 8) -> None:
+        """
+        [Helper] Create and populate CLion build directories for the given toolchain and profile pair
+        :param toolchain: The CMake toolchain selected for CLion
+        :param profile_pair: The Conan profile pair corresponding to the toolchain
+        :param with_coverage: Pass `True` to also create coverage-enabled build directories
+        :param size: The size of each ramdisk in gigabytes
+        :raise CalledProcessError: if any of the underlying `hdiutil`/`diskutil`/`conan` calls fails.
+        """
+        compiler = toolchain.identifier.compiler
         clion_toolchain_name = f"{compiler.type.value.lower()}-{compiler.version}-native"
-        clion_build_directories_with_profiles: dict[Path, ConanProfile] = {
-            Path.cwd() / f"cmake-build-debug-{clion_toolchain_name}": profile_dbg,
-            Path.cwd() / f"cmake-build-release-{clion_toolchain_name}": profile_rel,
+        build_directories_with_profiles: dict[Path, ConanProfile] = {
+            self.project.source_directory / f"cmake-build-debug-{clion_toolchain_name}": profile_pair.debug,
+            self.project.source_directory / f"cmake-build-release-{clion_toolchain_name}": profile_pair.release,
         }
         if with_coverage:
-            clion_build_directories_with_profiles[Path.cwd() / f"cmake-build-debug-{clion_toolchain_name}-coverage"] = profile_dbg
-            clion_build_directories_with_profiles[Path.cwd() / f"cmake-build-release-{clion_toolchain_name}-coverage"] = profile_rel
-        for build_directory, profile in clion_build_directories_with_profiles.items():
+            build_directories_with_profiles[self.project.source_directory / f"cmake-build-debug-{clion_toolchain_name}-coverage"] = profile_pair.debug
+            build_directories_with_profiles[self.project.source_directory / f"cmake-build-release-{clion_toolchain_name}-coverage"] = profile_pair.release
+        for build_directory, profile in build_directories_with_profiles.items():
             print("Bootstrapping CLion for Local Development...")
             print(f"    - Build Directory: {build_directory}")
             print(f"    - Conan Profile: {profile}")
