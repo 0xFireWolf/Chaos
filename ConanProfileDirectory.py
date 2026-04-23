@@ -6,7 +6,7 @@ from __future__ import annotations
 from pathlib import Path
 import os
 from .BuildSystemDescriptor import ConanProfile, ConanProfilePair, BuildSystemIdentifier, BuildType, HostSystem, Architecture
-from .Utilities import remove_file_if_exist
+from .Utilities import remove_file_if_exists
 
 
 class ConanProfileDirectory:
@@ -90,5 +90,5 @@ class ConanProfileDirectory:
         :param profile: The Conan profile to be linked
         :param as_link_at: The absolute path at which the symlink should be created
         """
-        remove_file_if_exist(as_link_at)
+        remove_file_if_exists(as_link_at)
         os.symlink(self.path / profile.filename, as_link_at)

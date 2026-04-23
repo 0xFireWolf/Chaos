@@ -12,7 +12,7 @@ from .Project import Project
 from .CMake import CMake
 from .Conan import Conan
 from .BuildSystemDescriptor import BuildType
-from .Utilities import remove_folder_if_exists, remove_file_if_exist
+from .Utilities import remove_folder_if_exists, remove_file_if_exists
 
 
 # A project builder that builds, tests, and cleans the project
@@ -214,11 +214,11 @@ class ProjectBuilder:
         [Action] Remove the build folder and the links to the selected compiler toolchain files
         """
         remove_folder_if_exists(self.project.build_directory)
-        remove_file_if_exist(self.project.current_toolchain_link_path)
-        remove_file_if_exist(self.project.current_build_profile_debug_link_path)
-        remove_file_if_exist(self.project.current_build_profile_release_link_path)
-        remove_file_if_exist(self.project.current_host_profile_debug_link_path)
-        remove_file_if_exist(self.project.current_host_profile_release_link_path)
+        remove_file_if_exists(self.project.current_toolchain_link_path)
+        remove_file_if_exists(self.project.current_build_profile_debug_link_path)
+        remove_file_if_exists(self.project.current_build_profile_release_link_path)
+        remove_file_if_exists(self.project.current_host_profile_debug_link_path)
+        remove_file_if_exists(self.project.current_host_profile_release_link_path)
 
     #
     # MARK: - Run Tests

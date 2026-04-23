@@ -93,7 +93,7 @@ def powershell(command: str, cwd: Path = Path.cwd()) -> None:
     subprocess.run(["PowerShell", "-Command", command], cwd=cwd).check_returncode()
 
 
-def remove_file_if_exist(file: Path) -> None:
+def remove_file_if_exists(file: Path) -> None:
     """
     Remove the given file if it exists
     :param file: The name of the file
