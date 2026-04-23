@@ -268,7 +268,7 @@ class Chaos:
             elif args.select_toolchain is not None:
                 self.ci_select_toolchain(*args.select_toolchain)
             elif args.restore_toolchain is not None:
-                self.ci_install_toolchain(*args.restore_toolchain)
+                self.ci_restore_toolchain(*args.restore_toolchain)
             elif args.build_all is not None:
                 self.ci_build_all(*args.build_all, cmake_generate_flags=unknown_args or None)
             elif args.run_tests is not None:
