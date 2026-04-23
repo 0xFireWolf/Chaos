@@ -20,19 +20,17 @@ from .CompilerToolchainInstaller import (
     UnsupportedToolchainError,
     kSupportedGccVersions,
     kSupportedClangVersions,
-    kSupportedAppleClangVersions
+    kSupportedAppleClangVersions,
+    CompilerToolchainInstallerMacOS,
+    CompilerToolchainInstallerUbuntu2404,
+    CompilerToolchainInstallerFreeBSD,
+    CompilerToolchainInstallerUnsupported
 )
 from .EnvironmentConfigurator import (
     EnvironmentConfiguratorMacOS,
     EnvironmentConfiguratorUbuntu,
     EnvironmentConfiguratorWindows,
     EnvironmentConfiguratorFreeBSD
-)
-from .CompilerToolchainInstaller import (
-    CompilerToolchainInstallerMacOS,
-    CompilerToolchainInstallerUbuntu2404,
-    CompilerToolchainInstallerFreeBSD,
-    CompilerToolchainInstallerUnsupported
 )
 
 from .Project import Project
