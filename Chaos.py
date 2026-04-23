@@ -128,7 +128,7 @@ class Chaos:
         toolchains = self.cmake_toolchain_directory.fetch_compatible_as_map(self.host_system, self.architecture)
         profiles = self.conan_profile_directory.fetch_compatible_as_map(self.host_system, self.architecture)
         # Silently intersect: only identifiers that have both a toolchain and a complete profile pair
-        identifiers = sorted(toolchains.keys() & profiles.keys())
+        identifiers = sorted(toolchains.keys() & profiles.keys(), key=lambda x: x.compiler)
         if not identifiers:
             print("No compatible compiler toolchain with matching Conan profiles is available.")
             return
