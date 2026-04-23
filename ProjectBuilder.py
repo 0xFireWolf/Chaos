@@ -106,33 +106,47 @@ class ProjectBuilder:
     #
 
     def configure(self,
-                  cmake: CMake,
                   build_type: BuildType,
-                  conan_flags: list[str] = None,
-                  cmake_generate_flags: list[str] = None) -> None:
+                  conan_flags: list[str] | None = None,
+                  cmake_generate_flags: list[str] | None = None) -> None:
         """
         [Action] [Helper] Configure the project
-        :param cmake: The CMake binary that will be used to invoke the native build system to build the project
         :param build_type: The build type
-        :param conan_flags: Additional flags passed to `conan`
-        :param cmake_generate_flags: Additional flags passed to `cmake` when generates files for the native build system
+        :param conan_flags: Optional additional arguments passed to `conan install`
+        :param cmake_generate_flags: Optional additional arguments passed to `cmake` during the generate step
         """
-        # Compute required properties for Conan
-        if build_type == BuildType.kDebug:
-            build_profile = kCurrentConanBuildProfileDebug
-            host_profile = kCurrentConanHostProfileDebug
+        # Determine which pair of Conan profiles will be used to install 3rd-party dependencies
+        build_profile, host_profile = self.choose_conan_profiles(build_type)
+
+        # Retrieve the CMake toolchain file that will be used to configure the project
+        toolchain_file = self.project.current_toolchain_link_path
+        chainload_toolchain_file = self.project.build_directory / self.conan.integration_file_name
+
+        # Check whether the bundled libc++ library should be used on macOS
+        # TODO: The env var has been renamed to CHAOS_XXXX
+        if int(os.getenv("CHAOS_USE_BUNDLED_LIBCPP", 0)) == 1:
+            defines = {"CHAOS_USE_BUNDLED_LIBCPP": "ON"}
         else:
-            build_profile = kCurrentConanBuildProfileRelease
-            host_profile = kCurrentConanHostProfileRelease
+            defines = None
 
-        # Compute required properties for CMake
-        toolchain_file = self.project.source_directory / kCurrentToolchainFile
-        chainload_file = self.project.build_directory / self.conan_cmake_integration_file
-
-        # Configure the project
+        # Create a fresh build folder
         self.create_fresh_build_folder()
-        self.conan_install(build_profile, host_profile, conan_flags)
-        self.cmake_generate(cmake, build_type, toolchain_file, chainload_file, cmake_generate_flags)
+
+        # Install all 3rd-party dependencies via Conan
+        self.conan.install(source_directory=self.project.source_directory,
+                           output_directory=self.project.build_directory,
+                           build_profile=build_profile,
+                           host_profile=host_profile,
+                           extra_args=self.make_conan_flags(conan_flags))
+
+        # Generate files for the native build system using CMake
+        self.cmake.generate(source_directory=self.project.source_directory,
+                            build_directory=self.project.build_directory,
+                            build_type=build_type,
+                            toolchain_file=toolchain_file,
+                            chainload_toolchain_file=chainload_toolchain_file,
+                            defines=defines,
+                            extra_args=self.make_cmake_generate_flags(cmake_generate_flags))
 
     def rebuild_project(self,
                         build_type: BuildType,
