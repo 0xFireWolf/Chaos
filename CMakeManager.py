@@ -101,12 +101,13 @@ class CMakeManager(ABC):
         return {(major, minor): self.get_installer_urls(major, minor)
                 for major, minor in self.get_all_installer_versions(min_major, min_minor)}
 
+    @abstractmethod
     def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMake:
         """
         Download the CMake installer from the given URL, extract and store the CMake binary to the given directory
         :param from_url: URL to the CMake installer to be downloaded
         :param to_directory: Path to the directory to store the extracted CMake binary
-        :return: A descriptor that describes the downloaded CMake binary.
+        :return: A handle to the downloaded CMake binary.
         """
         raise NotImplementedError
 
