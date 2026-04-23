@@ -278,3 +278,9 @@ class ProjectBuilder:
         [Action] Run all tests in RELEASE mode
         """
         self.rebuild_and_run_all_tests(BuildType.kRelease)
+
+    def rebuild_and_run_all_tests_with_coverage(self) -> None:
+        """
+        [Action] Run all tests with code coverage
+        """
+        print("Running tests with code coverage is not supported by Chaos v2 at the moment.")
