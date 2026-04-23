@@ -59,6 +59,7 @@ class CMakeManager(ABC):
                 return sorted(files)
         return []
 
+    @abstractmethod
     def get_installer_filenames(self, major: int, minor: int) -> list[str]:
         """
         Get all CMake installers that have the given major and minor version for the current operating system
