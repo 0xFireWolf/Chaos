@@ -94,6 +94,61 @@ class Chaos:
             raise EnvironmentError
 
     #
+    # MARK: Select Compiler Toolchains
+    #
+
+    def apply_compiler_toolchain(self,
+                                 toolchain: CMakeToolchain,
+                                 build_profiles: ConanProfilePair,
+                                 host_profiles: ConanProfilePair) -> None:
+        """
+        [Action] Apply the given CMake toolchain and the given Conan profile pairs
+        :param toolchain: The CMake toolchain to apply
+        :param build_profiles: The Conan profile pair that specifies the build environment
+        :param host_profiles: The Conan profile pair that specifies the host environment
+        """
+        print("Applying the CMake toolchain:", toolchain.filename)
+        print("Applying the Conan build profile (Debug):", build_profiles.debug.filename)
+        print("Applying the Conan build profile (Release):", build_profiles.release.filename)
+        print("Applying the Conan host profile (Debug):", host_profiles.debug.filename)
+        print("Applying the Conan host profile (Release):", host_profiles.release.filename)
+        self.cmake_toolchain_directory.select(toolchain, self.project.current_toolchain_link_path)
+        self.conan_profile_directory.select(build_profiles.debug, self.project.current_build_profile_debug_link_path)
+        self.conan_profile_directory.select(build_profiles.release, self.project.current_build_profile_release_link_path)
+        self.conan_profile_directory.select(host_profiles.debug, self.project.current_host_profile_debug_link_path)
+        self.conan_profile_directory.select(host_profiles.release, self.project.current_host_profile_release_link_path)
+        print()
+        print("The CMake toolchain and the corresponding Conan profiles are both set.")
+
+    def select_compiler_toolchain(self) -> None:
+        """
+        [Action] Prompt the user to select a compatible compiler toolchain and apply it
+        """
+        toolchains = self.cmake_toolchain_directory.fetch_compatible_as_map(self.host_system, self.architecture)
+        profiles = self.conan_profile_directory.fetch_compatible_as_map(self.host_system, self.architecture)
+        # Silently intersect: only identifiers that have both a toolchain and a complete profile pair
+        identifiers = sorted(toolchains.keys() & profiles.keys())
+        if not identifiers:
+            print("No compatible compiler toolchain with matching Conan profiles is available.")
+            return
+
+        menu = Menu(">> Select a compiler toolchain")
+        menu.add_item("      Arch       Compiler      Stdlib    Host OS   Distribution")
+        menu.add_separator()
+        for identifier in identifiers:
+            label = "  {:>6}  {:^14}  {:^9}  {:^7}  {:^14}".format(
+                identifier.architecture.value,
+                str(identifier.compiler),
+                identifier.standard_library.value,
+                identifier.host_system.value,
+                identifier.installation_source.value,
+            )
+            toolchain = toolchains[identifier]
+            pair = profiles[identifier]
+            menu.add_item(label, lambda t=toolchain, p=pair: self.apply_compiler_toolchain(t, p, p))
+        Menu.interact(menu)
+
+    #
     # MARK: Chaos Running in Chaos Mode
     #
 
