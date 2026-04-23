@@ -159,6 +159,7 @@ class CMakeManagerMacOS(CMakeManager):
         return CMake(executable_path, version)
 
 
+# A manager that downloads and manages CMake binaries for Linux
 class CMakeManagerLinux(CMakeManager):
     def get_installer_filenames(self, major: int, minor: int) -> list[str]:
         """
