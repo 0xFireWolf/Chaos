@@ -193,13 +193,6 @@ class ProjectBuilder:
         """
         self.cmake.install(build_directory=self.project.build_directory, prefix=prefix)
 
-    # Action
-    def conan_remove_all(self) -> None:
-        """
-        [Action] Remove all build artifacts from Conan's local cache
-        """
-        subprocess.run(["conan", "remove", "-c", "*"]).check_returncode()
-
     #
     # MARK: - Clean Up
     #
