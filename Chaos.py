@@ -356,33 +356,54 @@ class Chaos:
             self.bootstrapping_create_ramdisk(build_directory, size)
             self.bootstrapping_conan_install(build_directory, profile)
 
-    def bootstrapping_clion_interactive(self) -> None:
-        self.clear_console()
-
-        print("Please select a toolchain: \n")
-        toolchains = self.toolchain_manager.fetch_compatible_compiler_toolchains_as_map(self.toolchain_manager.cmake_toolchains_folder_name)
-        identifiers = sorted(list(toolchains.keys()))
-        for index, identifier in enumerate(identifiers):
-            print("[{:02}] {}".format(index, toolchains[identifier]))
-        print()
-        toolchain_index = int(input("Please enter the toolchain index: "))
-        toolchain_name = Path(toolchains[identifiers[toolchain_index]].filename).stem
-
+    def bootstrapping_clion_with_selection(self, toolchain: CMakeToolchain, profile_pair: ConanProfilePair) -> None:
+        """
+        [Helper] After the user selects a toolchain via `Menu`, prompt for the remaining options and run the bootstrap
+        :param toolchain: The CMake toolchain selected by the user
+        :param profile_pair: The Conan profile pair corresponding to the toolchain
+        """
         print()
         with_coverage_input = input("Do you want to create build directories for coverage as well (Y/N, Default: Y): ").strip()
         with_coverage = True if not with_coverage_input else with_coverage_input == "Y"
 
         print()
-        ramdisk_size_input = input("Please enter the ramdisk size: (Unit: GB, Default: 8 GB)").strip()
+        ramdisk_size_input = input("Please enter the ramdisk size: (Unit: GB, Default: 8 GB): ").strip()
         ramdisk_size = 8 if not ramdisk_size_input else int(ramdisk_size_input)
 
         print()
         print("Bootstrapping CLion for Local Development:")
-        print(f"    - Toolchain Name: {toolchain_name}")
+        print(f"    - Compiler: {toolchain.identifier.compiler}")
         print(f"    - With Coverage: {with_coverage}")
         print(f"    - Ramdisk Size: {ramdisk_size} GB")
         print()
-        self.bootstrapping_clion_local(toolchain_name, with_coverage, ramdisk_size)
+        self.bootstrapping_clion_local(toolchain, profile_pair, with_coverage, ramdisk_size)
+
+    def bootstrapping_clion_interactive(self) -> None:
+        """
+        [Action] Prompt the user to select a compatible compiler toolchain, then bootstrap CLion build directories
+        """
+        toolchains = self.cmake_toolchain_directory.fetch_compatible_as_map(self.host_system, self.architecture)
+        profiles = self.conan_profile_directory.fetch_compatible_as_map(self.host_system, self.architecture)
+        identifiers = sorted(toolchains.keys() & profiles.keys(), key=lambda x: x.compiler)
+        if not identifiers:
+            print("No compatible compiler toolchain with matching Conan profiles is available.")
+            return
+
+        menu = Menu(">> Select a compiler toolchain for CLion")
+        menu.add_item("      Arch       Compiler      Stdlib    Host OS   Distribution")
+        menu.add_separator()
+        for identifier in identifiers:
+            label = "  {:>6}  {:^14}  {:^9}  {:^7}  {:^14}".format(
+                identifier.architecture.value,
+                str(identifier.compiler),
+                identifier.standard_library.value,
+                identifier.host_system.value,
+                identifier.installation_source.value,
+            )
+            toolchain = toolchains[identifier]
+            pair = profiles[identifier]
+            menu.add_item(label, lambda t=toolchain, p=pair: self.bootstrapping_clion_with_selection(t, p))
+        Menu.interact(menu)
 
     def cleanup_build_directories_for_clion(self) -> None:
         build_directories = [Path(entry.path) for entry in os.scandir(Path.cwd())
