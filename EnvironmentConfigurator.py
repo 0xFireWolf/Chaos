@@ -27,15 +27,15 @@ class EnvironmentConfigurator(ABC):
 
     @abstractmethod
     def install_build_essentials(self) -> None:
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def install_cmake(self) -> None:
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def install_conan(self) -> None:
-        raise NotImplementedError
+        pass
 
     # def install_homebrew(self) -> None:
     #     # Check whether Homebrew has already been installed
