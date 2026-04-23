@@ -4,6 +4,7 @@
 
 import shutil
 import subprocess
+import platform
 import sys
 from pathlib import Path
 
@@ -129,3 +130,12 @@ def remove_folder_if_exists(folder: Path) -> None:
         shutil.rmtree(folder)
     except FileNotFoundError:
         pass
+
+
+_clear_console_command = ["cmd", "/c", "cls"] if platform.system() == "Windows" else ["clear"]
+
+def clear_console() -> None:
+    """
+    Clear the console screen on the current platform
+    """
+    subprocess.run(_clear_console_command)
