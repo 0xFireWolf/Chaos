@@ -23,6 +23,7 @@ from .CompilerToolchainInstaller import (
     kSupportedAppleClangVersions,
     CompilerToolchainInstallerMacOS,
     CompilerToolchainInstallerUbuntu2404,
+    CompilerToolchainInstallerUbuntu2604,
     CompilerToolchainInstallerFreeBSD,
     CompilerToolchainInstallerUnsupported
 )
@@ -74,6 +75,8 @@ class Chaos:
                 self.configurator = EnvironmentConfiguratorUbuntu(project.additional_tools_installer.ubuntu)
                 if version == "24.04":
                     self.toolchain_installer = CompilerToolchainInstallerUbuntu2404(Architecture.kx86_64)
+                elif version == "26.04":
+                    self.toolchain_installer = CompilerToolchainInstallerUbuntu2604(Architecture.kx86_64)
                 else:
                     raise EnvironmentError(f"Ubuntu {version} is not supported.")
                 self.cmake_manager = CMakeManagerLinux()
