@@ -91,7 +91,7 @@ class Conan:
                 output_directory: Path,
                 build_profile: Path,
                 host_profile: Path,
-                extra_args: list[str] = None) -> None:
+                extra_args: list[str] | None = None) -> None:
         """
         Invoke `conan install` to install all required dependencies for the project
         :param source_directory: Path to the source directory in which `conanfile.txt` or `conanfile.py` resides
