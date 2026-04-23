@@ -385,9 +385,10 @@ class Chaos:
         menu.add_separator()
         menu.add_item(">> Manage Compiler Toolchains")
         menu.add_separator()
-        menu.add_submenu("Install a supported compiler", self.create_compiler_menu(), Menu.interact)
-        menu.add_item("Install all supported compilers", self.toolchain_manager.install_all_compilers)
-        menu.add_item("Select a compiler toolchain", self.toolchain_manager.select_compiler_toolchain)
+        if self.host_system != HostSystem.kWindows:
+            menu.add_submenu("Install a supported compiler", self.create_compiler_menu(), Menu.interact)
+            menu.add_item("Install all supported compilers", self.toolchain_installer.install_all_compilers)
+        menu.add_item("Select a compiler toolchain", self.select_compiler_toolchain)
         menu.add_separator()
         menu.add_item(">> Build, Test & Clean Projects")
         menu.add_separator()
