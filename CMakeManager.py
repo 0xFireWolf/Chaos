@@ -19,7 +19,18 @@ class CMakeManager(ABC):
     # Default timeout (in seconds) for all HTTP requests
     kHTTPRequestTimeout = 30
 
-class CMakeManager(abc.ABC):
+    @staticmethod
+    def _http_get(url: str) -> requests.Response:
+        """
+        [Helper] Fetch the content at the given URL with a sensible timeout and error handling
+        :param url: The URL to fetch
+        :return: The HTTP response.
+        :raise requests.RequestException: if the request fails or returns a non-2xx status code.
+        """
+        response = requests.get(url, timeout=CMakeManager.kHTTPRequestTimeout)
+        response.raise_for_status()
+        return response
+
     def get_installer_filenames_with_patterns(self, major: int, minor: int, patterns: list[str]) -> list[str]:
         """
         [Helper] Get all CMake installers that have the given major and minor version
