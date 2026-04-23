@@ -211,13 +211,11 @@ class Chaos:
         """
         tokens = name.rsplit("-", 1)
         if len(tokens) != 2 or not tokens[1].isdigit():
-            raise KeyError(f"{name} is not a valid compiler toolchain.")
+            raise KeyError(f"{name} is not a valid Apple Clang compiler toolchain.")
         family, version = tokens[0], int(tokens[1])
-        match family:
-            case "apple-clang":
-                self.toolchain_installer.install_apple_clang(version)
-            case _:
-                raise KeyError(f"{name} is not a valid Apple Clang compiler toolchain.")
+        if family != "apple-clang":
+            raise KeyError(f"{name} is not a valid Apple Clang compiler toolchain.")
+        self.toolchain_installer.install_apple_clang(version)
 
     def ci_build_all(self, build_type: str, cmake_generate_flags: list[str] = None) -> None:
         """
