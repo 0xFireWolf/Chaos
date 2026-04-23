@@ -22,7 +22,7 @@ from .Utilities import (
 
 # An abstract configurator that sets up the development environment on the host system
 class EnvironmentConfigurator(ABC):
-    def __init__(self, installer: Callable[[], None] = None):
+    def __init__(self, installer: Callable[[], None] | None = None):
         self.other_tools_installer = installer
 
     @abstractmethod
