@@ -5,7 +5,7 @@
 from __future__ import annotations
 from io import BytesIO
 from pathlib import Path
-from abc import ABC
+from abc import ABC, abstractmethod
 import re
 import requests
 import tarfile
