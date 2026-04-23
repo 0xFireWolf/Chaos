@@ -4,10 +4,20 @@
 
 import tempfile
 import requests
+import subprocess
+import shutil
 import os
 from abc import ABC, abstractmethod
 from typing import Callable
-from .Utilities import *
+from pathlib import Path
+from .Utilities import (
+    apt_install,
+    brew_install,
+    pip_install,
+    pkg_install,
+    powershell,
+    winget_install,
+)
 
 
 # An abstract configurator that sets up the development environment on the host system
