@@ -99,7 +99,7 @@ def choco_install(packages: list[str]) -> None:
     :raise `CalledProcessError` on error.
     """
     for package in packages:
-        subprocess.run(["choco", "install", "-y", package]).check_returncode()
+        subprocess.run(["choco", "install", "-y", package], check=True)
 
 
 def powershell(command: str, cwd: Path = Path.cwd()) -> None:
