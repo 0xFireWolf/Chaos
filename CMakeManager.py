@@ -87,7 +87,7 @@ class CMakeManager(ABC):
         :return: A list of versions, each of which is a pair of <major, minor> version.
         """
         print(f"Fetching all available CMake releases with major >= {min_major} and minor >= {min_minor}...")
-        html = requests.get("https://cmake.org/files/").text
+        html = self._http_get("https://cmake.org/files/").text
         result = [(int(major), int(minor)) for (major, minor) in re.findall(r'href="v(\d+)\.(\d+)/"', html)]
         return sorted(list(filter(lambda pair: pair[0] >= min_major and pair[1] >= min_minor, result)))
 
