@@ -106,7 +106,7 @@ class ProjectBuilder:
                   conan_flags: list[str] | None = None,
                   cmake_generate_flags: list[str] | None = None) -> None:
         """
-        [Action] [Helper] Configure the project
+        Configure the project
         :param build_type: The build type
         :param conan_flags: Optional additional arguments passed to `conan install`
         :param cmake_generate_flags: Optional additional arguments passed to `cmake` during the generate step
