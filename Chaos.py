@@ -51,43 +51,44 @@ class Chaos:
         Initialize the Chaos Control Center for the given project
         :param project: A project whose chaos to be controlled
         """
+        self.project = project
+        self.project_builder = ProjectBuilder(project, CMake.default(), Conan.default())
+        self.cmake_toolchain_directory = CMakeToolchainDirectory(project.cmake_toolchains_directory)
+        self.conan_profile_directory = ConanProfileDirectory(project.conan_profiles_directory)
+
+        # Examine the current platform
         system = platform.system()
         machine = platform.machine()
         if system == "Darwin":
-            architecture = Architecture.kx86_64 if machine == "x86_64" else Architecture.kARM64
+            self.host_system = HostSystem.kMacOS
+            self.architecture = Architecture.kx86_64 if machine == "x86_64" else Architecture.kARM64
             self.configurator = EnvironmentConfiguratorMacOS(project.additional_tools_installer.macos)
-            self.toolchain_manager = CompilerToolchainManagerMacOS(architecture)
-            self.project_builder = ProjectBuilder(project, CMakeManagerMacOS())
-            self.clear_console = lambda: os.system("clear")
+            self.toolchain_installer = CompilerToolchainInstallerMacOS(self.architecture)
         elif system == "Linux":
             distribution = distro.id()
             version = distro.version()
             if distribution == "ubuntu":
+                self.host_system = HostSystem.kUbuntu
+                self.architecture = Architecture.kx86_64
                 self.configurator = EnvironmentConfiguratorUbuntu(project.additional_tools_installer.ubuntu)
-                if version == "20.04":
-                    self.toolchain_manager = CompilerToolchainManagerUbuntu2004(Architecture.kx86_64)
-                elif version == "22.04":
-                    self.toolchain_manager = CompilerToolchainManagerUbuntu2204(Architecture.kx86_64)
-                elif version == "24.04":
-                    self.toolchain_manager = CompilerToolchainManagerUbuntu2404(Architecture.kx86_64)
+                if version == "24.04":
+                    self.toolchain_installer = CompilerToolchainInstallerUbuntu2404(Architecture.kx86_64)
                 else:
-                    print(f"Ubuntu {version} is not tested.")
+                    print(f"Ubuntu {version} is not supported.")
                     raise EnvironmentError
-                self.project_builder = ProjectBuilder(project, CMakeManagerLinux())
-                self.clear_console = lambda: os.system("clear")
             else:
                 print(f"{distro.name(True)} is not supported.")
                 raise EnvironmentError
         elif system == "Windows":
+            self.host_system = HostSystem.kWindows
+            self.architecture = Architecture.kx86_64
             self.configurator = EnvironmentConfiguratorWindows(project.additional_tools_installer.windows)
-            self.toolchain_manager = CompilerToolchainManagerWindows(Architecture.kx86_64)
-            self.project_builder = ProjectBuilder(project, CMakeManagerWindows())
-            self.clear_console = lambda: os.system("cls")
+            self.toolchain_installer = CompilerToolchainInstallerUnsupported(HostSystem.kWindows, Architecture.kx86_64)
         elif system == "FreeBSD":
+            self.host_system = HostSystem.kFreeBSD
+            self.architecture = Architecture.kx86_64
             self.configurator = EnvironmentConfiguratorFreeBSD(project.additional_tools_installer.freebsd)
-            self.toolchain_manager = CompilerToolchainManagerFreeBSD(Architecture.kx86_64)
-            self.project_builder = ProjectBuilder(project, CMakeManager())  # CMakeManager does not support FreeBSD
-            self.clear_console = lambda: os.system("clear")
+            self.toolchain_installer = CompilerToolchainInstallerFreeBSD(Architecture.kx86_64)
         else:
             print(f"{system} is not supported.")
             raise EnvironmentError
