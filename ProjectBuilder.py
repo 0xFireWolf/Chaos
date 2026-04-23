@@ -220,6 +220,13 @@ class ProjectBuilder:
         remove_file_if_exists(self.project.current_host_profile_debug_link_path)
         remove_file_if_exists(self.project.current_host_profile_release_link_path)
 
+    # Action
+    def remove_all_packages(self) -> None:
+        """
+        [Action] Remove all conan packages
+        """
+        self.conan.remove_all()
+
     #
     # MARK: - Run Tests
     #
