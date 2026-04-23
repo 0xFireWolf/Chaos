@@ -296,6 +296,36 @@ class CompilerToolchainInstallerUbuntu2404(CompilerToolchainInstallerUbuntu):
 
 
 #
+# MARK: - Ubuntu 26.04 LTS
+#
+
+class CompilerToolchainInstallerUbuntu2604(CompilerToolchainInstallerUbuntu):
+    # https://documentation.ubuntu.com/ubuntu-for-developers/reference/availability/gcc/#gcc-toolchain-availability
+    def install_gcc(self, version: int) -> None:
+        if version not in kSupportedGccVersions:
+            raise UnsupportedToolchainError(f"GCC {version} is not a supported version on Ubuntu 26.04.")
+        if version == 10:
+            brew_install(["gcc@10"])
+        elif 11 <= version <= 15:
+            self.install_gcc_from_apt(version)
+        else:
+            raise UnsupportedToolchainError(f"GCC {version} is not available on Ubuntu 26.04.")
+
+    # https://documentation.ubuntu.com/ubuntu-for-developers/reference/availability/llvm/#llvm-toolchain-availability
+    def install_clang(self, version: int) -> None:
+        if version not in kSupportedClangVersions:
+            raise UnsupportedToolchainError(f"Clang {version} is not a supported version on Ubuntu 26.04.")
+        elif 14 <= version <= 16:
+            brew_install([f"llvm@{version}"])
+        elif 17 <= version <= 21:
+            self.install_clang_from_apt(version)
+        elif 22 == version:
+            self.install_clang_from_apt_llvm_org(version)
+        else:
+            raise UnsupportedToolchainError(f"GCC {version} is not available on Ubuntu 26.04.")
+
+
+#
 # MARK: - FreeBSD
 #
 
