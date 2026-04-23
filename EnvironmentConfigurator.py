@@ -93,6 +93,7 @@ class EnvironmentConfiguratorUbuntu(EnvironmentConfigurator):
 # A configurator that sets up the development environment on Windows 10 or later
 class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
     def install_winget(self) -> None:
+        # TODO: DEPRECATED, This is fragile
         print("Installing the Windows Package Manager...")
         with tempfile.TemporaryDirectory() as temp_dir:
             uris = ["https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx",
@@ -113,11 +114,11 @@ class EnvironmentConfiguratorWindows(EnvironmentConfigurator):
                 print(f"{filename} has been installed.")
 
     def install_build_essentials(self) -> None:
-        winget_path = shutil.which("winget")
-        if winget_path is None:
-            self.install_winget()
-        else:
-            print(f"Found winget at {winget_path}.")
+        # winget_path = shutil.which("winget")
+        # if winget_path is None:
+        #     self.install_winget()
+        # else:
+        #     print(f"Found winget at {winget_path}.")
         winget_install(["Git.Git"])
 
     def install_cmake(self) -> None:
