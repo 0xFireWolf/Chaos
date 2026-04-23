@@ -359,22 +359,12 @@ class Chaos:
         :return: The compiler menu
         """
         menu = Menu(">> Select a compiler you want to install")
-        menu.add_item("GCC 10", self.toolchain_manager.install_gcc_10)
-        menu.add_item("GCC 11", self.toolchain_manager.install_gcc_11)
-        menu.add_item("GCC 12", self.toolchain_manager.install_gcc_12)
-        menu.add_item("GCC 13", self.toolchain_manager.install_gcc_13)
-        menu.add_item("GCC 14", self.toolchain_manager.install_gcc_14)
-        menu.add_item("GCC 15", self.toolchain_manager.install_gcc_15)
-        menu.add_item("Clang 13", self.toolchain_manager.install_clang_13)
-        menu.add_item("Clang 14", self.toolchain_manager.install_clang_14)
-        menu.add_item("Clang 15", self.toolchain_manager.install_clang_15)
-        menu.add_item("Clang 16", self.toolchain_manager.install_clang_16)
-        menu.add_item("Clang 17", self.toolchain_manager.install_clang_17)
-        menu.add_item("Clang 18", self.toolchain_manager.install_clang_18)
-        menu.add_item("Clang 19", self.toolchain_manager.install_clang_19)
-        menu.add_item("Clang 20", self.toolchain_manager.install_clang_20)
-        menu.add_item("Clang 21", self.toolchain_manager.install_clang_21)
-        menu.add_item("Clang 22", self.toolchain_manager.install_clang_22)
+        for version in kSupportedGccVersions:
+            menu.add_item(f"GCC {version}", lambda v=version: self.toolchain_installer.install_gcc(v))
+        for version in kSupportedClangVersions:
+            menu.add_item(f"Clang {version}", lambda v=version: self.toolchain_installer.install_clang(v))
+        for version in kSupportedAppleClangVersions:
+            menu.add_item(f"AppleClang {version}", lambda v=version: self.toolchain_installer.install_apple_clang(v))
         return menu
 
     def create_main_menu(self) -> Menu:
