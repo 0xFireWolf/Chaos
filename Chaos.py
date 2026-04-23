@@ -231,7 +231,7 @@ class Chaos:
         """
         [CI] Remove all packages from Conan's local cache
         """
-        self.project_builder.conan_remove_all()
+        Conan.default().remove_all()
 
     def ci_entry_point(self, args: argparse.Namespace, unknown_args: list[str]) -> int:
         """
