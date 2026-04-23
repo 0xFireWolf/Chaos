@@ -79,7 +79,7 @@ class CMakeManager(ABC):
         return [f"https://cmake.org/files/v{major}.{minor}/{filename}"
                 for filename in self.get_installer_filenames(major, minor)]
 
-    def get_all_installer_versions(self, min_major: int, min_minor: int) -> list[(int, int)]:
+    def get_all_installer_versions(self, min_major: int, min_minor: int) -> list[tuple[int, int]]:
         """
         Get all CMake versions that are greater or equal to the given major and minor version
         :param min_major: The minimum major version of CMake installers
