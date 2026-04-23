@@ -3,15 +3,16 @@
 #
 
 from __future__ import annotations
+from typing import Any
+from pathlib import Path
+import platform
+import subprocess
+import os
+from .Project import Project
 from .CMake import CMake
 from .Conan import Conan
-
-from typing import Any
-from .CompilerToolchainManager import *
-from .CMakeManager import CMakeManager
-from .Project import Project
-import glob
-import platform
+from .BuildSystemDescriptor import BuildType
+from .Utilities import remove_folder_if_exists, remove_file_if_exist
 
 
 # A project builder that builds, tests, and cleans the project
