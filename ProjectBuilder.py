@@ -190,7 +190,7 @@ class ProjectBuilder:
         self.rebuild_project(BuildType.kRelease)
 
     # Action
-    def install_project(self, prefix: Path = None) -> None:
+    def install_project(self, prefix: Path | None = None) -> None:
         """
         [Action] Install all project artifacts
         """
