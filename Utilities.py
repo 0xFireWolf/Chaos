@@ -43,7 +43,7 @@ def apt_add_repository(name: str) -> None:
     :param name: The repository name
     :raise `CalledProcessError` on error.
     """
-    subprocess.run(["sudo", "add-apt-repository", "-y", name]).check_returncode()
+    subprocess.run(["sudo", "add-apt-repository", "-y", name], check=True)
 
 
 def pkg_install(packages: list[str]) -> None:
