@@ -148,15 +148,15 @@ class CMakeManagerMacOS(CMakeManager):
         Download the CMake installer from the given URL, extract and store the CMake binary to the given directory
         :param from_url: URL to the CMake installer to be downloaded
         :param to_directory: Path to the directory to store the extracted CMake binary
-        :return: A descriptor that describes the downloaded CMake binary.
+        :return: A handle to the downloaded CMake binary.
         """
         folder_name = from_url.rsplit("/", 1)[-1].removesuffix(".tar.gz")
-        versions = re.findall(r"cmake-(\d+)\.(\d+)\.(\d+)", folder_name)[0]
+        version = self._parse_version_from_folder_name(folder_name)
         executable_path = to_directory / folder_name / "CMake.app" / "Contents" / "bin" / "cmake"
-        print(f"Downloading CMake v{versions[0]}.{versions[1]}.{versions[2]} for macOS...")
-        with tarfile.open(fileobj=BytesIO(requests.get(from_url).content)) as archive:
+        print(f"Downloading CMake v{version} for macOS...")
+        with tarfile.open(fileobj=BytesIO(self._http_get(from_url).content)) as archive:
             archive.extractall(path=to_directory)
-        return CMake(int(versions[0]), int(versions[1]), int(versions[2]), executable_path)
+        return CMake(executable_path, version)
 
 
 class CMakeManagerLinux(CMakeManager):
