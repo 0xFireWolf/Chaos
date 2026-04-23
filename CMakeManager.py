@@ -111,15 +111,14 @@ class CMakeManager(ABC):
         """
         raise NotImplementedError
 
-    def get_cmake_binaries(self, min_major: int, min_minor: int, to_directory: Path,
-                           latest_patch_only: bool = True) -> list[CMake]:
+    def get_cmake_binaries(self, min_major: int, min_minor: int, to_directory: Path, latest_patch_only: bool = True) -> list[CMake]:
         """
         Download all CMake binaries that are greater or equal to the given major and minor version
         :param min_major: The minimum major version of CMake installers
         :param min_minor: The minimum minor version of CMake installers
         :param to_directory: Path to the directory to store the extracted CMake binary
         :param latest_patch_only: Pass `True` to only download the latest patch version for each release
-        :return: A list of CMake binary descriptors.
+        :return: A list of handles to downloaded CMake binaries.
         """
         binaries = list[CMake]()
         for (major, minor), urls in self.get_all_installer_urls(min_major, min_minor).items():
