@@ -443,7 +443,7 @@ class Chaos:
             else:
                 Menu.interact(menu)
             return 0
-        except (KeyError, ValueError, CalledProcessError):
+        except (KeyError, ValueError, CalledProcessError, UnsupportedToolchainError):
             print("The Chaos Control Center has terminated unexpectedly.")
             traceback.print_exc()
             return -1
