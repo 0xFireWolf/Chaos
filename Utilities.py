@@ -14,12 +14,16 @@ def brew_install(packages: list[str]) -> None:
     :param packages: Name of the packages
     :raise `CalledProcessError` on error.
     """
-    executable_path = Path(shutil.which("brew"))
+    brew = shutil.which("brew")
+    if brew is None:
+        raise FileNotFoundError("Homebrew is not installed or not on PATH.")
+    executable_path = Path(brew)
     print(f"Found the Homebrew at {executable_path}.", flush=True)
     if not hasattr(brew_install, "updated"):
-        subprocess.run([executable_path, "update"]).check_returncode()
+        if subprocess.run([executable_path, "update"]).returncode != 0:
+            print("Warning: Unable to refresh the Homebrew package index.", flush=True)
         brew_install.updated = True
-    subprocess.run([executable_path, "install"] + packages).check_returncode()
+    subprocess.run([executable_path, "install"] + packages, check=True)
 
 
 def apt_install(packages: list[str]) -> None:
