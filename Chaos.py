@@ -263,7 +263,7 @@ class Chaos:
                 print(f"Unrecognized Chaos command: {args.command}.")
                 raise ValueError
             return 0
-        except (KeyError, ValueError, CalledProcessError):
+        except (KeyError, ValueError, CalledProcessError, UnsupportedToolchainError):
             print("Failed to perform the CI operation.")
             traceback.print_exc()
             return -1
