@@ -14,6 +14,10 @@ from .CMake import CMake
 from .Version import Version
 
 
+# An abstract manager that downloads and manages CMake binaries for a specific operating system
+class CMakeManager(ABC):
+    # Default timeout (in seconds) for all HTTP requests
+    kHTTPRequestTimeout = 30
 
 class CMakeManager(abc.ABC):
     def get_installer_filenames_with_patterns(self, major: int, minor: int, patterns: list[str]) -> list[str]:
