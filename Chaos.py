@@ -161,33 +161,24 @@ class Chaos:
     def ci_install_toolchain(self, name: str) -> None:
         """
         [CI] Install the toolchain that has the given name
-        :param name: The toolchain name
-        :raise `KeyError` if the given name is invalid;
-               `CalledProcessError` if failed to install the toolchain.
+        :param name: The toolchain name (e.g., `gcc-14`, `clang-19`, `apple-clang-17`)
+        :raise KeyError: if the given name is not a recognized compiler toolchain.
+        :raise UnsupportedToolchainError: if the compiler is not supported on the current host system.
+        :raise CalledProcessError: if failed to install the compiler.
         """
-        match name:
-            case "gcc-10": return self.toolchain_manager.install_gcc_10()
-            case "gcc-11": return self.toolchain_manager.install_gcc_11()
-            case "gcc-12": return self.toolchain_manager.install_gcc_12()
-            case "gcc-13": return self.toolchain_manager.install_gcc_13()
-            case "gcc-14": return self.toolchain_manager.install_gcc_14()
-            case "gcc-15": return self.toolchain_manager.install_gcc_15()
-            case "clang-13": return self.toolchain_manager.install_clang_13()
-            case "clang-14": return self.toolchain_manager.install_clang_14()
-            case "clang-15": return self.toolchain_manager.install_clang_15()
-            case "clang-16": return self.toolchain_manager.install_clang_16()
-            case "clang-17": return self.toolchain_manager.install_clang_17()
-            case "clang-18": return self.toolchain_manager.install_clang_18()
-            case "clang-19": return self.toolchain_manager.install_clang_19()
-            case "clang-20": return self.toolchain_manager.install_clang_20()
-            case "clang-21": return self.toolchain_manager.install_clang_21()
-            case "clang-22": return self.toolchain_manager.install_clang_22()
-            case "apple-clang-13": return self.toolchain_manager.install_apple_clang_13()
-            case "apple-clang-14": return self.toolchain_manager.install_apple_clang_14()
-            case "apple-clang-15": return self.toolchain_manager.install_apple_clang_15()
-            case "apple-clang-16": return self.toolchain_manager.install_apple_clang_16()
-            case "apple-clang-17": return self.toolchain_manager.install_apple_clang_17()
-            case _: raise KeyError(f"{name} is not a valid compiler toolchain.")
+        tokens = name.rsplit("-", 1)
+        if len(tokens) != 2 or not tokens[1].isdigit():
+            raise KeyError(f"{name} is not a valid compiler toolchain.")
+        family, version = tokens[0], int(tokens[1])
+        match family:
+            case "gcc":
+                self.toolchain_installer.install_gcc(version)
+            case "clang":
+                self.toolchain_installer.install_clang(version)
+            case "apple-clang":
+                self.toolchain_installer.install_apple_clang(version)
+            case _:
+                raise KeyError(f"{name} is not a valid compiler toolchain.")
 
     def ci_select_toolchain(self, build_name: str, host_name: str = None) -> None:
         """
