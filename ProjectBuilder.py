@@ -147,9 +147,9 @@ class ProjectBuilder:
 
     def rebuild_project(self,
                         build_type: BuildType,
-                        conan_flags: list[str] = None,
-                        cmake_generate_flags: list[str] = None,
-                        cmake_build_flags: list[str] = None) -> None:
+                        conan_flags: list[str] | None = None,
+                        cmake_generate_flags: list[str] | None = None,
+                        cmake_build_flags: list[str] | None = None) -> None:
         """
         Rebuild the project
         :param build_type: The build type
