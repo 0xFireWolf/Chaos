@@ -195,6 +195,25 @@ class Chaos:
         host_profiles = self.conan_profile_directory.find(host_name) if host_name else build_profiles
         self.apply_compiler_toolchain(toolchain, build_profiles, host_profiles)
 
+    def ci_restore_toolchain(self, name: str) -> None:
+        """
+        [CI] Restore the toolchain that has the given name (macOS only)
+        :param name: The toolchain name (e.g., `apple-clang-17`)
+        :raise KeyError: if the given name is not a recognized compiler toolchain.
+        :raise KeyError: if the given name is not a valid Apple Clang compiler toolchain.
+        :raise UnsupportedToolchainError: if the compiler is not supported on the current host system.
+        :raise CalledProcessError: if failed to install the compiler.
+        """
+        tokens = name.rsplit("-", 1)
+        if len(tokens) != 2 or not tokens[1].isdigit():
+            raise KeyError(f"{name} is not a valid compiler toolchain.")
+        family, version = tokens[0], int(tokens[1])
+        match family:
+            case "apple-clang":
+                self.toolchain_installer.install_apple_clang(version)
+            case _:
+                raise KeyError(f"{name} is not a valid Apple Clang compiler toolchain.")
+
     def ci_build_all(self, build_type: str, cmake_generate_flags: list[str] = None) -> None:
         """
         [CI] Build all targets
