@@ -217,3 +217,24 @@ class CMakeManagerWindows(CMakeManager):
         with zipfile.ZipFile(BytesIO(self._http_get(from_url).content)) as archive:
             archive.extractall(path=to_directory)
         return CMake(executable_path, version)
+
+
+# A manager that downloads and manages CMake binaries for an unsupported operating system
+class CMakeManagerUnsupported(CMakeManager):
+    def get_installer_filenames(self, major: int, minor: int) -> list[str]:
+        """
+        Get all CMake installers that have the given major and minor version for an unsupported operating system
+        :param major: The major version of CMake installers
+        :param minor: The minor version of CMake installers
+        :return: A list of file names sorted in ascending order.
+        """
+        raise RuntimeError("CMake Manager is not available on this platform.")
+
+    def get_cmake_binary(self, from_url: str, to_directory: Path) -> CMake:
+        """
+        Download the CMake installer from the given URL, extract and store the CMake binary to the given directory
+        :param from_url: URL to the CMake installer to be downloaded
+        :param to_directory: Path to the directory to store the extracted CMake binary
+        :return: A handle to the downloaded CMake binary.
+        """
+        raise RuntimeError("CMake Manager is not available on this platform.")
