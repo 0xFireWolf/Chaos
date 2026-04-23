@@ -5,12 +5,14 @@
 from __future__ import annotations
 from io import BytesIO
 from pathlib import Path
-import abc
+from abc import ABC
 import re
 import requests
 import tarfile
 import zipfile
 from .CMake import CMake
+from .Version import Version
+
 
 
 class CMakeManager(abc.ABC):
