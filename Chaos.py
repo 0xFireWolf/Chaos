@@ -595,7 +595,7 @@ def main(project: Project) -> int:
                        choices=["Debug", "Release"],
                        help="Run all tests in Debug or Release mode")
 
-    # Chaos Command: --run-tests-with-coverage [<BuildType>]
+    # Chaos Command: --run-tests-with-coverage
     group.add_argument("--run-tests-with-coverage",
                        action="store_true",
                        help="Run all tests and analyze code coverage")
