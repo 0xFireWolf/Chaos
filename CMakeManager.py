@@ -52,7 +52,7 @@ class CMakeManager(ABC):
         :param patterns: A list of regular expressions used to find CMake installers for a specific operating system
         :return: A list of file names sorted in ascending order.
         """
-        html = requests.get(f"https://cmake.org/files/v{major}.{minor}/").text
+        html = self._http_get(f"https://cmake.org/files/v{major}.{minor}/").text
         for pattern in patterns:
             files = list(re.findall(pattern, html))
             if len(files) != 0:
