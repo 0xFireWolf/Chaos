@@ -289,7 +289,10 @@ class CompilerToolchainInstallerUbuntu2404(CompilerToolchainInstallerUbuntu):
             raise UnsupportedToolchainError(f"Clang {version} is not a supported version on Ubuntu 24.04.")
         elif 14 <= version <= 19:
             self.install_clang_from_apt(version)
-        elif 20 <= version <= 22:
+        elif version == 20:
+            apt_add_repository("ppa:ubuntu-toolchain-r/ppa")
+            self.install_clang_from_apt(version)
+        elif 21 <= version <= 22:
             self.install_clang_from_apt_llvm_org(version)
         else:
             raise UnsupportedToolchainError(f"Clang {version} is not available on Ubuntu 24.04.")
