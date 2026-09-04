@@ -19,10 +19,10 @@ from .XcodeFinder import XcodeBundle, XcodeFinder
 #
 
 # Every GCC version that Chaos knows how to install on at least one host system
-kSupportedGccVersions: tuple[int, ...] = (10, 11, 12, 13, 14, 15)
+kSupportedGccVersions: tuple[int, ...] = (10, 11, 12, 13, 14, 15, 16)
 
 # Every Clang version that Chaos knows how to install on at least one host system
-kSupportedClangVersions: tuple[int, ...] = (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
+kSupportedClangVersions: tuple[int, ...] = (13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)
 
 # Every AppleClang version that Chaos knows how to install (non-contiguous — AppleClang 17's successor is 21)
 kSupportedAppleClangVersions: tuple[int, ...] = (13, 14, 15, 16, 17, 21)
@@ -289,7 +289,7 @@ class CompilerToolchainInstallerUbuntu2404(CompilerToolchainInstallerUbuntu):
             raise UnsupportedToolchainError(f"Clang {version} is not a supported version on Ubuntu 24.04.")
         elif 14 <= version <= 20:
             self.install_clang_from_apt(version)
-        elif 21 <= version <= 22:
+        elif 21 <= version:
             self.install_clang_from_apt_llvm_org(version)
         else:
             raise UnsupportedToolchainError(f"Clang {version} is not available on Ubuntu 24.04.")
@@ -319,10 +319,10 @@ class CompilerToolchainInstallerUbuntu2604(CompilerToolchainInstallerUbuntu):
             brew_install([f"llvm@{version}"])
         elif 17 <= version <= 21:
             self.install_clang_from_apt(version)
-        elif 22 == version:
+        elif 22 <= version:
             self.install_clang_from_apt_llvm_org(version)
         else:
-            raise UnsupportedToolchainError(f"GCC {version} is not available on Ubuntu 26.04.")
+            raise UnsupportedToolchainError(f"Clang {version} is not available on Ubuntu 26.04.")
 
 
 #
