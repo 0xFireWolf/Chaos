@@ -317,9 +317,9 @@ class CompilerToolchainInstallerUbuntu2604(CompilerToolchainInstallerUbuntu):
             raise UnsupportedToolchainError(f"Clang {version} is not a supported version on Ubuntu 26.04.")
         elif 14 <= version <= 16:
             brew_install([f"llvm@{version}"])
-        elif 17 <= version <= 21:
+        elif 17 <= version <= 22:
             self.install_clang_from_apt(version)
-        elif 22 <= version:
+        elif 23 <= version:
             self.install_clang_from_apt_llvm_org(version)
         else:
             raise UnsupportedToolchainError(f"Clang {version} is not available on Ubuntu 26.04.")
