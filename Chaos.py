@@ -520,7 +520,8 @@ class Chaos:
         menu.add_item("Rebuild and run all tests (RELEASE)", self.project_builder.rebuild_and_run_all_tests_release)
         menu.add_item("Rebuild and run all tests with coverage", self.project_builder.rebuild_and_run_all_tests_with_coverage)
         menu.add_item("Clean the build folder", self.project_builder.clean_build_folder)
-        menu.add_item("Clean the build folder and reset the toolchain", self.project_builder.clean_all)
+        if self.project.needs_conan:
+            menu.add_item("Clean the build folder and reset the toolchain", self.project_builder.clean_all)
         menu.add_item("Remove all Conan packages", self.project_builder.remove_all_packages)
         menu.add_item("Determine the minimum CMake version", self.determine_minimum_cmake_version_interactive)
         if self.host_system == HostSystem.kMacOS:
