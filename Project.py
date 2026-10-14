@@ -12,6 +12,7 @@ class Project:
                  build_directory_name: str = "build",
                  cmake_toolchains_directory_name: str = "Toolchains",
                  conan_profiles_directory_name: str = "Profiles",
+                 needs_conan: bool = True,
                  conan_flags: list[str] | None = None,
                  cmake_generate_flags: list[str] | None = None,
                  cmake_build_flags: list[str] | None = None,
@@ -33,6 +34,9 @@ class Project:
 
         # A path to the directory in which all Conan profiles can be found
         self.conan_profiles_directory: Path = self.source_directory / conan_profiles_directory_name
+
+        # Specify whether Conan is needed to build this project
+        self.needs_conan: bool = needs_conan
 
         # A list of additional flags passed to Conan when installing 3rd-party libraries
         self.conan_flags: list[str] | None = conan_flags
