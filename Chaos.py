@@ -206,9 +206,12 @@ class Chaos:
         :raise CalledProcessError: if failed to select the toolchain.
         """
         toolchain = self.cmake_toolchain_directory.find(build_name)
-        build_profiles = self.conan_profile_directory.find(build_name)
-        host_profiles = self.conan_profile_directory.find(host_name) if host_name else build_profiles
-        self.apply_compiler_toolchain(toolchain, build_profiles, host_profiles)
+        if self.project.needs_conan:
+            build_profiles = self.conan_profile_directory.find(build_name)
+            host_profiles = self.conan_profile_directory.find(host_name) if host_name else build_profiles
+            self.apply_compiler_toolchain(toolchain, build_profiles, host_profiles)
+        else:
+            self.apply_compiler_toolchain_cmake_only(toolchain)
 
     def ci_restore_toolchain(self, name: str) -> None:
         """
