@@ -41,7 +41,16 @@ from .Conan import Conan
 from .CMakeManager import CMakeManagerMacOS, CMakeManagerLinux, CMakeManagerWindows, CMakeManagerUnsupported
 from .CMakeToolchainDirectory import CMakeToolchainDirectory
 from .ConanProfileDirectory import ConanProfileDirectory
-from .BuildSystemDescriptor import BuildType, CMakeToolchain, ConanProfile, ConanProfilePair, HostSystem, Architecture
+from .BuildSystemDescriptor import (
+    BuildType,
+    CMakeToolchain,
+    ConanProfile,
+    ConanProfilePair,
+    HostSystem,
+    Architecture,
+    Compiler,
+    CompilerType
+)
 from .Menu import Menu
 from .Utilities import remove_folder_if_exists
 
@@ -174,7 +183,26 @@ class Chaos:
         """
         self.configurator.install_all()
 
+    def ci_install_toolchain_private(self, compiler: Compiler) -> None:
+        """
+        [CI] Install the specified compiler toolchain
+        :param compiler: The parsed toolchain name as an instance of `Compiler`
+        :raise ValueError: if the compiler refers to Microsoft Visual C++
+        :raise CalledProcessError: if failed to install the compiler.
+        """
+        match compiler.type:
+            case CompilerType.kGCC:
+                self.toolchain_installer.install_gcc(compiler.version)
+            case CompilerType.kClang:
+                self.toolchain_installer.install_clang(compiler.version)
+            case CompilerType.kAppleClang:
+                self.toolchain_installer.install_apple_clang(compiler.version)
+            case CompilerType.kMSVC:
+                raise ValueError("Chaos cannot install Microsoft Visual C++. Please install Visual Studio manually.")
+
     def ci_install_toolchain(self, name: str) -> None:
+        # TODO: The toolchain name should be updated to match the string representation of `Compiler`
+        # TODO: Then use Compiler.parse(name) and call the helper ci_install_toolchain()
         """
         [CI] Install the toolchain that has the given name
         :param name: The toolchain name (e.g., `gcc-14`, `clang-19`, `apple-clang-17`)
