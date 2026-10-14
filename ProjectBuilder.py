@@ -17,12 +17,13 @@ from .Utilities import remove_folder_if_exists, remove_file_if_exists
 
 # A project builder that builds, tests, and cleans the project
 class ProjectBuilder:
-    def __init__(self, project: Project, cmake: CMake, conan: Conan):
+    def __init__(self, project: Project, cmake: CMake, conan: Conan | None):
         """
         Initialize the project builder
         :param project: A C++ project to be built
         :param cmake: A handle to the `cmake` binary used to configure, build, and install the project
-        :param conan: A handle to the `conan` binary used to install the project's dependencies
+        :param conan: A handle to the `conan` binary used to install the project's dependencies;
+                      Pass `None` if `conan` is not needed for the project
         """
         self.project = project
         self.cmake = cmake
@@ -117,7 +118,9 @@ class ProjectBuilder:
 
         # Retrieve the CMake toolchain file that will be used to configure the project
         toolchain_file = self.project.current_toolchain_link_path
-        chainload_toolchain_file = self.project.build_directory / self.conan.integration_file_name
+        chainload_toolchain_file = None \
+            if self.conan is None \
+            else self.project.build_directory / self.conan.integration_file_name
 
         # Check whether the bundled libc++ library should be used on macOS
         # TODO: The env var has been renamed to CHAOS_XXXX
@@ -130,11 +133,12 @@ class ProjectBuilder:
         self.create_fresh_build_folder()
 
         # Install all 3rd-party dependencies via Conan
-        self.conan.install(source_directory=self.project.source_directory,
-                           output_directory=self.project.build_directory,
-                           build_profile=build_profile,
-                           host_profile=host_profile,
-                           extra_args=self.make_conan_flags(conan_flags))
+        if self.conan is not None:
+            self.conan.install(source_directory=self.project.source_directory,
+                               output_directory=self.project.build_directory,
+                               build_profile=build_profile,
+                               host_profile=host_profile,
+                               extra_args=self.make_conan_flags(conan_flags))
 
         # Generate files for the native build system using CMake
         self.cmake.generate(source_directory=self.project.source_directory,
