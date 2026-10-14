@@ -230,6 +230,7 @@ class ProjectBuilder:
         """
         [Action] Remove all conan packages
         """
+        assert self.conan is not None
         self.conan.remove_all()
 
     #
