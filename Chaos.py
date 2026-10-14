@@ -103,6 +103,16 @@ class Chaos:
     # MARK: Select Compiler Toolchains
     #
 
+    def apply_compiler_toolchain_cmake_only(self, toolchain: CMakeToolchain) -> None:
+        """
+        [Action] Apply the given CMake toolchain
+        :param toolchain: The CMake toolchain to apply
+        """
+        print("Applying the CMake toolchain:", toolchain.filename)
+        self.cmake_toolchain_directory.select(toolchain, self.project.current_toolchain_link_path)
+        print()
+        print("The CMake toolchain has been set.")
+
     def apply_compiler_toolchain(self,
                                  toolchain: CMakeToolchain,
                                  build_profiles: ConanProfilePair,
