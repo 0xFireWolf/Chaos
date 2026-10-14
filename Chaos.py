@@ -296,6 +296,12 @@ class Chaos:
         """
         self.project_builder.remove_all_packages()
 
+    def ci_clean_all(self) -> None:
+        """
+        [CI] Remove the build directory and reset the toolchain
+        """
+        self.project_builder.clean_all()
+
     def ci_entry_point(self, args: argparse.Namespace, unknown_args: list[str]) -> int:
         """
         [CI] Main Entry Point of the Continuous Integration
