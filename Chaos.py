@@ -53,7 +53,9 @@ class Chaos:
         :param project: A project whose chaos to be controlled
         """
         self.project = project
-        self.project_builder = ProjectBuilder(project, CMake.default(), Conan.default())
+        self.project_builder = ProjectBuilder(project,
+                                              CMake.default(),
+                                              Conan.default() if project.needs_conan else None)
         self.cmake_toolchain_directory = CMakeToolchainDirectory(project.cmake_toolchains_directory)
         self.conan_profile_directory = ConanProfileDirectory(project.conan_profiles_directory)
 
