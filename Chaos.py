@@ -119,7 +119,6 @@ class Chaos:
         """
         print("Applying the CMake toolchain:", toolchain.filename)
         self.cmake_toolchain_directory.select(toolchain, self.project.current_toolchain_link_path)
-        print()
         print("The CMake toolchain has been set.")
 
     def apply_compiler_toolchain(self,
