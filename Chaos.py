@@ -186,7 +186,6 @@ class Chaos:
         """
         [CI] Install the specified compiler toolchain
         :param compiler: The parsed toolchain name as an instance of `Compiler`
-        :raise ValueError: if the compiler refers to Microsoft Visual C++
         :raise CalledProcessError: if failed to install the compiler.
         """
         match compiler.type:
@@ -197,7 +196,7 @@ class Chaos:
             case CompilerType.kAppleClang:
                 self.toolchain_installer.install_apple_clang(compiler.version)
             case CompilerType.kMSVC:
-                raise ValueError("Chaos cannot install Microsoft Visual C++. Please install Visual Studio manually.")
+                print("Microsoft Visual C++ Compiler is bundled with Visual Studio.")
 
     def ci_install_toolchain(self, name: str) -> None:
         # TODO: The toolchain name should be updated to match the string representation of `Compiler`
