@@ -10,8 +10,8 @@ class Project:
     def __init__(self,
                  name: str,
                  build_directory_name: str = "build",
-                 cmake_toolchains_directory_name: str = "Toolchains",
-                 conan_profiles_directory_name: str = "Profiles",
+                 cmake_toolchains_directory_relative_path: Path = Path("Toolchains"),
+                 conan_profiles_directory_relative_path: Path = Path("Profiles"),
                  needs_conan: bool = True,
                  conan_flags: list[str] | None = None,
                  cmake_generate_flags: list[str] | None = None,
@@ -30,10 +30,10 @@ class Project:
         self.build_directory: Path = self.source_directory / build_directory_name
 
         # A path to the directory in which all CMake toolchain files can be found
-        self.cmake_toolchains_directory: Path = self.source_directory / cmake_toolchains_directory_name
+        self.cmake_toolchains_directory: Path = self.source_directory / cmake_toolchains_directory_relative_path
 
         # A path to the directory in which all Conan profiles can be found
-        self.conan_profiles_directory: Path = self.source_directory / conan_profiles_directory_name
+        self.conan_profiles_directory: Path = self.source_directory / conan_profiles_directory_relative_path
 
         # Specify whether Conan is needed to build this project
         self.needs_conan: bool = needs_conan
