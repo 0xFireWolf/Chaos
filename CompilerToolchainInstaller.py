@@ -132,8 +132,8 @@ class CompilerToolchainInstallerMacOS(CompilerToolchainInstaller):
         # Apple Clang 17.0.0 -> Xcode 16.3, 16.4, 26.0, 26.0.1, 26.1, 26.2, 26.3
         17: [(26, 3), (26, 2), (26, 1), (26, 0), (16, 4), (16, 3)],
 
-        # Apple Clang 21.0.0 -> Xcode 26.4, 26.4.1
-        21: [(26, 4)],
+        # Apple Clang 21.0.0 -> Xcode 26.4, 26.4.1, 26.5, 26.6, 27.0
+        21: [(26, 4), (26, 5), (26, 6), (27, 0)],
     }
 
     def __init__(self, architecture: Architecture):
